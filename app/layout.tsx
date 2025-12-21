@@ -6,6 +6,9 @@ import Providers from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://jobify-app.vercel.app"
+  ),
   title: "Jobify | Modern Next.js Job Tracking App",
   description:
     "Jobify Tracking App is a full-featured, modern job application tracker for job seekers. Built with Next.js 14+, TypeScript, Clerk authentication, Prisma ORM, React Query, shadcn/ui, and Tailwind CSS, it empowers users to efficiently organize, track, and analyze their job search journey. Enjoy a beautiful dashboard, secure authentication, analytics, theming, and a modular, extensible codebase.",
