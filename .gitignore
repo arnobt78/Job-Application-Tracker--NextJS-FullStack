@@ -41,3 +41,5 @@ next-env.d.ts
 
 .vscode
 .next
+
+HETZNER_VPS_MIGRATION_GUIDE.md
