@@ -1,4 +1,4 @@
-# Jobify | Job Tracking Application - Next.js, TypeScript, Clerk, Prisma, React Query, PostgreSQL FullStack Project
+# Job Tracking Application - Next.js, TypeScript, Clerk, Prisma, React Query, PostgreSQL FullStack Project
 
 A full-featured, production-ready job tracking application built with Next.js 14+, TypeScript, Clerk, Prisma, React Query, PostgreSQL, and modern web technologies. Jobify helps job seekers efficiently organize, track, and analyze their job search journey with a beautiful, responsive dashboard.
 
