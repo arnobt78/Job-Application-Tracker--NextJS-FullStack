@@ -38,6 +38,7 @@ const isProtectedRoute = createRouteMatcher([
   '/add-job',
   '/jobs(.*)',
   '/stats',
+  '/user-profile(.*)',
 ]);
 
 /**

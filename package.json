@@ -10,7 +10,12 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:inspect": "tsx scripts/db-inspect.ts",
+    "db:migrate-clerkid": "tsx scripts/db-migrate-clerkid.ts",
+    "db:fix-status": "tsx scripts/db-fix-status.ts",
+    "db:fix-future-dates": "tsx scripts/db-fix-future-dates.ts",
+    "db:seed-test-user": "tsx scripts/seed-test-user-jobs.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.1",

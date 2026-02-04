@@ -143,12 +143,9 @@ export const metadata: Metadata = {
     },
   },
 
-  // Icons and favicons
+  // Icons and favicons - favicon.ico for tab, logo.svg for Apple devices
   icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/logo.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
     apple: [{ url: "/logo.svg", type: "image/svg+xml" }],
     shortcut: "/favicon.ico",
   },
@@ -225,7 +222,7 @@ export default function RootLayout({
      * Makes auth() and other Clerk hooks available in all components.
      * Must be a Server Component (no 'use client' directive).
      */
-    <ClerkProvider>
+    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
       <html lang="en" suppressHydrationWarning>
         {/* 
           suppressHydrationWarning: Prevents React hydration warnings
@@ -233,7 +230,7 @@ export default function RootLayout({
           (e.g., adding "dark" class). The warning occurs because server and client
           may have different initial HTML due to theme detection.
         */}
-        <body className={inter.className}>
+        <body className={inter.className} suppressHydrationWarning>
           {/* 
             Providers Component
             - ThemeProvider: Dark/light mode

@@ -22,6 +22,7 @@ function Sidebar() {
         className="mx-auto"
         width={164}
         height={50}
+        priority
       />
       <div className="flex flex-col mt-20 gap-y-4">
         {links.map((link) => {

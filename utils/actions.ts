@@ -323,9 +323,13 @@ export async function getStatsAction(): Promise<{
     });
 
     // Transform array into object for easier access
-    // Example: [{status: "pending", _count: {status: 5}}] -> {pending: 5}
+    // Normalize status to lowercase so "Pending"/"pending" both count as pending
+    // Example: [{status: "Pending", _count: {status: 6}}] -> {pending: 6}
     const statsObject = stats.reduce((acc, curr) => {
-      acc[curr.status] = curr._count.status;
+      const normalized = curr.status.toLowerCase();
+      if (["pending", "interview", "declined"].includes(normalized)) {
+        acc[normalized] = (acc[normalized] || 0) + curr._count.status;
+      }
       return acc;
     }, {} as Record<string, number>);
 
@@ -357,17 +361,18 @@ export async function getChartsDataAction(): Promise<
 > {
   const userId = authenticateAndRedirect();
 
-  // Calculate date 6 months ago using dayjs
-  // toDate() converts dayjs object to JavaScript Date for Prisma
+  // Calculate date range: last 6 months, up to current moment (exclude future dates)
+  const now = dayjs().toDate();
   const sixMonthsAgo = dayjs().subtract(6, "month").toDate();
 
   try {
-    // Fetch jobs from last 6 months, ordered chronologically
+    // Fetch jobs from last 6 months only (exclude future createdAt dates)
     const jobs = await prisma.job.findMany({
       where: {
         clerkId: userId,
         createdAt: {
-          gte: sixMonthsAgo, // gte = greater than or equal (date comparison)
+          gte: sixMonthsAgo,
+          lte: now, // Don't show future dates in chart
         },
       },
       orderBy: {
