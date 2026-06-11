@@ -1,4 +1,5 @@
 import { GlassCard } from '@/components/ui/glass-card';
+import { MARKETING_COPY } from '@/lib/ui/marketing-copy';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -9,24 +10,6 @@ import {
 } from 'lucide-react';
 
 type AuthVariant = 'sign-in' | 'sign-up';
-
-const AUTH_COPY: Record<
-  AuthVariant,
-  { eyebrow: string; title: string; highlight: string; body: string }
-> = {
-  'sign-in': {
-    eyebrow: 'Welcome back',
-    title: 'Modern job',
-    highlight: 'tracking platform',
-    body: 'Sign in to manage applications, view analytics, and export your search history — with instant sync across every tab.',
-  },
-  'sign-up': {
-    eyebrow: 'Get started',
-    title: 'Join the modern',
-    highlight: 'job search stack',
-    body: 'Create a free account and organize every application with filters, charts, and real-time updates across devices.',
-  },
-};
 
 const AUTH_FEATURES: { icon: LucideIcon; label: string }[] = [
   { icon: RefreshCw, label: 'Real-time sync' },
@@ -40,9 +23,9 @@ type AuthMarketingPanelProps = {
   className?: string;
 };
 
-/** Static left-column copy for auth pages — mirrors HealthCal marketing panel */
+/** Static left-column copy for auth pages — no images */
 export function AuthMarketingPanel({ variant, className }: AuthMarketingPanelProps) {
-  const copy = AUTH_COPY[variant];
+  const copy = MARKETING_COPY[variant];
 
   return (
     <div className={cn('flex flex-col gap-6', className)}>

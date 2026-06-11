@@ -5,18 +5,32 @@ import { SignUp } from '@clerk/nextjs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlassCard } from '@/components/ui/glass-card';
 
+const clerkAppearance = {
+  elements: {
+    rootBox: 'w-full',
+    card: 'bg-transparent shadow-none border-0 p-0',
+    headerTitle: 'text-foreground',
+    headerSubtitle: 'text-muted-foreground',
+    socialButtonsBlockButton: 'border-white/10 bg-background/50',
+    formFieldInput: 'glass-input',
+    formButtonPrimary:
+      'bg-primary text-white/90 hover:bg-primary/90 shadow-[0_15px_35px_rgba(59,130,246,0.45)]',
+  },
+};
+
+/** Clerk sign-up inside emerald glass shell — matches sign-in sky glow pattern */
 export default function SignUpWrapper() {
   const { isLoaded } = useAuth();
 
   if (!isLoaded) {
     return (
       <div className="w-full max-w-md">
-        <GlassCard variant="sky">
-          <div className="space-y-2 mb-6">
+        <GlassCard variant="emerald">
+          <div className="mb-6 space-y-2">
             <Skeleton className="h-8 w-52" />
             <Skeleton className="h-4 w-72" />
           </div>
-          <div className="space-y-4 mb-4">
+          <div className="mb-4 space-y-4">
             <Skeleton className="h-10 w-full rounded-md" />
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
@@ -49,7 +63,7 @@ export default function SignUpWrapper() {
             </div>
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
-          <div className="flex justify-center mt-4">
+          <div className="mt-4 flex justify-center">
             <Skeleton className="h-4 w-56" />
           </div>
         </GlassCard>
@@ -58,14 +72,14 @@ export default function SignUpWrapper() {
   }
 
   return (
-    <SignUp
-      signInUrl="/sign-in"
-      afterSignUpUrl="/add-job"
-      appearance={{
-        elements: {
-          rootBox: 'mx-auto',
-        },
-      }}
-    />
+    <div className="w-full max-w-md">
+      <GlassCard variant="emerald" className="p-4 sm:p-6">
+        <SignUp
+          signInUrl="/sign-in"
+          afterSignUpUrl="/add-job"
+          appearance={clerkAppearance}
+        />
+      </GlassCard>
+    </div>
   );
 }

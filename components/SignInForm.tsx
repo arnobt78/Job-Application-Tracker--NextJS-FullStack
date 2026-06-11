@@ -4,6 +4,7 @@ import { OAuthStrategy } from "@clerk/types";
 import { useSignIn } from "@clerk/nextjs";
 import Link from "next/link";
 import { useState } from "react";
+import { useGuestSignIn } from "@/hooks/useGuestSignIn";
 import {
   Select,
   SelectContent,
@@ -16,10 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlassCard } from "@/components/ui/glass-card";
-import { useToast } from "@/components/ui/use-toast";
 import {
   TEST_ACCOUNTS,
-  TEST_ACCOUNT_ROLES,
   type TestAccountRole,
 } from "@/lib/auth/test-credentials";
 
@@ -28,13 +27,12 @@ interface SignInFormProps {
 }
 
 export default function SignInForm({ isGuest = false }: SignInFormProps) {
-  const { isLoaded, signIn, setActive } = useSignIn();
-  const { toast } = useToast();
+  const { isLoaded, signIn } = useSignIn();
+  const { signInWithCredentials, isLoading } = useGuestSignIn();
   const guestAccount = TEST_ACCOUNTS["guest-user"];
   const [selectedRole, setSelectedRole] = useState(isGuest ? "guest-user" : "");
   const [email, setEmail] = useState(isGuest ? guestAccount.email : "");
   const [password, setPassword] = useState(isGuest ? guestAccount.password : "");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleRoleSelect = (value: string) => {
     if (value === "clear") {
@@ -63,28 +61,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoaded) return;
-
-    setIsLoading(true);
-    try {
-      const result = await signIn!.create({
-        identifier: email,
-        password,
-      });
-
-      if (result.status === "complete") {
-        await setActive!({ session: result.createdSessionId });
-        // proxy.ts protects routes — full-page redirect ensures session cookie is sent
-        window.location.href = "/add-job";
-        return; // Don't show toast - page is navigating away
-      }
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Invalid email or password.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await signInWithCredentials(email, password);
   };
 
   if (!isLoaded) {
