@@ -4,9 +4,15 @@ import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useJobsCacheSync } from '@/hooks/useJobsCacheSync';
+import { useSentryUser } from '@/hooks/useSentryUser';
 
 function JobsCacheSyncListener() {
   useJobsCacheSync();
+  return null;
+}
+
+function SentryUserListener() {
+  useSentryUser();
   return null;
 }
 
@@ -29,6 +35,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <JobsCacheSyncListener />
+      <SentryUserListener />
       {children}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
