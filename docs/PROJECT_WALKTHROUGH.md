@@ -62,4 +62,8 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 
 ## Deferred
 
-NextAuth migration, E2E Playwright, Prisma schema cleanup (Task/Tour/Token models kept).
+NextAuth migration, E2E Playwright, Prisma schema cleanup, PostHog/Session Replay.
+
+## UI audit (2026-06)
+
+All 8 plan phases shipped in `6df37b0`. typecheck/lint/test/build green. Orphan `public/job-*.svg` removed.
