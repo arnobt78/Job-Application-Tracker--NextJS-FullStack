@@ -1,44 +1,38 @@
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-
+import type { ReactNode } from 'react';
 import { Skeleton } from './ui/skeleton';
+import { GlassCard, type GlassVariant } from '@/components/ui/glass-card';
+import { Clock, CalendarCheck, XCircle } from 'lucide-react';
 
 type StatsCardsProps = {
   title: string;
   value: number;
+  variant?: GlassVariant;
 };
 
-function StatsCards({ title, value }: StatsCardsProps) {
+const statIcons: Record<string, ReactNode> = {
+  'pending jobs': <Clock className="h-6 w-6 text-amber-400" />,
+  'interviews set': <CalendarCheck className="h-6 w-6 text-emerald-400" />,
+  'jobs declined': <XCircle className="h-6 w-6 text-rose-400" />,
+};
+
+function StatsCards({ title, value, variant = 'sky' }: StatsCardsProps) {
   return (
-    <Card className='bg-muted'>
-      <CardHeader className='flex flex-row justify-between items-center'>
-        <CardTitle className='capitalize'>{title}</CardTitle>
-        <CardDescription className='text-4xl font-extrabold text-primary mt-[0px!important]'>
-          {value}
-        </CardDescription>
-      </CardHeader>
-    </Card>
+    <GlassCard variant={variant}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.35em] text-muted-foreground flex items-center gap-2">
+            {statIcons[title]}
+            {title}
+          </p>
+          <p className="mt-3 text-3xl font-semibold">{value}</p>
+        </div>
+      </div>
+    </GlassCard>
   );
 }
 
 export function StatsLoadingCard() {
-  return (
-    <Card className='w-[330px] h-[88px]'>
-      <CardHeader className='flex flex-row justify-between items-center'>
-        <div className='flex items-center space-x-4'>
-          <Skeleton className='h-12 w-12 rounded-full' />
-          <div className='space-y-2'>
-            <Skeleton className='h-4 w-[150px]' />
-            <Skeleton className='h-4 w-[100px]' />
-          </div>
-        </div>
-      </CardHeader>
-    </Card>
-  );
+  return <Skeleton className="h-[120px] w-full rounded-[28px]" />;
 }
 
 export default StatsCards;

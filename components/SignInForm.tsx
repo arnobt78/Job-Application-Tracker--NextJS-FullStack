@@ -3,7 +3,7 @@
 import { OAuthStrategy } from "@clerk/types";
 import { useSignIn } from "@clerk/nextjs";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -15,15 +15,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GlassCard } from "@/components/ui/glass-card";
 import { useToast } from "@/components/ui/use-toast";
-
-const testAccounts = {
-  "guest-user": {
-    name: "Test User",
-    email: "test@user.com",
-    password: "12345678",
-  },
-};
+import {
+  TEST_ACCOUNTS,
+  TEST_ACCOUNT_ROLES,
+  type TestAccountRole,
+} from "@/lib/auth/test-credentials";
 
 interface SignInFormProps {
   isGuest?: boolean;
@@ -32,19 +30,11 @@ interface SignInFormProps {
 export default function SignInForm({ isGuest = false }: SignInFormProps) {
   const { isLoaded, signIn, setActive } = useSignIn();
   const { toast } = useToast();
-  const [selectedRole, setSelectedRole] = useState<string>("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const guestAccount = TEST_ACCOUNTS["guest-user"];
+  const [selectedRole, setSelectedRole] = useState(isGuest ? "guest-user" : "");
+  const [email, setEmail] = useState(isGuest ? guestAccount.email : "");
+  const [password, setPassword] = useState(isGuest ? guestAccount.password : "");
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isGuest) {
-      setSelectedRole("guest-user");
-      const account = testAccounts["guest-user"];
-      setEmail(account.email);
-      setPassword(account.password);
-    }
-  }, [isGuest]);
 
   const handleRoleSelect = (value: string) => {
     if (value === "clear") {
@@ -53,7 +43,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
       setPassword("");
     } else {
       setSelectedRole(value);
-      const account = testAccounts[value as keyof typeof testAccounts];
+      const account = TEST_ACCOUNTS[value as TestAccountRole];
       if (account) {
         setEmail(account.email);
         setPassword(account.password);
@@ -83,9 +73,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
 
       if (result.status === "complete") {
         await setActive!({ session: result.createdSessionId });
-        // Use full-page redirect to avoid RSC 404: router.push triggers an immediate
-        // RSC fetch that can run before the session cookie is sent, causing Clerk
-        // middleware to return 404 for the unauthenticated RSC request.
+        // proxy.ts protects routes — full-page redirect ensures session cookie is sent
         window.location.href = "/add-job";
         return; // Don't show toast - page is navigating away
       }
@@ -102,7 +90,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
   if (!isLoaded) {
     return (
       <div className="w-full max-w-md">
-        <div className="bg-muted p-8 rounded-lg">
+        <GlassCard variant="sky">
           <div className="space-y-2 mb-6">
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-4 w-64" />
@@ -137,14 +125,14 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
           <div className="flex justify-center">
             <Skeleton className="h-4 w-48" />
           </div>
-        </div>
+        </GlassCard>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-md">
-      <div className="bg-muted p-8 rounded-lg">
+      <GlassCard variant="sky">
         <div className="space-y-2 mb-6">
           <h1 className="text-2xl font-bold">Welcome back</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
@@ -158,7 +146,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
               value={selectedRole || undefined}
               onValueChange={handleRoleSelect}
             >
-              <SelectTrigger id="guest-select">
+              <SelectTrigger id="guest-select" className="glass-input">
                 <SelectValue placeholder="Select Role Based Test Account" />
               </SelectTrigger>
               <SelectContent>
@@ -275,7 +263,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
             Sign up
           </Link>
         </p>
-      </div>
+      </GlassCard>
     </div>
   );
 }

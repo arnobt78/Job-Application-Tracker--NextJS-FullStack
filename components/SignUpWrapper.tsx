@@ -3,6 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { SignUp } from '@clerk/nextjs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GlassCard } from '@/components/ui/glass-card';
 
 export default function SignUpWrapper() {
   const { isLoaded } = useAuth();
@@ -10,7 +11,7 @@ export default function SignUpWrapper() {
   if (!isLoaded) {
     return (
       <div className="w-full max-w-[400px]">
-        <div className="bg-muted p-8 rounded-lg">
+        <GlassCard variant="sky">
           <div className="space-y-2 mb-6">
             <Skeleton className="h-8 w-52" />
             <Skeleton className="h-4 w-72" />
@@ -51,7 +52,7 @@ export default function SignUpWrapper() {
           <div className="flex justify-center mt-4">
             <Skeleton className="h-4 w-56" />
           </div>
-        </div>
+        </GlassCard>
       </div>
     );
   }

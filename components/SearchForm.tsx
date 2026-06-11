@@ -16,6 +16,7 @@
 import { Input } from './ui/input';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from './ui/button';
+import { GlassCard } from '@/components/ui/glass-card';
 
 import {
   Select,
@@ -74,10 +75,11 @@ function SearchContainer() {
   };
 
   return (
-    <form
-      className='bg-muted mb-16 p-8 grid sm:grid-cols-2 md:grid-cols-3  gap-4 rounded-lg'
-      onSubmit={handleSubmit}
-    >
+    <GlassCard variant="sky" className="mb-16">
+      <form
+        className="grid sm:grid-cols-2 md:grid-cols-3 gap-4"
+        onSubmit={handleSubmit}
+      >
       <Input
         type='text'
         placeholder='Search Jobs'
@@ -85,7 +87,7 @@ function SearchContainer() {
         defaultValue={search}
       />
       <Select defaultValue={jobStatus} name='jobStatus'>
-        <SelectTrigger>
+        <SelectTrigger className="glass-input">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -100,6 +102,7 @@ function SearchContainer() {
       </Select>
       <Button type='submit'>Search</Button>
     </form>
+    </GlassCard>
   );
 }
 export default SearchContainer;

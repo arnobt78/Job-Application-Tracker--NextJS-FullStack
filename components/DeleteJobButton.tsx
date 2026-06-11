@@ -1,39 +1,24 @@
+'use client';
+
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import JobInfo from './JobInfo';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteJobAction } from '@/utils/actions';
-import { useToast } from '@/components/ui/use-toast';
+import { useDeleteJobMutation } from '@/hooks/useJobsMutation';
+import { Trash2 } from 'lucide-react';
 
 function DeleteJobBtn({ id }: { id: string }) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { mutate, isPending } = useMutation({
-    mutationFn: (id: string) => deleteJobAction(id),
-    onSuccess: (data) => {
-      if (!data) {
-        toast({
-          description: 'there was an error',
-        });
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
-      queryClient.invalidateQueries({ queryKey: ['charts'] });
+  const { mutate, isPending } = useDeleteJobMutation(id);
 
-      toast({ description: 'job removed' });
-    },
-  });
   return (
     <Button
-      size='sm'
+      variant="destructive"
+      size="sm"
       disabled={isPending}
-      onClick={() => {
-        mutate(id);
-      }}
+      className="gap-1"
+      onClick={() => mutate()}
     >
-      {isPending ? 'deleting...' : 'delete'}
+      <Trash2 className="h-4 w-4" />
+      {isPending ? 'Deleting...' : 'Delete'}
     </Button>
   );
 }
+
 export default DeleteJobBtn;

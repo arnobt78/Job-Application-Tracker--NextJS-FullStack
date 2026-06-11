@@ -60,7 +60,7 @@ export function CustomFormSelect({
           <FormLabel className='capitalize'>{labelText || name}</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="glass-input">
                 <SelectValue />
               </SelectTrigger>
             </FormControl>

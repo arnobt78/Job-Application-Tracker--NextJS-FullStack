@@ -1,0 +1,59 @@
+# Agile V Policy — Jobify
+
+version: "1.0"
+cycle: C1
+updated: "2026-06-11T10:25:44Z"
+
+project:
+  name: jobify
+  regulatory_context: non-regulated
+  primary_build_skill: build-agent-js
+
+gates:
+  gate_1:
+    required: true
+    checkpoint_type: Human-Verify
+    evidence: [REQUIREMENTS.md, ATM.md, RISK_REGISTER.md]
+  gate_2:
+    required: true
+    checkpoint_type: Human-Verify
+    prerequisites:
+      - VALIDATION_SUMMARY.md
+      - EVAL_RESULTS.md eval_gate_status PASS or WAIVED
+      - red_team_signoff
+
+traceability:
+  halt_without_req: true
+  req_id_format: "REQ-XXXX"
+  art_id_format: "ART-XXXX"
+  tc_id_format: "TC-XXXX"
+  cr_id_format: "CR-XXXX"
+
+scope_v:
+  enforce_phases: [Specify, Constrain, Orchestrate, Prove, Evolve, Verify]
+  red_team_protocol: true
+  no_self_verification: true
+
+quality_gates:
+  interface_validation: required
+  test_quality: required
+  data_type_awareness: required
+  time_allocation: required
+
+security:
+  never_commit: [.env, .env.local, credentials.json]
+  classify_before_llm: true
+  context_sanitize_on_end: true
+
+revalidation:
+  interval_months: 12
+  triggers: [model_change, major_runtime_update, skill_change, cr_threshold_5]
+
+hitl:
+  durable_checkpoints: true
+  resume_requires_token: true
+  checkpoint_sla_hours: 72
+
+deployment:
+  require_gate_2: true
+  no_deploy_without_approval: true

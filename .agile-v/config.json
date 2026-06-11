@@ -1,0 +1,76 @@
+{
+  "project": {
+    "name": "Jobify — Job Application Tracker",
+    "repo": "18-nextjs-jobify-app",
+    "framework": "Next.js 14 App Router",
+    "language": "TypeScript",
+    "domain_build_skill": "build-agent-js"
+  },
+  "agile_v": {
+    "version": "1.4",
+    "cycle": "C1",
+    "standard": "Agile V Infinity Loop",
+    "regulatory_context": "non-regulated",
+    "activated": "2026-06-11T10:25:44Z"
+  },
+  "stack": {
+    "frontend": ["Next.js 14.2", "React 18", "Tailwind CSS", "shadcn/ui", "TanStack Query"],
+    "backend": ["Next.js Server Actions", "Prisma 5.7", "PostgreSQL"],
+    "auth": ["Clerk"],
+    "deployment": ["Vercel"]
+  },
+  "approval_authority": {
+    "gate_1": ["Project Owner", "Tech Lead"],
+    "gate_2": ["Project Owner"]
+  },
+  "model_versions": {
+    "orchestrator": { "tier": "high", "last_validated": "2026-06-11", "validated_by": "bootstrap" },
+    "build_agent": { "tier": "medium", "last_validated": "2026-06-11", "validated_by": "bootstrap" },
+    "red_team": { "tier": "medium", "last_validated": "2026-06-11", "validated_by": "bootstrap" }
+  },
+  "llm_provider_registry": [
+    {
+      "name": "Cursor Agent",
+      "models": ["auto"],
+      "data_residency": "provider-default",
+      "retention": "session",
+      "api_data_usage": "per Cursor policy",
+      "approved_for": ["source_code", "requirements", "non-PHI"],
+      "review_date": "2026-06-11"
+    }
+  ],
+  "active_skills": {
+    "framework": [
+      "agile-v-core",
+      "agile-v-pipeline",
+      "agile-v-lifecycle",
+      "agile-v-compliance",
+      "agile-v-quality-gates",
+      "agile-v-product-owner"
+    ],
+    "agents": [
+      "requirement-architect",
+      "discovery-analyst",
+      "logic-gatekeeper",
+      "threat-modeler",
+      "ux-spec-author",
+      "build-agent",
+      "build-agent-js",
+      "test-designer",
+      "red-team-verifier",
+      "compliance-auditor",
+      "documentation-agent",
+      "observability-planner",
+      "release-manager",
+      "schematic-generator"
+    ],
+    "domain_primary": "build-agent-js"
+  },
+  "paths": {
+    "state": ".agile-v/STATE.md",
+    "requirements": ".agile-v/REQUIREMENTS.md",
+    "decision_log": ".agile-v/DECISION_LOG.md",
+    "validation": ".agile-v/VALIDATION_SUMMARY.md",
+    "skills_registry": ".agile-v/SKILLS_REGISTRY.md"
+  }
+}

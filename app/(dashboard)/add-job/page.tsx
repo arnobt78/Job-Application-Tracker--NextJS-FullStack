@@ -1,16 +1,19 @@
 import CreateJobForm from '@/components/CreateJobForm';
-import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from '@tanstack/react-query';
+import type { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/site-metadata';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = createPageMetadata({
+  title: 'Add Job',
+  description:
+    'Add a new job application to your Jobify tracker with position, company, location, status, and employment type.',
+  path: '/add-job',
+  noIndex: true,
+});
 
 function AddJobPage() {
-  const queryClient = new QueryClient();
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <CreateJobForm />
-    </HydrationBoundary>
-  );
+  return <CreateJobForm />;
 }
+
 export default AddJobPage;

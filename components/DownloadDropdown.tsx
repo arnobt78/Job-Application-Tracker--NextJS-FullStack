@@ -25,7 +25,7 @@ import { Download, FileText, Table } from "lucide-react";
 import { getAllJobsForDownloadAction } from "@/utils/actions";
 import { JobType } from "@/utils/types";
 import dayjs from "dayjs";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 function DownloadDropdown() {
   /**
@@ -50,7 +50,7 @@ function DownloadDropdown() {
   const handleDownloadExcel = async () => {
     try {
       const jobs = await getAllJobsForDownloadAction();
-      downloadAsExcel(jobs);
+      await downloadAsExcel(jobs);
     } catch (error) {
       console.error("Error downloading Excel:", error);
     }
@@ -177,8 +177,7 @@ function DownloadDropdown() {
    *
    * @param jobs - Array of job application records from the database
    */
-  const downloadAsExcel = (jobs: JobType[]) => {
-    // Calculate statistics (same logic as CSV)
+  const downloadAsExcel = async (jobs: JobType[]) => {
     const totalApplied = jobs.length;
     const declined = jobs.filter((j) => j.status === "declined").length;
     const interview = jobs.filter((j) => j.status === "interview").length;
@@ -187,24 +186,18 @@ function DownloadDropdown() {
     const generatedAt = dayjs().format("DD-MMM-YYYY HH:mm");
     const headingText = `Total Applied: ${totalApplied}, Declined: ${declined}, Interview: ${interview}, Pending: ${pending}      Report Generated: ${generatedAt}`;
 
-    // Sort newest first (same as CSV)
     const sorted = [...jobs].sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    // Build rows as a 2D array (array of arrays)
-    // This is the format XLSX library expects: rows[rowIndex][columnIndex]
-    const rows: Array<Array<string | number>> = [];
-    // Build worksheet rows
-    // Row 0: Title (will be merged across columns)
-    rows.push(["Job Application History"]);
-    // Row 1: Statistics (will be merged across columns)
-    rows.push([headingText]);
-    // Row 2: Blank row for visual separation
-    rows.push([]);
-    // Row 3: Table header
-    rows.push([
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Job Applications");
+
+    worksheet.addRow(["Job Application History"]);
+    worksheet.addRow([headingText]);
+    worksheet.addRow([]);
+    worksheet.addRow([
       "No.",
       "Applied Date",
       "Job Title",
@@ -214,7 +207,9 @@ function DownloadDropdown() {
       "Status",
     ]);
 
-    // Process each job and add to rows array
+    worksheet.mergeCells("A1:G1");
+    worksheet.mergeCells("A2:G2");
+
     let serial = 1;
     let lastMonthKey = "";
     sorted.forEach((job) => {
@@ -228,14 +223,12 @@ function DownloadDropdown() {
           : "Internship";
       const status = job.status.charAt(0).toUpperCase() + job.status.slice(1);
 
-      // Insert blank row when month changes (same logic as CSV)
       if (lastMonthKey && monthKey !== lastMonthKey) {
-        rows.push([]);
+        worksheet.addRow([]);
       }
       lastMonthKey = monthKey;
 
-      // Add data row (serial is a number, rest are strings)
-      rows.push([
+      worksheet.addRow([
         serial,
         appliedDate,
         job.position,
@@ -247,36 +240,11 @@ function DownloadDropdown() {
       serial += 1;
     });
 
-    // Convert array of arrays to Excel worksheet
-    // aoa_to_sheet = "array of arrays to sheet"
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-
-    // Merge cells for title and stats rows
-    // !merges is a special property in XLSX format
-    // s = start, e = end, r = row, c = column (0-indexed)
-    // Merging row 0, columns 0-6 (all 7 columns) for title
-    // Merging row 1, columns 0-6 (all 7 columns) for stats
-    (worksheet as any)["!merges"] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },
-    ];
-
-    // Create a new Excel workbook
-    const workbook = XLSX.utils.book_new();
-    // Add worksheet to workbook with name "Job Applications"
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Job Applications");
-
-    // Write workbook to binary array format
-    // bookType: "xlsx" = Excel 2007+ format
-    // type: "array" = return as Uint8Array for Blob creation
-    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-
-    // Create blob with proper Excel MIME type
-    const blob = new Blob([wbout], {
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    // Trigger download (same pattern as CSV)
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -284,36 +252,7 @@ function DownloadDropdown() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    // Clean up the object URL to free memory
     URL.revokeObjectURL(url);
-  };
-
-  /**
-   * Helper function to group jobs by month
-   *
-   * This function uses the reduce() method to transform an array into an object
-   * where keys are month names (e.g., "Oct 2025") and values are arrays of jobs
-   *
-   * Note: This function is currently not used in the component but kept for
-   * potential future use or reference
-   *
-   * @param jobs - Array of job application records
-   * @returns Object with month names as keys and arrays of jobs as values
-   */
-  const groupJobsByMonth = (jobs: JobType[]) => {
-    // reduce() accumulates values into a single result
-    // acc = accumulator (the object we're building)
-    // job = current job being processed
-    return jobs.reduce((acc, job) => {
-      const month = dayjs(job.createdAt).format("MMM YYYY");
-      // Initialize array for this month if it doesn't exist
-      if (!acc[month]) {
-        acc[month] = [];
-      }
-      // Add job to the appropriate month's array
-      acc[month].push(job);
-      return acc;
-    }, {} as Record<string, JobType[]>);
   };
 
   /**

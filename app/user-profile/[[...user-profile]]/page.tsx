@@ -1,6 +1,17 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/site-metadata';
 import { UserProfile } from '@clerk/nextjs';
 import { ArrowLeft } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = createPageMetadata({
+  title: 'User Profile',
+  description: 'Manage your Jobify account settings and profile.',
+  path: '/user-profile',
+  noIndex: true,
+});
 
 export default function UserProfilePage() {
   return (

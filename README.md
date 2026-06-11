@@ -104,7 +104,7 @@ Jobify is a comprehensive job application tracking system that allows users to:
 ### Additional Libraries
 
 - **dayjs** - Date manipulation and formatting
-- **xlsx** - Excel file generation
+- **exceljs** - Excel file generation
 - **next-themes** - Theme management
 - **class-variance-authority** - Component variant management
 
@@ -138,7 +138,7 @@ job-tracking-app/
 │   │   ├── form.tsx
 │   │   ├── input.tsx
 │   │   └── ...                   # Other UI components
-│   ├── ButtonContainer.tsx       # Pagination buttons
+│   ├── ComplexButtonContainer.tsx  # Pagination buttons
 │   ├── ChartsContainer.tsx       # Analytics charts
 │   ├── CreateJobForm.tsx         # Form to create new job
 │   ├── DeleteJobButton.tsx       # Delete job button
@@ -154,7 +154,7 @@ job-tracking-app/
 │   └── ThemeToggle.tsx           # Theme switcher
 ├── prisma/
 │   ├── schema.prisma             # Database schema
-│   └── seed.js                   # Database seeding script
+│   └── seed.ts                   # Database seeding script
 ├── public/                       # Static assets
 │   ├── logo.svg
 │   └── main.svg
@@ -165,9 +165,9 @@ job-tracking-app/
 │   └── types.ts                  # TypeScript types & Zod schemas
 ├── lib/
 │   └── utils.ts                  # Utility functions
-├── middleware.ts                 # Next.js middleware (auth protection)
-├── next.config.js                # Next.js configuration
-├── tailwind.config.ts            # Tailwind CSS configuration
+├── proxy.ts                      # Next.js proxy (Clerk auth protection)
+├── next.config.ts                # Next.js configuration
+├── tailwind.config.js            # Tailwind CSS configuration
 ├── tsconfig.json                 # TypeScript configuration
 └── package.json                  # Dependencies and scripts
 ```
@@ -1016,7 +1016,7 @@ app/
 
 ### Route Protection
 
-Routes are protected using Clerk middleware in `middleware.ts`:
+Routes are protected using Clerk in `proxy.ts`:
 
 ```typescript
 const isProtectedRoute = createRouteMatcher([
@@ -1411,7 +1411,7 @@ async function JobsPage() {
 ### Example 4: Protected Route with Middleware
 
 ```typescript
-// middleware.ts
+// proxy.ts
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher([

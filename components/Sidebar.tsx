@@ -1,39 +1,37 @@
-"use client";
-import links from "@/utils/links";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "./ui/button";
-import { usePathname } from "next/navigation";
+'use client';
+
+import links from '@/utils/links';
+import Link from 'next/link';
+import { Button } from './ui/button';
+import { usePathname } from 'next/navigation';
+import { SafeImage } from '@/components/ui/safe-image';
 
 function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="py-4 px-8 bg-muted h-full">
-      {/* 
-        Next.js Image component with file from public folder
-        - Files in public folder are served from root path (/)
-        - width and height are required for Next.js Image optimization
-        - These should match the actual SVG dimensions for best results
-      */}
-      <Image
+    <aside className="py-4 px-8 h-full min-h-screen">
+      <SafeImage
         src="/logo.svg"
-        alt="jobify logo"
+        alt="Jobify logo"
         className="mx-auto"
         width={164}
         height={50}
         priority
       />
-      <div className="flex flex-col mt-20 gap-y-4">
+      <div className="flex flex-col mt-20 gap-y-2">
         {links.map((link) => {
+          const isActive = pathname === link.href;
           return (
             <Button
               asChild
               key={link.href}
-              variant={pathname === link.href ? "default" : "link"}
+              variant={isActive ? 'default' : 'ghost'}
+              className="justify-start"
             >
-              <Link href={link.href} className="flex items-center gap-x-2 ">
-                {link.icon} <span className="capitalize">{link.label}</span>
+              <Link href={link.href} className="flex items-center gap-x-2">
+                {link.icon}
+                <span className="capitalize">{link.label}</span>
               </Link>
             </Button>
           );
@@ -42,4 +40,5 @@ function Sidebar() {
     </aside>
   );
 }
+
 export default Sidebar;

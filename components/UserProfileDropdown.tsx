@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Settings, LogOut } from 'lucide-react';
+import { SafeImage } from '@/components/ui/safe-image';
 
 function getAvatarUrl(
   imageUrl: string | undefined,
@@ -55,12 +56,13 @@ export default function UserProfileDropdown() {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
           <div className="h-9 w-9 rounded-full border-2 overflow-hidden">
             {avatarUrl ? (
-              <img
+              <SafeImage
                 src={avatarUrl}
                 alt={name}
+                width={36}
+                height={36}
                 className="h-full w-full object-cover"
                 onError={() => setAvatarError(true)}
-                referrerPolicy="no-referrer"
               />
             ) : (
               <Skeleton className="h-full w-full rounded-none" />
@@ -68,7 +70,7 @@ export default function UserProfileDropdown() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 backdrop-blur-sm">
         <DropdownMenuLabel>
           <p className="font-medium">{name}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
