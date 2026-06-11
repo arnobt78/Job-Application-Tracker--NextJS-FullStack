@@ -36,7 +36,8 @@ CRUD mutation path:
 | `lib/sentry/config.ts`         | Shared Sentry init (tunnel client-only)               |
 | `proxy.ts`                     | Clerk auth gate (Next 16)                             |
 | `components/ui/`               | shadcn + glass/ripple/safe-image                      |
-| `components/layout/`           | PageContainer, SiteLogo, SiteFooter, Copyright        |
+| `components/layout/`           | PageContainer, SplitContentLayout, MarketingVisualPanel, SiteFooter |
+| `lib/ui/marketing-assets.ts`   | job JPG/SVG paths for hero + auth + promo accents       |
 | `components/pages/`            | HomePage, SignIn/SignUp page content (CSR)              |
 | `lib/ui/dimensions.ts`         | Shared skeleton/card dimensions                         |
 

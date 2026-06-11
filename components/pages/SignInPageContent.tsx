@@ -1,37 +1,57 @@
 'use client';
 
 import SignInForm from '@/components/SignInForm';
+import { AuthMarketingPanel } from '@/components/layout/auth-marketing-panel';
+import { MarketingBackground } from '@/components/layout/marketing-background';
+import { MarketingVisualPanel } from '@/components/layout/marketing-visual-panel';
 import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteLogo } from '@/components/layout/site-logo';
-import { SafeImage } from '@/components/ui/safe-image';
+import { SplitContentLayout } from '@/components/layout/split-content-layout';
+import { getMarketingAssets } from '@/lib/ui/marketing-assets';
 
 type SignInPageContentProps = {
   isGuest?: boolean;
 };
 
-/** Auth layout — CSR form; SSR metadata stays in app/sign-in/page.tsx */
+const signInAssets = getMarketingAssets('sign-in');
+
+/** Auth layout — fluid split; form first on mobile */
 export function SignInPageContent({ isGuest = false }: SignInPageContentProps) {
   return (
-    <>
+    <div className="relative z-10 flex min-h-screen flex-col">
+      <MarketingBackground src={signInAssets.background} />
+
       <div className="relative z-10 flex min-h-screen flex-col">
         <PageContainer className="py-6">
           <SiteLogo priority />
         </PageContainer>
 
-        <PageContainer className="grid w-full flex-1 items-center gap-10 pb-16 sm:grid-cols-2 lg:-mt-16 lg:grid-cols-[1fr,400px]">
-          <SafeImage
-            src="/main.svg"
-            alt="Jobify illustration"
-            className="mx-auto hidden w-full max-w-[400px] sm:block"
-            width={400}
-            height={400}
+        <PageContainer className="flex-1 pb-12">
+          <SplitContentLayout
+            reverseOnMobile
+            minHeight="min-h-[calc(100vh-14rem)]"
+            leading={
+              <div className="flex w-full flex-col gap-8">
+                <AuthMarketingPanel variant="sign-in" />
+                <MarketingVisualPanel
+                  src={signInAssets.panel}
+                  alt="Job application tracking illustration"
+                  accentSrc={signInAssets.accent}
+                  className="hidden md:block"
+                />
+              </div>
+            }
+            trailing={
+              <div className="mx-auto w-full max-w-md md:mx-0 md:max-w-none">
+                <SignInForm isGuest={isGuest} />
+              </div>
+            }
           />
-          <SignInForm isGuest={isGuest} />
         </PageContainer>
 
         <SiteFooter />
       </div>
-    </>
+    </div>
   );
 }

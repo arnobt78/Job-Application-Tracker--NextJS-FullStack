@@ -2,8 +2,10 @@
 
 import { PageContainer } from '@/components/layout/page-container';
 import { GlassCard } from '@/components/ui/glass-card';
+import { SafeImage } from '@/components/ui/safe-image';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { StaggerGroup } from '@/components/ui/stagger-group';
+import { MARKETING_ASSETS } from '@/lib/ui/marketing-assets';
 import {
   BarChart3,
   FileSpreadsheet,
@@ -16,24 +18,28 @@ const PROMO_STATS = [
     title: 'Real-time sync',
     description: 'SSE + Redis Streams keep every tab in sync without refresh.',
     icon: RefreshCw,
+    accent: MARKETING_ASSETS.accents[0],
     variant: 'sky' as const,
   },
   {
     title: 'Analytics charts',
     description: 'Visualize pending, interview, and declined applications.',
     icon: BarChart3,
+    accent: MARKETING_ASSETS.accents[1],
     variant: 'violet' as const,
   },
   {
     title: 'Export CSV / Excel',
     description: 'Download your full job history in one click.',
     icon: FileSpreadsheet,
+    accent: MARKETING_ASSETS.accents[2],
     variant: 'emerald' as const,
   },
   {
     title: 'Secure auth',
     description: 'Clerk-powered sign-in with protected dashboard routes.',
     icon: ShieldCheck,
+    accent: MARKETING_ASSETS.accents[3],
     variant: 'amber' as const,
   },
 ];
@@ -59,7 +65,17 @@ export function StatsPromoSection() {
         >
           {PROMO_STATS.map((item) => (
             <GlassCard key={item.title} variant={item.variant}>
-              <item.icon className="mb-3 h-8 w-8 text-white/90" />
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <item.icon className="h-8 w-8 shrink-0 text-white/90" />
+                <SafeImage
+                  src={item.accent}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 shrink-0 object-contain opacity-90"
+                  aria-hidden
+                />
+              </div>
               <h3 className="text-lg font-semibold text-white/90">{item.title}</h3>
               <p className="mt-2 text-sm text-white/70">{item.description}</p>
             </GlassCard>
