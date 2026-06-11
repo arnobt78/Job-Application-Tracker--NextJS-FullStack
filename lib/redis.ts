@@ -1,6 +1,7 @@
 /**
  * Optional Upstash Redis — read-through cache + Redis Streams for cross-instance SSE pub/sub.
- * Graceful no-op when UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN are unset.
+ * Graceful no-op when Upstash env vars are unset.
+ * Accepts UPSTASH_REDIS_REST_* (Upstash dashboard default) or UPSTASH_REDIS_* aliases.
  */
 
 import type { Redis } from '@upstash/redis';
@@ -10,8 +11,10 @@ let redisClient: Redis | null | undefined;
 async function getRedis(): Promise<Redis | null> {
   if (redisClient !== undefined) return redisClient;
 
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ?? process.env.UPSTASH_REDIS_URL;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.UPSTASH_REDIS_TOKEN;
 
   if (!url || !token) {
     redisClient = null;
