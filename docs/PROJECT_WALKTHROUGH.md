@@ -36,6 +36,9 @@ CRUD mutation path:
 | `lib/sentry/config.ts`         | Shared Sentry init (tunnel client-only)               |
 | `proxy.ts`                     | Clerk auth gate (Next 16)                             |
 | `components/ui/`               | shadcn + glass/ripple/safe-image                      |
+| `components/layout/`           | PageContainer, SiteLogo, SiteFooter, Copyright        |
+| `components/pages/`            | HomePage, SignIn/SignUp page content (CSR)              |
+| `lib/ui/dimensions.ts`         | Shared skeleton/card dimensions                         |
 
 ## Invalidation coverage
 
@@ -49,7 +52,7 @@ Every CRUD invalidates jobs/stats/charts/job(id). Optimistic patches on create/d
 
 ## Sentry files
 
-`sentry.*.config.ts` · `instrumentation.ts` · `app/global-error.tsx` · `app/api/monitoring/route.ts` · `lib/sentry/config.ts`
+`sentry.*.config.ts` · `instrumentation.ts` · `app/global-error.tsx` · `app/error.tsx` · `app/api/monitoring/route.ts` · `lib/sentry/config.ts`
 
 ## Verification
 

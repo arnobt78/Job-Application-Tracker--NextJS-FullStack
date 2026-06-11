@@ -10,14 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'border border-primary/30 bg-gradient-to-r from-primary/70 via-primary/50 to-primary/30 text-primary-foreground shadow-[0_15px_35px_rgba(59,130,246,0.45)] hover:from-primary/80 hover:via-primary/60 hover:to-primary/40',
+          'border border-primary/30 bg-gradient-to-r from-primary/70 via-primary/50 to-primary/30 text-white/90 shadow-[0_15px_35px_rgba(59,130,246,0.45)] hover:from-primary/80 hover:via-primary/60 hover:to-primary/40 [&_svg]:text-white/90',
         destructive:
-          'border border-rose-400/30 bg-gradient-to-r from-rose-500/70 via-rose-500/50 to-rose-500/30 text-white shadow-[0_15px_35px_rgba(225,29,72,0.45)] hover:from-rose-500/80 hover:via-rose-600/60 hover:to-rose-500/40',
+          'border border-rose-400/30 bg-gradient-to-r from-rose-500/70 via-rose-500/50 to-rose-500/30 text-white/90 shadow-[0_15px_35px_rgba(225,29,72,0.45)] hover:from-rose-500/80 hover:via-rose-600/60 hover:to-rose-500/40 [&_svg]:text-white/90',
         outline:
-          'border border-white/10 bg-background/50 hover:bg-accent/50 hover:border-white/20',
+          'border border-white/10 bg-background/50 text-foreground/90 hover:bg-accent/50 hover:border-white/20 [&_svg]:text-foreground/90',
         secondary:
-          'bg-gradient-to-r from-secondary/70 via-secondary/50 to-secondary/30 text-secondary-foreground border border-secondary/30',
-        ghost: 'hover:bg-accent/50 hover:text-accent-foreground',
+          'bg-gradient-to-r from-secondary/70 via-secondary/50 to-secondary/30 text-white/80 border border-secondary/30 [&_svg]:text-white/80',
+        ghost:
+          'text-foreground/90 hover:bg-accent/50 hover:text-accent-foreground [&_svg]:text-foreground/90',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {

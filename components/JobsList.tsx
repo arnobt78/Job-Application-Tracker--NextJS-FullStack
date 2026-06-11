@@ -9,6 +9,7 @@ import ComplexButtonContainer from './ComplexButtonContainer';
 import DownloadDropdown from './DownloadDropdown';
 import { Skeleton } from './ui/skeleton';
 import { Briefcase } from 'lucide-react';
+import { UI_DIMENSIONS } from '@/lib/ui/dimensions';
 
 function JobsList() {
   const searchParams = useSearchParams();
@@ -27,12 +28,15 @@ function JobsList() {
   const totalPages = data?.totalPages || 0;
 
   if (isPending) {
+    const { heightClass, roundedClass } = UI_DIMENSIONS.jobCard;
+    const { heightClass: titleH, widthClass: titleW } = UI_DIMENSIONS.jobsListTitle;
+
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid md:grid-cols-2 gap-8">
+        <Skeleton className={`${titleH} ${titleW}`} />
+        <div className="grid w-full gap-8 sm:grid-cols-2">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-48 rounded-[28px]" />
+            <Skeleton key={i} className={`${heightClass} w-full ${roundedClass}`} />
           ))}
         </div>
       </div>

@@ -10,7 +10,7 @@ export default function SignUpWrapper() {
 
   if (!isLoaded) {
     return (
-      <div className="w-full max-w-[400px]">
+      <div className="w-full max-w-md">
         <GlassCard variant="sky">
           <div className="space-y-2 mb-6">
             <Skeleton className="h-8 w-52" />

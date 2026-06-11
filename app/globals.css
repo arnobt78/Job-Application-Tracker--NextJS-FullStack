@@ -34,7 +34,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
     --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
@@ -136,9 +136,7 @@
   }
 }
 
-.glass-btn-primary {
-  @apply inline-flex items-center justify-center rounded-xl border border-primary/30 bg-gradient-to-r from-primary/70 via-primary/50 to-primary/30 px-4 py-2 text-sm font-semibold text-primary-foreground shadow-[0_15px_35px_rgba(59,130,246,0.45)] backdrop-blur-sm transition duration-200 hover:border-primary/40 hover:from-primary/80 hover:via-primary/60 hover:to-primary/40;
-}
+/* Removed glass-btn-primary — use Button default variant instead */
 
 .glass-input {
   @apply bg-white/5 backdrop-blur-sm border border-white/20 placeholder:text-muted-foreground focus-visible:border-sky-400 focus-visible:ring-sky-500/50 shadow-[0_10px_30px_rgba(2,132,199,0.15)];

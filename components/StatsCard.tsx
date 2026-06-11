@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Skeleton } from './ui/skeleton';
 import { GlassCard, type GlassVariant } from '@/components/ui/glass-card';
+import { UI_DIMENSIONS } from '@/lib/ui/dimensions';
 import { Clock, CalendarCheck, XCircle } from 'lucide-react';
 
 type StatsCardsProps = {
@@ -32,7 +33,8 @@ function StatsCards({ title, value, variant = 'sky' }: StatsCardsProps) {
 }
 
 export function StatsLoadingCard() {
-  return <Skeleton className="h-[120px] w-full rounded-[28px]" />;
+  const { heightClass, roundedClass } = UI_DIMENSIONS.statsCard;
+  return <Skeleton className={`${heightClass} w-full ${roundedClass}`} />;
 }
 
 export default StatsCards;

@@ -194,9 +194,15 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
+          <div className="cta-shine-wrap w-full rounded-md">
+            <Button
+              type="submit"
+              className="cta-shine-button w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </div>
         </form>
 
         <div className="relative my-4">
