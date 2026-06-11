@@ -1,5 +1,12 @@
 'use client';
 
+import {
+  getReducedMotionSnapshot,
+  SCROLL_REVEAL_HIDDEN_CLASS,
+  SCROLL_REVEAL_ITEM_CLASS,
+  SCROLL_REVEAL_VISIBLE_CLASS,
+  subscribeReducedMotion,
+} from '@/lib/ui/scroll-motion';
 import { cn } from '@/lib/utils';
 import {
   useEffect,
@@ -13,22 +20,12 @@ import {
 type ScrollRevealProps = {
   children: ReactNode;
   className?: string;
-  /** Stagger delay in ms for stair-step reveal */
+  /** Stagger delay in ms when used inside a shared trigger */
   delay?: number;
   style?: CSSProperties;
 };
 
-function subscribeReducedMotion(onChange: () => void) {
-  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-  mq.addEventListener('change', onChange);
-  return () => mq.removeEventListener('change', onChange);
-}
-
-function getReducedMotionSnapshot() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-/** IntersectionObserver reveal — client-only, respects prefers-reduced-motion */
+/** Single-item viewport reveal — respects prefers-reduced-motion */
 export function ScrollReveal({
   children,
   className,
@@ -52,13 +49,8 @@ export function ScrollReveal({
     if (!el) return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setIntersected(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -4% 0px' }
+      ([entry]) => setIntersected(entry?.isIntersecting ?? false),
+      { threshold: 0.08, rootMargin: '0px 0px -4% 0px' }
     );
 
     observer.observe(el);
@@ -69,11 +61,11 @@ export function ScrollReveal({
     <div
       ref={ref}
       className={cn(
-        'transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:translate-y-0',
-        visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0',
+        SCROLL_REVEAL_ITEM_CLASS,
+        visible ? SCROLL_REVEAL_VISIBLE_CLASS : SCROLL_REVEAL_HIDDEN_CLASS,
         className
       )}
-      style={{ transitionDelay: `${delay}ms`, ...style }}
+      style={{ transitionDelay: visible ? `${delay}ms` : '0ms', ...style }}
     >
       {children}
     </div>

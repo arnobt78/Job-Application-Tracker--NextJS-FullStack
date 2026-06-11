@@ -111,16 +111,25 @@
 
 .cta-shine-wrap::after {
   content: '';
-  @apply pointer-events-none absolute inset-y-0 w-[85%];
+  @apply pointer-events-none absolute inset-y-0 left-0 w-[45%];
   background: linear-gradient(
-    105deg,
+    90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0) 35%,
-    rgba(255, 255, 255, 0.45) 50%,
-    rgba(255, 255, 255, 0) 65%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.08) 80%,
     transparent 100%
   );
   animation: cta-shine 4.5s cubic-bezier(0.35, 0, 0.15, 1) infinite;
+}
+
+/* Offset hero CTAs so shines sweep at different times */
+.cta-shine-wrap--delay-a::after {
+  animation-delay: 0s;
+}
+
+.cta-shine-wrap--delay-b::after {
+  animation-delay: 2.25s;
 }
 
 .cta-shine-button {
@@ -129,10 +138,10 @@
 
 @keyframes cta-shine {
   from {
-    transform: translateX(-100%) skewX(-8deg);
+    transform: translateX(-120%);
   }
   to {
-    transform: translateX(200%) skewX(-8deg);
+    transform: translateX(320%);
   }
 }
 

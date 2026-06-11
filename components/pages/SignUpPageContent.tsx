@@ -1,6 +1,6 @@
 'use client';
 
-import SignUpWrapper from '@/components/SignUpWrapper';
+import SignUpForm from '@/components/SignUpForm';
 import { AuthMarketingPanel } from '@/components/layout/auth-marketing-panel';
 import { PageContainer } from '@/components/layout/page-container';
 import { SiteFooter } from '@/components/layout/site-footer';
@@ -21,8 +21,8 @@ export function SignUpPageContent() {
           minHeight="min-h-[calc(100vh-14rem)]"
           leading={<AuthMarketingPanel variant="sign-up" />}
           trailing={
-            <div className="mx-auto flex w-full max-w-md justify-center md:mx-0 md:max-w-none">
-              <SignUpWrapper />
+            <div className="mx-auto w-full max-w-md md:mx-0 md:max-w-none">
+              <SignUpForm />
             </div>
           }
         />

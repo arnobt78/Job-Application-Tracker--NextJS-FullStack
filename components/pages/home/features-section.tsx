@@ -2,7 +2,8 @@
 
 import { PageContainer } from '@/components/layout/page-container';
 import { GlassCard, type GlassVariant } from '@/components/ui/glass-card';
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
+import { ScrollParallaxSection } from '@/components/ui/scroll-parallax-section';
+import { ScrollStagger } from '@/components/ui/scroll-stagger';
 import { StaggerGroup } from '@/components/ui/stagger-group';
 import { MARKETING_COPY } from '@/lib/ui/marketing-copy';
 import {
@@ -23,23 +24,23 @@ const FEATURE_VARIANTS: GlassVariant[] = [
 ];
 const copy = MARKETING_COPY.features;
 
-/** Feature grid — centered header like stats promo */
+/** Features — heading lines then cards stagger on viewport enter */
 export function FeaturesSection() {
   return (
-    <section className="relative z-10 py-20">
+    <ScrollParallaxSection id="features" className="relative z-10 py-20">
       <PageContainer>
-        <ScrollReveal>
-          <h2 className="text-center text-3xl font-bold sm:text-4xl">
+        <ScrollStagger staggerMs={100} className="text-center">
+          <h2 className="text-3xl font-bold sm:text-4xl">
             {copy.heading}{' '}
             <span className="text-primary">{copy.headingHighlight}</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
             {copy.subheading}
           </p>
-        </ScrollReveal>
+        </ScrollStagger>
 
         <StaggerGroup
-          staggerMs={100}
+          staggerMs={110}
           className="mt-12 grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {copy.cards.map((feature, index) => {
@@ -59,6 +60,6 @@ export function FeaturesSection() {
           })}
         </StaggerGroup>
       </PageContainer>
-    </section>
+    </ScrollParallaxSection>
   );
 }

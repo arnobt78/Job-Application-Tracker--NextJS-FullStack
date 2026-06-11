@@ -1,17 +1,16 @@
 'use client';
 
-import { ScrollReveal } from '@/components/ui/scroll-reveal';
-import { Children, type ReactNode } from 'react';
+import { ScrollStagger } from '@/components/ui/scroll-stagger';
+import { type ReactNode } from 'react';
 
 type StaggerGroupProps = {
   children: ReactNode;
-  /** Base delay between each child in ms */
   staggerMs?: number;
   className?: string;
   itemClassName?: string;
 };
 
-/** Wraps children with incrementing ScrollReveal delays (stair-step) */
+/** Alias for ScrollStagger — grid/card stair-step on viewport enter */
 export function StaggerGroup({
   children,
   staggerMs = 120,
@@ -19,16 +18,12 @@ export function StaggerGroup({
   itemClassName,
 }: StaggerGroupProps) {
   return (
-    <div className={className}>
-      {Children.map(children, (child, index) => (
-        <ScrollReveal
-          key={index}
-          delay={index * staggerMs}
-          className={itemClassName}
-        >
-          {child}
-        </ScrollReveal>
-      ))}
-    </div>
+    <ScrollStagger
+      staggerMs={staggerMs}
+      className={className}
+      itemClassName={itemClassName}
+    >
+      {children}
+    </ScrollStagger>
   );
 }
