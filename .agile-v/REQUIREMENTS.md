@@ -28,7 +28,7 @@
 4. Unauthenticated users redirected from protected routes
 
 **Verification:** TC-0001, TC-0002  
-**Artifacts:** ART-0001 (`middleware.ts`), ART-0002 (`app/sign-in/`), ART-0003 (`app/sign-up/`)
+**Artifacts:** ART-0001 (`proxy.ts`), ART-0002 (`app/sign-in/`), ART-0003 (`app/sign-up/`)
 
 ---
 
@@ -85,7 +85,7 @@
 3. Pagination controls visible when totalPages > 1
 
 **Verification:** TC-0010  
-**Artifacts:** ART-0010 (`ButtonContainer.tsx`), ART-0004
+**Artifacts:** ART-0010 (`ComplexButtonContainer.tsx`), ART-0004
 
 ---
 

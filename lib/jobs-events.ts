@@ -1,12 +1,12 @@
 /**
- * In-memory invalidation bus for SSE (same instance) + Redis marker for cross-instance.
+ * Invalidation bus: in-memory (same instance) + Redis Streams (cross-instance SSE).
  * publishInvalidation is called from server actions after CRUD.
  */
 
 import {
-  getInvalidationMarker,
-  setInvalidationMarker,
-  type InvalidationMarker,
+  pushInvalidationStreamEvent,
+  readInvalidationStreamEvents,
+  type StreamInvalidationPayload,
 } from '@/lib/redis';
 
 export type JobsInvalidationEvent = {
@@ -42,7 +42,7 @@ export function subscribeInvalidations(
   };
 }
 
-/** Notify in-memory subscribers + persist Redis marker for other Vercel instances */
+/** Notify in-memory subscribers + XADD to Redis Stream for other Vercel instances */
 export async function publishInvalidation(
   userId: string,
   jobId?: string
@@ -58,21 +58,30 @@ export async function publishInvalidation(
     }
   });
 
-  await setInvalidationMarker(userId, jobId);
+  await pushInvalidationStreamEvent(userId, jobId);
 }
 
-/** Poll Redis for invalidation events from other serverless instances */
-export async function pollRemoteInvalidation(
+/**
+ * Blocking read from Redis Stream — used by SSE route instead of interval polling.
+ * Returns empty array when Redis is not configured (in-memory bus still works).
+ */
+export async function awaitRemoteInvalidations(
   userId: string,
-  lastTs: number
-): Promise<{ event: JobsInvalidationEvent; ts: number } | null> {
-  const marker = await getInvalidationMarker(userId);
-  if (!marker || marker.ts <= lastTs) return null;
+  lastStreamId: string,
+  blockMs = 5_000
+): Promise<{ events: JobsInvalidationEvent[]; lastId: string }> {
+  const payloads: StreamInvalidationPayload[] =
+    await readInvalidationStreamEvents(userId, lastStreamId, blockMs);
 
-  return {
-    event: { type: 'invalidate', jobId: marker.jobId },
-    ts: marker.ts,
-  };
+  if (payloads.length === 0) {
+    return { events: [], lastId: lastStreamId };
+  }
+
+  const lastId = payloads[payloads.length - 1]!.id;
+  const events = payloads.map((p) => ({
+    type: 'invalidate' as const,
+    jobId: p.jobId,
+  }));
+
+  return { events, lastId };
 }
-
-export type { InvalidationMarker };

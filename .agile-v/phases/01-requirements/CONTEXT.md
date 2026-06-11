@@ -8,7 +8,7 @@
 
 ## Key Files (paths only — read in agent context)
 
-- `middleware.ts` — route protection
+- `proxy.ts` — route protection
 - `utils/actions.ts` — server actions (CRUD, stats, export)
 - `prisma/schema.prisma` — Job model + legacy models
 - `components/` — UI layer

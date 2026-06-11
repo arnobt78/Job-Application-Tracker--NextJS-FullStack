@@ -4,7 +4,7 @@
 
 | ART-ID | Cycle | Type | Path | REQ-IDs | Status |
 |---|---|---|---|---|---|
-| ART-0001 | C1 | Middleware | `middleware.ts` | REQ-0001, REQ-0009 | Baseline |
+| ART-0001 | C1 | Proxy | `proxy.ts` | REQ-0001, REQ-0009 | Baseline |
 | ART-0002 | C1 | Page | `app/sign-in/[[...sign-in]]/page.tsx` | REQ-0001 | Baseline |
 | ART-0003 | C1 | Page | `app/sign-up/[[...sign-up]]/page.tsx` | REQ-0001 | Baseline |
 | ART-0004 | C1 | Server Actions | `utils/actions.ts` | REQ-0002, REQ-0003, REQ-0004, REQ-0011, REQ-0005, REQ-0006, REQ-0007 | Baseline |
@@ -13,7 +13,7 @@
 | ART-0007 | C1 | Schema | `prisma/schema.prisma` | REQ-0002, REQ-0016 | Baseline |
 | ART-0008 | C1 | Component | `components/SearchForm.tsx` | REQ-0003 | Baseline |
 | ART-0009 | C1 | Component | `components/JobsList.tsx` | REQ-0003, REQ-0015 | Baseline |
-| ART-0010 | C1 | Component | `components/ButtonContainer.tsx` | REQ-0004 | Baseline |
+| ART-0010 | C1 | Component | `components/ComplexButtonContainer.tsx` | REQ-0004 | Baseline |
 | ART-0011 | C1 | Component | `components/StatsContainer.tsx` | REQ-0005 | Baseline |
 | ART-0012 | C1 | Component | `components/StatsCard.tsx` | REQ-0005 | Baseline |
 | ART-0013 | C1 | Component | `components/ChartsContainer.tsx` | REQ-0006 | Baseline |

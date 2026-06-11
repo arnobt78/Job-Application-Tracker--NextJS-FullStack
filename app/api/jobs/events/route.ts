@@ -1,10 +1,10 @@
 /**
  * SSE stream for cross-tab / cross-instance invalidation after CRUD.
- * Pairs with publishInvalidation in lib/jobs-events.ts.
+ * Same-instance: in-memory bus. Cross-instance: Redis Streams XREAD BLOCK (no polling).
  */
 import { auth } from '@clerk/nextjs/server';
 import {
-  pollRemoteInvalidation,
+  awaitRemoteInvalidations,
   subscribeInvalidations,
   type JobsInvalidationEvent,
 } from '@/lib/jobs-events';
@@ -12,7 +12,6 @@ import {
 export const dynamic = 'force-dynamic';
 
 const HEARTBEAT_MS = 30_000;
-const REMOTE_POLL_MS = 2_000;
 
 function encodeSse(data: JobsInvalidationEvent): Uint8Array {
   return new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`);
@@ -24,8 +23,9 @@ export async function GET(request: Request): Promise<Response> {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  let lastRemoteTs = Date.now();
   let closed = false;
+  /** '$' = only new stream entries after connect */
+  let lastStreamId = '$';
 
   const stream = new ReadableStream({
     start(controller) {
@@ -49,20 +49,26 @@ export async function GET(request: Request): Promise<Response> {
         }
       }, HEARTBEAT_MS);
 
-      const remotePoll = setInterval(async () => {
-        if (closed) return;
-        const remote = await pollRemoteInvalidation(userId, lastRemoteTs);
-        if (remote) {
-          lastRemoteTs = remote.ts;
-          push(remote.event);
+      /** Redis Stream blocking loop — replaces 2s key polling */
+      const streamLoop = async () => {
+        while (!closed && !request.signal.aborted) {
+          const { events, lastId } = await awaitRemoteInvalidations(
+            userId,
+            lastStreamId,
+            5_000
+          );
+          lastStreamId = lastId;
+          for (const event of events) {
+            push(event);
+          }
         }
-      }, REMOTE_POLL_MS);
+      };
+      void streamLoop();
 
       const cleanup = () => {
         if (closed) return;
         closed = true;
         clearInterval(heartbeat);
-        clearInterval(remotePoll);
         unsubscribe();
         try {
           controller.close();

@@ -14,7 +14,7 @@ page.tsx (SSR prefetch, force-dynamic)
 CRUD mutation path:
   useJobsMutation (optimistic) → server action → invalidateUserJobCaches
     → revalidateTag + revalidatePath + publishInvalidation
-    → React Query invalidate + BroadcastChannel + SSE
+    → React Query invalidate + BroadcastChannel + SSE (Redis Streams)
 ```
 
 ## Key directories
@@ -25,15 +25,16 @@ CRUD mutation path:
 | `app/api/jobs/events/` | SSE invalidation stream (Clerk auth) |
 | `lib/jobs/queries.ts` | Cached Prisma reads |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
-| `lib/jobs-events.ts` | In-memory + Redis invalidation bus |
-| `hooks/useJobsMutation.ts` | Optimistic CRUD hooks |
-| `hooks/useJobsCacheSync.ts` | SSE + BroadcastChannel listener |
+| `lib/jobs/chart-optimistic.ts` | Optimistic charts cache patches |
+| `lib/redis.ts` | Read-through cache + Redis Streams (XADD/XREAD BLOCK) |
+| `lib/jobs-events.ts` | In-memory bus + stream publish/subscribe |
+| `hooks/useJobsMutation.ts` | Optimistic CRUD hooks (lists + stats + charts) |
 | `providers/query-provider.tsx` | RQ defaults (staleTime: 0) |
 | `proxy.ts` | Clerk auth gate (Next 16) |
 | `components/ui/` | shadcn + glass/ripple/safe-image |
 
 ## Invalidation coverage
-Every CRUD (create/update/delete) invalidates: all `jobs` lists, `stats`, `charts`, and `job(id)` when applicable — current tab, other tabs (BC), other instances (SSE/Redis marker).
+Every CRUD invalidates jobs/stats/charts/job(id). Optimistic patches on create/delete update charts instantly. Cross-tab: BroadcastChannel. Cross-instance: Redis Streams via SSE XREAD BLOCK.
 
 ## Env vars
 - Clerk, DATABASE_URL — required

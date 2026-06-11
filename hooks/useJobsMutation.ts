@@ -12,6 +12,10 @@ import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
 import { useToast } from '@/components/ui/use-toast';
 import type { JobsListResult, StatsResult } from '@/lib/jobs/queries';
+import {
+  bumpChartMonth,
+  type ChartsCache,
+} from '@/lib/jobs/chart-optimistic';
 
 type JobsListCache = JobsListResult | undefined;
 type StatsCache = StatsResult | undefined;
@@ -34,7 +38,7 @@ function bumpStat(stats: StatsCache, status: string, delta: number): StatsCache 
   return { ...stats, [key]: Math.max(0, (stats[key] ?? 0) + delta) };
 }
 
-/** Create job — optimistic prepend to all job lists + stats bump */
+/** Create job — optimistic prepend to lists + stats + charts bump */
 export function useCreateJobMutation() {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -46,6 +50,7 @@ export function useCreateJobMutation() {
     onMutate: async (values) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
       await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.charts.all });
 
       const previousJobs = queryClient.getQueriesData<JobsListCache>({
         queryKey: queryKeys.jobs.all,
@@ -53,11 +58,15 @@ export function useCreateJobMutation() {
       const previousStats = queryClient.getQueryData<StatsCache>(
         queryKeys.stats.all
       );
+      const previousCharts = queryClient.getQueryData<ChartsCache>(
+        queryKeys.charts.all
+      );
 
+      const now = new Date();
       const optimisticJob: JobType = {
         id: `optimistic-${Date.now()}`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
         clerkId: '',
         ...values,
       };
@@ -78,7 +87,11 @@ export function useCreateJobMutation() {
         bumpStat(old, values.status, 1)
       );
 
-      return { previousJobs, previousStats };
+      queryClient.setQueryData<ChartsCache>(queryKeys.charts.all, (old) =>
+        bumpChartMonth(old, now, 1)
+      );
+
+      return { previousJobs, previousStats, previousCharts };
     },
     onError: (_err, _values, context) => {
       context?.previousJobs.forEach(([key, data]) => {
@@ -86,6 +99,9 @@ export function useCreateJobMutation() {
       });
       if (context?.previousStats !== undefined) {
         queryClient.setQueryData(queryKeys.stats.all, context.previousStats);
+      }
+      if (context?.previousCharts !== undefined) {
+        queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
       }
       toast({ description: 'There was an error creating the job.' });
     },
@@ -103,7 +119,7 @@ export function useCreateJobMutation() {
   });
 }
 
-/** Update job — optimistic patch in detail + list caches */
+/** Update job — optimistic patch in detail + list + stats (charts unchanged unless date edits) */
 export function useUpdateJobMutation(jobId: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -117,6 +133,7 @@ export function useUpdateJobMutation(jobId: string) {
       await queryClient.cancelQueries({
         queryKey: queryKeys.job.detail(jobId),
       });
+      await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
 
       const previousJobs = queryClient.getQueriesData<JobsListCache>({
         queryKey: queryKeys.jobs.all,
@@ -188,7 +205,7 @@ export function useUpdateJobMutation(jobId: string) {
   });
 }
 
-/** Delete job — optimistic remove from lists + stats decrement */
+/** Delete job — optimistic remove from lists + stats + charts decrement */
 export function useDeleteJobMutation(jobId: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -198,6 +215,8 @@ export function useDeleteJobMutation(jobId: string) {
     mutationFn: () => deleteJobAction(jobId),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.charts.all });
 
       const previousJobs = queryClient.getQueriesData<JobsListCache>({
         queryKey: queryKeys.jobs.all,
@@ -205,14 +224,22 @@ export function useDeleteJobMutation(jobId: string) {
       const previousStats = queryClient.getQueryData<StatsCache>(
         queryKeys.stats.all
       );
+      const previousCharts = queryClient.getQueryData<ChartsCache>(
+        queryKeys.charts.all
+      );
 
       let removedStatus: string | undefined;
+      let removedCreatedAt: Date | undefined;
+
       queryClient.setQueriesData<JobsListCache>(
         { queryKey: queryKeys.jobs.all },
         (old) => {
           if (!old) return old;
           const removed = old.jobs.find((j) => j.id === jobId);
           removedStatus = removed?.status;
+          removedCreatedAt = removed?.createdAt
+            ? new Date(removed.createdAt)
+            : undefined;
           return {
             ...old,
             jobs: old.jobs.filter((j) => j.id !== jobId),
@@ -227,7 +254,13 @@ export function useDeleteJobMutation(jobId: string) {
         );
       }
 
-      return { previousJobs, previousStats };
+      if (removedCreatedAt) {
+        queryClient.setQueryData<ChartsCache>(queryKeys.charts.all, (old) =>
+          bumpChartMonth(old, removedCreatedAt!, -1)
+        );
+      }
+
+      return { previousJobs, previousStats, previousCharts };
     },
     onError: (_err, _vars, context) => {
       context?.previousJobs.forEach(([key, data]) => {
@@ -235,6 +268,9 @@ export function useDeleteJobMutation(jobId: string) {
       });
       if (context?.previousStats !== undefined) {
         queryClient.setQueryData(queryKeys.stats.all, context.previousStats);
+      }
+      if (context?.previousCharts !== undefined) {
+        queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
       }
       toast({ description: 'There was an error deleting the job.' });
     },

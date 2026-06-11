@@ -1,17 +1,13 @@
 /**
- * Optional Upstash Redis read-through cache + cross-instance invalidation markers.
+ * Optional Upstash Redis — read-through cache + Redis Streams for cross-instance SSE pub/sub.
  * Graceful no-op when UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN are unset.
  */
 
-type RedisClient = {
-  get: (key: string) => Promise<string | null>;
-  set: (key: string, value: string, opts?: { ex?: number }) => Promise<unknown>;
-  del: (...keys: string[]) => Promise<unknown>;
-};
+import type { Redis } from '@upstash/redis';
 
-let redisClient: RedisClient | null | undefined;
+let redisClient: Redis | null | undefined;
 
-async function getRedis(): Promise<RedisClient | null> {
+async function getRedis(): Promise<Redis | null> {
   if (redisClient !== undefined) return redisClient;
 
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -23,8 +19,8 @@ async function getRedis(): Promise<RedisClient | null> {
   }
 
   try {
-    const { Redis } = await import('@upstash/redis');
-    redisClient = new Redis({ url, token }) as RedisClient;
+    const { Redis: UpstashRedis } = await import('@upstash/redis');
+    redisClient = new UpstashRedis({ url, token });
     return redisClient;
   } catch {
     redisClient = null;
@@ -37,7 +33,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
   if (!redis) return null;
 
   try {
-    const raw = await redis.get(key);
+    const raw = await redis.get<string>(key);
     if (raw == null) return null;
     return typeof raw === 'string' ? (JSON.parse(raw) as T) : (raw as T);
   } catch {
@@ -56,7 +52,7 @@ export async function setCache(
   try {
     await redis.set(key, JSON.stringify(value), { ex: ttlSeconds });
   } catch {
-    // Redis unavailable — Prisma/cache components still serve data
+    // Redis unavailable — Prisma/unstable_cache still serve data
   }
 }
 
@@ -71,32 +67,89 @@ export async function deleteCacheKeys(...keys: string[]): Promise<void> {
   }
 }
 
-/** Cross-instance invalidation marker — SSE routes poll this key */
-export type InvalidationMarker = {
-  type: 'invalidate';
+/** Redis Stream key — one stream per user for invalidation events */
+export function invalidationStreamKey(userId: string): string {
+  return `jobify:invalidate-stream:${userId}`;
+}
+
+export type StreamInvalidationPayload = {
+  id: string;
   jobId?: string;
   ts: number;
 };
 
-export function invalidationMarkerKey(userId: string): string {
-  return `jobify:last-invalidate:${userId}`;
-}
-
-export async function setInvalidationMarker(
+/**
+ * XADD invalidation event — consumed by SSE via XREAD BLOCK (true pub/sub over Streams).
+ * MAXLEN ~ keeps stream bounded for long-running deployments.
+ */
+export async function pushInvalidationStreamEvent(
   userId: string,
   jobId?: string
-): Promise<InvalidationMarker> {
-  const marker: InvalidationMarker = {
-    type: 'invalidate',
-    jobId,
-    ts: Date.now(),
-  };
-  await setCache(invalidationMarkerKey(userId), marker, 3600);
-  return marker;
+): Promise<StreamInvalidationPayload | null> {
+  const redis = await getRedis();
+  if (!redis) return null;
+
+  const ts = Date.now();
+  try {
+    const id = await redis.xadd(invalidationStreamKey(userId), '*', {
+      type: 'invalidate',
+      jobId: jobId ?? '',
+      ts: String(ts),
+    });
+
+    if (typeof id !== 'string') return null;
+
+    // Trim stream to last ~100 events (approximate maxlen)
+    await redis.xtrim(invalidationStreamKey(userId), {
+      strategy: 'MAXLEN',
+      threshold: 100,
+      exactness: '~',
+    });
+
+    return { id, jobId, ts };
+  } catch {
+    return null;
+  }
 }
 
-export async function getInvalidationMarker(
-  userId: string
-): Promise<InvalidationMarker | null> {
-  return getCache<InvalidationMarker>(invalidationMarkerKey(userId));
+/**
+ * XREAD BLOCK — waits up to blockMs for new invalidation events (replaces key polling).
+ */
+export async function readInvalidationStreamEvents(
+  userId: string,
+  lastId: string,
+  blockMs = 5_000
+): Promise<StreamInvalidationPayload[]> {
+  const redis = await getRedis();
+  if (!redis) return [];
+
+  try {
+    const result = await redis.xread(
+      invalidationStreamKey(userId),
+      lastId,
+      { count: 10, blockMS: blockMs }
+    );
+
+    if (!result || !Array.isArray(result)) return [];
+
+    const events: StreamInvalidationPayload[] = [];
+
+    for (const entry of result) {
+      const record = entry as {
+        id: string;
+        message: Record<string, string>;
+      };
+      if (!record?.id || !record.message) continue;
+
+      events.push({
+        id: record.id,
+        jobId: record.message.jobId || undefined,
+        ts: Number(record.message.ts) || Date.now(),
+      });
+    }
+
+    return events;
+  } catch {
+    return [];
+  }
 }

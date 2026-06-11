@@ -16,7 +16,7 @@ Capture retroactive baseline requirements from existing Jobify codebase.
 - README.md
 - prisma/schema.prisma
 - utils/actions.ts
-- middleware.ts
+- proxy.ts
 - Component inventory
 
 ## Outputs
