@@ -16,3 +16,8 @@
 | 2026-06-12T12:58:22Z | AQMS Orchestrator | C1 | Reactivate Agile V session; 24 skills ACTIVE; resume INT-0002 BL-0006 | C1 bootstrap complete; Gate 1 still pending | — |
 | 2026-06-12T21:00:00Z | Build Agent (JS) | C1 | Unified NavShell for landing/auth/dashboard | Single h-14 chrome; DRY nav pattern | REQ-0012 |
 | 2026-06-12T21:31:53Z | AQMS Orchestrator | C1 | INT-0002 resolved; INT-0003 active for user-driven work | BL-0006 complete at be950be | BL-0007 |
+| 2026-06-13T00:00:00Z | Build Agent (JS) | C1 | Sonner replaces Radix toast; localStorage auth toast flags | Post-redirect toasts survive Clerk sign-out | REQ-0014 |
+| 2026-06-13T00:30:00Z | Build Agent (JS) | C1 | Route-gated welcome/goodbye; single logout redirect | Avoid double navigation flash | REQ-0014 |
+| 2026-06-13T00:45:00Z | Build Agent (JS) | C1 | `void prefetchQuery` + remove all `loading.tsx` | Instant static shell in page.tsx | REQ-0014 |
+| 2026-06-13T01:00:00Z | Build Agent (JS) | C1 | Split JobsList → jobs-count/grid/pagination + shared hook | Match stats instant-shell pattern | REQ-0003, REQ-0014 |
+| 2026-06-13T01:10:00Z | AQMS Orchestrator | C1 | Session pause @ `4efaf37`; sync .agile-v for tomorrow | BL-0007 active; BL-0002 done | — |

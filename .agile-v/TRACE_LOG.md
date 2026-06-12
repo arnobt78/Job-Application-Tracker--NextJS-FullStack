@@ -20,3 +20,8 @@
 | 2026-06-12T21:00:00Z | orchestrate | build-agent-js | REQ-0012, REQ-0013 | Navbar/page-container/ui styling | SUCCESS — `be950be` |
 | 2026-06-12T21:31:53Z | bootstrap | agile-v-core | — | Reactivate Infinity Loop; INT-0003; sync to `be950be` | ACTIVE |
 | 2026-06-12T21:31:53Z | prove | red-team-verifier | REQ-0012…0013 | EVAL-0002 typecheck/lint/test(19) @ be950be | SUCCESS |
+| 2026-06-13T00:00:00Z | build | build-agent-js | REQ-0001, REQ-0014 | Sign-in preview + Sonner + auth toast listener | SUCCESS — `8ac2e6d` |
+| 2026-06-13T00:30:00Z | build | build-agent-js | REQ-0014 | Instant shells, auth toast timing, test-account row | SUCCESS — `cc72b0b` |
+| 2026-06-13T01:00:00Z | build | build-agent-js | REQ-0003, REQ-0014 | Dashboard jobs split + useJobsListQuery | SUCCESS — `4efaf37` |
+| 2026-06-13T01:10:00Z | prove | red-team-verifier | REQ-0014…0003 | EVAL-0003 lint/typecheck/test(20)/build @ 4efaf37 | SUCCESS |
+| 2026-06-13T01:10:00Z | checkpoint | agile-v-core | — | Sync .agile-v for tomorrow resume @ 4efaf37 | PAUSED |

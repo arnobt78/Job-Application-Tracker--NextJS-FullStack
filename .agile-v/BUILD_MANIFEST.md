@@ -12,7 +12,7 @@
 | ART-0006 | C1 | Component | `components/EditJobForm.tsx` | REQ-0002, REQ-0010 | Baseline |
 | ART-0007 | C1 | Schema | `prisma/schema.prisma` | REQ-0002, REQ-0016 | Baseline |
 | ART-0008 | C1 | Component | `components/SearchForm.tsx` | REQ-0003 | Baseline |
-| ART-0009 | C1 | Component | `components/JobsList.tsx` | REQ-0003, REQ-0015 | Baseline |
+| ART-0009 | C1 | Component | `components/jobs/*`, `hooks/useJobsListQuery.ts` | REQ-0003, REQ-0015 | `4efaf37` (replaces JobsList) |
 | ART-0010 | C1 | Component | `components/ComplexButtonContainer.tsx` | REQ-0004 | Baseline |
 | ART-0011 | C1 | Component | `components/StatsContainer.tsx` | REQ-0005 | Baseline |
 | ART-0012 | C1 | Component | `components/StatsCard.tsx` | REQ-0005 | Baseline |
@@ -26,9 +26,9 @@
 | ART-0020 | C1 | Component | `components/Navbar.tsx` | REQ-0012 | Baseline |
 | ART-0021 | C1 | Layout | `app/(dashboard)/layout.tsx` | REQ-0012 | Baseline |
 | ART-0022 | C1 | Page | `app/page.tsx` | REQ-0013 | Baseline |
-| ART-0023 | C1 | Loading | `app/(dashboard)/jobs/loading.tsx`, `stats/loading.tsx` | REQ-0014 | Baseline |
+| ART-0023 | C1 | Loading | — | REQ-0014 | **REMOVED** — instant shell; no loading.tsx |
 | ART-0024 | C1 | UI | `components/ui/skeleton.tsx` | REQ-0014 | Baseline |
-| ART-0025 | C1 | UI | `components/ui/toast.tsx`, `use-toast.ts`, `toaster.tsx` | REQ-0014 | Baseline |
+| ART-0025 | C1 | UI | `components/ui/sonner.tsx`, `lib/notifications/*` | REQ-0014 | `8ac2e6d` (Sonner; Radix toast deleted) |
 | ART-0026 | C1 | Provider | `app/providers.tsx` | REQ-0015 | Baseline |
 | ART-0027 | C1 | DB Client | `utils/db.ts` | REQ-0016 | Baseline |
 | ART-0028 | C1 | Config | `package.json` | REQ-0017 | Baseline |
@@ -47,7 +47,23 @@
 | ART-0041 | C1 | Layout | `components/layout/nav-shell.tsx` | REQ-0012 | `07fcd0e` |
 | ART-0042 | C1 | Layout | `components/layout/dashboard-nav.tsx` | REQ-0012, REQ-0019 | `07fcd0e` |
 | ART-0043 | C1 | Layout | `components/layout/auth-nav.tsx` | REQ-0001, REQ-0023 | `07fcd0e` |
-| ART-0044 | C1 | Page | `app/(dashboard)/dashboard/page.tsx` | REQ-0012 | `07fcd0e` |
+| ART-0044 | C1 | Page | `app/(dashboard)/dashboard/page.tsx` | REQ-0012 | `4efaf37` |
+| ART-0045 | C1 | Auth UI | `SignInPageShell`, `AuthSignInLeadingPanel` | REQ-0001 | `8ac2e6d` |
+| ART-0046 | C1 | Auth UI | `TestAccountSelectRow`, `test-credentials imageUrl` | REQ-0001 | `cc72b0b` |
+| ART-0047 | C1 | Notifications | `auth-toast-listener.tsx`, `auth-toast-storage.ts` | REQ-0014 | `cc72b0b` |
+| ART-0048 | C1 | Notifications | `lib/notifications/app-toast.ts` | REQ-0014 | `8ac2e6d` |
+| ART-0049 | C1 | Page | `app/(dashboard)/stats/page.tsx` (instant shell) | REQ-0014, REQ-0005 | `cc72b0b` |
+| ART-0050 | C1 | Component | `StatsCard isLoading`, `ChartsContainer` body-only | REQ-0014 | `cc72b0b` |
+| ART-0051 | C1 | Hook | `hooks/useJobsListQuery.ts` | REQ-0003 | `4efaf37` |
+| ART-0052 | C1 | Component | `components/jobs/jobs-count.tsx` | REQ-0003 | `4efaf37` |
+| ART-0053 | C1 | Component | `components/jobs/jobs-grid.tsx` | REQ-0003 | `4efaf37` |
+| ART-0054 | C1 | Component | `components/jobs/jobs-pagination.tsx` | REQ-0003 | `4efaf37` |
+
+## Deprecated / removed
+
+- `components/JobsList.tsx`, `components/Navbar.tsx`, `components/Sidebar.tsx`
+- `app/(dashboard)/stats/loading.tsx`, legacy `/jobs` routes
+- Radix toast (`toast.tsx`, `use-toast.ts`, `toaster.tsx`)
 
 ## Build Commands
 
