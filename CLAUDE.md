@@ -25,9 +25,9 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 `lib/query-keys.ts` — `jobs`, `stats`, `charts`, `job(id)`
 
 ## Routes
-- `/dashboard` — main jobs list (renamed from `/jobs`); `/dashboard/[id]` — edit dialog via URL
-- `/add-job` and `/jobs/*` — middleware-redirected to `/dashboard`
-- Legacy `app/(dashboard)/jobs/` kept (per no-delete rule); superseded by `app/(dashboard)/dashboard/`
+- `/dashboard` — main jobs list; `/dashboard/[id]` — edit dialog via URL
+- `/add-job` — middleware-redirected to `/dashboard` (Add Job dialog)
+- Legacy `/jobs/*` — removed; `proxy.ts` still redirects old URLs → `/dashboard`
 
 ## Hydration
 - `lib/format-date.ts` — `formatJobDate()` UTC + en-US; used in `JobCard` (fixes React #418)
@@ -46,7 +46,7 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 
 ## UI — Landing
 - `LandingNav` + `SiteFooter` — `lib/ui/landing-chrome.ts` (h-14, no py)
-- Hero: `HeroVisualCarousel` (main.svg + job-1..4), `ScrollParallaxSection`, `ScrollStagger`
+- Hero: `HeroVisualCarousel` (main.svg + job-1..4, active slide `loading="eager"`), `ScrollParallaxSection`, `ScrollStagger`
 - Sections: `lib/ui/landing-sections.ts`; copy `lib/ui/marketing-copy.ts`
 - CTA shine: `cta-shine-wrap--delay-a/b` on Get Started / Try Demo
 - `TryDemoAccountButton` + `useGuestSignIn`

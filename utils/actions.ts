@@ -100,7 +100,7 @@ export async function getSingleJobAction(id: string): Promise<JobType | null> {
   }
 
   if (!job) {
-    redirect("/jobs");
+    redirect("/dashboard");
   }
   return job;
 }
@@ -134,7 +134,7 @@ export async function getStatsAction(): Promise<{
   try {
     return await getCachedStats(userId);
   } catch {
-    redirect("/jobs");
+    redirect("/dashboard");
   }
 }
 
@@ -146,7 +146,7 @@ export async function getChartsDataAction(): Promise<
   try {
     return await getCachedCharts(userId);
   } catch {
-    redirect("/jobs");
+    redirect("/dashboard");
   }
 }
 

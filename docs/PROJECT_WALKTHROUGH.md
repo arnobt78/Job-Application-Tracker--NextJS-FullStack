@@ -23,8 +23,7 @@ CRUD mutation path:
 | Path | Role |
 | ---- | ---- |
 | `app/(dashboard)/dashboard/` | Main jobs route (`/dashboard` + `/dashboard/[id]`) |
-| `app/(dashboard)/jobs/` | Legacy route — middleware redirects to `/dashboard` (kept per no-delete rule) |
-| `app/(dashboard)/stats/` | Stats page — unchanged |
+| `app/(dashboard)/stats/` | Stats page |
 | `app/api/jobs/events/` | SSE invalidation stream (Clerk auth) |
 | `lib/jobs/queries.ts` | Cached Prisma reads |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
@@ -88,7 +87,9 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - Sidebar removed; DashboardNav top-nav with pills + mobile hamburger ✓
 - Add Job + Edit Job converted to glassmorphic Shadcn Dialog ✓
 - /dashboard route (renamed from /jobs); /dashboard/[id] for direct URL edit ✓
-- Middleware redirects /add-job + /jobs/* → /dashboard ✓
+- Middleware redirects /add-job + legacy /jobs/* → /dashboard ✓
+- Hero carousel: active slide uses `loading="eager"` (LCP) ✓
+- Legacy `app/(dashboard)/jobs/` removed ✓
 - FormComponents: required prop + asterisk; Vitest tests passing ✓
 
 ## Hydration fix (2026-06-12)

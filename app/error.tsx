@@ -32,8 +32,8 @@ export default function Error({
           <Button type="button" onClick={() => reset()}>
             Try again
           </Button>
-          <Button type="button" variant="outline" onClick={() => (window.location.href = '/jobs')}>
-            Go to jobs
+          <Button type="button" variant="outline" onClick={() => (window.location.href = '/dashboard')}>
+            Go to dashboard
           </Button>
         </div>
       </PageContainer>

@@ -11,10 +11,10 @@ export async function invalidateUserJobCaches(
   userId: string,
   jobId?: string
 ): Promise<void> {
-  revalidatePath('/jobs');
+  revalidatePath('/dashboard');
   revalidatePath('/stats');
   revalidatePath('/add-job');
-  revalidatePath('/jobs/[id]', 'page');
+  revalidatePath('/dashboard/[id]', 'page');
 
   for (const tag of allUserTags(userId)) {
     revalidateTag(tag, 'max');

@@ -11,7 +11,7 @@ export default function robots(): MetadataRoute.Robots {
           '/_next/',
           '/api/',
           '/add-job',
-          '/jobs',
+          '/dashboard',
           '/stats',
           '/user-profile',
         ],
