@@ -104,6 +104,7 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 
 - Removed unused `Task`, `Tour`, `Token` models + migration ✓
 - Added Job indexes for list/filter/sort queries ✓
+- DB: `db push` (dev) · baseline `migrate resolve --applied 20260612120000_remove_unused_models` on existing prod DB ✓
 
 ## Docs (2026-06-12)
 

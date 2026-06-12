@@ -63,6 +63,7 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 ## Prisma
 - `prisma/schema.prisma` — **Job** model only; indexes on `clerkId`, `[clerkId, status]`, `[clerkId, createdAt]`
 - Migration `20260612120000_remove_unused_models` drops legacy Task/Tour/Token tables
+- **DB sync:** dev → `npx prisma db push`; existing prod DB → `migrate resolve --applied 20260612120000_remove_unused_models` then `migrate deploy`
 
 ## Docs
 - `README.md` — full educational guide (setup, env, architecture, reuse)
