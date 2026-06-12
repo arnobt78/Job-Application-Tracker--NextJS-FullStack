@@ -60,6 +60,10 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 ## SEO
 `lib/site-metadata.ts` — SITE_URL `https://jobify-tracker.vercel.app`
 
+## Prisma
+- `prisma/schema.prisma` — **Job** model only; indexes on `clerkId`, `[clerkId, status]`, `[clerkId, createdAt]`
+- Migration `20260612120000_remove_unused_models` drops legacy Task/Tour/Token tables
+
 ## Docs
 - `README.md` — full educational guide (setup, env, architecture, reuse)
 - `.env.example` — Clerk fallbacks → `/dashboard`

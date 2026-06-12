@@ -1,4 +1,4 @@
-/** Shared scroll-reveal motion tokens — used by ScrollReveal + ScrollStagger */
+/** Shared scroll-reveal motion tokens — used by ScrollStagger */
 
 export const SCROLL_REVEAL_ITEM_CLASS =
   'transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:opacity-100 motion-reduce:translate-y-0';

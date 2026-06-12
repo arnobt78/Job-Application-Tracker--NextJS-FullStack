@@ -340,6 +340,8 @@ DIRECT_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
 **Without Redis:** app uses in-memory cache + BroadcastChannel (single instance / same browser).  
 **Without Sentry:** error boundaries still work; errors are not reported externally.
 
+**Schema:** only the `Job` model is used. Legacy `Task`, `Tour`, and `Token` tables were removed — run `npx prisma migrate deploy` (or `db push`) after pulling.
+
 ---
 
 ## Database Setup

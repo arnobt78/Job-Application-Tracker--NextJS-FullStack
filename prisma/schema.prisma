@@ -1,15 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// generator client {
-//   provider = "prisma-client-js"
-// }
-
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
+// Jobify Prisma schema — Job model only (course leftovers Task/Tour/Token removed)
 
 generator client {
   provider = "prisma-client-js"
@@ -20,41 +9,20 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
-        
 
-model Task {
-  id String @id @default(uuid())
-  content String
-  createdAt DateTime @default(now())
-  completed Boolean @default(false)
-}
-
+/// Job application record — scoped per Clerk user via clerkId
 model Job {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   clerkId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  position    String
+  position  String
   company   String
   location  String
-  status      String
-  mode     String
-}
+  status    String // pending | interview | declined
+  mode      String // full-time | part-time | internship
 
-model Tour {
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  city String
-  country String
-  title String
-  description String @db.Text
-  image String? @db.Text
-  stops Json
-  @@unique([city,country])
-}
-
-model Token {
-  clerkId String @id
-  tokens Int @default (1000)
+  @@index([clerkId])
+  @@index([clerkId, status])
+  @@index([clerkId, createdAt(sort: Desc)])
 }

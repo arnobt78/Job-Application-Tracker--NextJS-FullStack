@@ -100,6 +100,11 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - `next.config.ts` — static Cache-Control headers scoped to production ✓
 - lint/typecheck/test(20)/build green ✓
 
+## Prisma cleanup (2026-06-12)
+
+- Removed unused `Task`, `Tour`, `Token` models + migration ✓
+- Added Job indexes for list/filter/sort queries ✓
+
 ## Docs (2026-06-12)
 
 - `README.md` — complete learner guide (badges, env, routes, hooks, examples) ✓
@@ -108,4 +113,4 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 
 ## Deferred
 
-NextAuth migration, E2E Playwright, Prisma schema cleanup, PostHog.
+E2E Playwright, PostHog.
