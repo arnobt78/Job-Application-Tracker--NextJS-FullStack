@@ -89,7 +89,8 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - /dashboard route (renamed from /jobs); /dashboard/[id] for direct URL edit ✓
 - Middleware redirects /add-job + legacy /jobs/* → /dashboard ✓
 - Hero carousel: active slide uses `loading="eager"` (LCP) ✓
-- Legacy `app/(dashboard)/jobs/` removed ✓
+- Legacy `app/(dashboard)/jobs/` and `add-job/` removed; middleware redirects old URLs ✓
+- SafeImage: no `loading` prop when `priority` (fixes hero hydration mismatch) ✓
 - FormComponents: required prop + asterisk; Vitest tests passing ✓
 
 ## Hydration fix (2026-06-12)

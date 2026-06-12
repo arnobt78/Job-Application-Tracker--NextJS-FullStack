@@ -22,7 +22,7 @@ export function useSignUpForm() {
     async (sessionId: string | null) => {
       if (!sessionId || !setActive) return false;
       await setActive({ session: sessionId });
-      window.location.href = '/add-job';
+      window.location.href = '/dashboard';
       return true;
     },
     [setActive]

@@ -32,6 +32,10 @@ export function SafeImage({
 
   const eager = Boolean(priority || loading === 'eager');
 
+  // Next.js Image drops `loading` when priority is set on the client but SSR may
+  // still emit loading="eager" — omit loading whenever priority is true.
+  const imageLoading = priority ? undefined : loading;
+
   if (useNative && resolvedSrc) {
     if (fill) {
       return (
@@ -70,7 +74,7 @@ export function SafeImage({
       width={width}
       height={height}
       priority={priority}
-      loading={loading}
+      loading={imageLoading}
       onError={handleError}
     />
   );

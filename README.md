@@ -270,8 +270,8 @@ DIRECT_URL="postgresql://username:password@localhost:5432/jobify_db?schema=publi
 - In Clerk Dashboard, go to **Settings** → **Paths**
 - Set **Sign-in path** to: `/sign-in`
 - Set **Sign-up path** to: `/sign-up`
-- Set **After sign-in URL** to: `/add-job`
-- Set **After sign-up URL** to: `/add-job`
+- Set **After sign-in URL** to: `/dashboard`
+- Set **After sign-up URL** to: `/dashboard`
 
 #### 2. PostgreSQL Database Connection
 
@@ -471,40 +471,30 @@ When users click "Get Started":
 
 1. Clerk middleware checks authentication
 2. Unauthenticated users are redirected to sign-in
-3. After sign-in/sign-up, users are redirected to `/add-job`
+3. After sign-in/sign-up, users are redirected to `/dashboard`
 
 **Protected Routes:**
 
-- `/add-job` - Add new job application
-- `/jobs` - View all jobs
-- `/jobs/[id]` - Edit specific job
+- `/dashboard` - View and manage job applications (Add Job dialog)
+- `/dashboard/[id]` - Edit a specific job (dialog via URL)
 - `/stats` - View statistics dashboard
 
-### 3. Add Job Page (`/add-job`)
+**Legacy redirects** (`proxy.ts`): `/add-job` and `/jobs/*` → `/dashboard`
+
+### 3. Dashboard (`/dashboard`)
 
 **Features:**
 
-- Form to create new job application
-- Fields: Position, Company, Location, Status, Mode
-- Client and server-side validation
-- Toast notification on success/error
-- Automatic redirect to jobs list after creation
-
-**Form Validation:**
-
-- Uses React Hook Form for form state
-- Zod schema for validation
-- Real-time error messages
-
-### 4. All Jobs Page (`/jobs`)
-
-**Features:**
-
-- Search by position or company name
-- Filter by status (all, pending, interview, declined)
-- Pagination for large job lists
+- Jobs list with search, filter, and pagination
+- Add Job via glassmorphic dialog
 - Download dropdown (CSV/Excel export)
 - Responsive grid layout (2 columns on desktop, 1 on mobile)
+
+**Form Validation (Add/Edit dialogs):**
+
+- React Hook Form + Zod schema
+- Real-time error messages
+- Toast notification on success/error
 
 **Data Flow:**
 
@@ -513,7 +503,7 @@ When users click "Get Started":
 3. URL search params sync with filters
 4. Real-time updates on search/filter changes
 
-### 5. Edit Job Page (`/jobs/[id]`)
+### 4. Edit Job (`/dashboard/[id]`)
 
 **Features:**
 
@@ -523,7 +513,7 @@ When users click "Get Started":
 - Delete job functionality
 - Server-side data prefetching
 
-### 6. Statistics Page (`/stats`)
+### 5. Statistics Page (`/stats`)
 
 **Features:**
 
@@ -864,7 +854,7 @@ const job = await getSingleJobAction("job-id-123");
 **Security:**
 
 - Only returns job if it belongs to authenticated user
-- Redirects to `/jobs` if job not found or unauthorized
+- Redirects to `/dashboard` if job not found or unauthorized
 
 ---
 
@@ -990,7 +980,7 @@ const allJobs = await getAllJobsForDownloadAction();
 
 ### Next.js App Router
 
-This project uses Next.js 14 App Router with the following structure:
+This project uses Next.js 16 App Router with the following structure:
 
 ```bash
 app/
@@ -998,14 +988,12 @@ app/
 ├── layout.tsx                  # Root layout
 ├── providers.tsx               # Global providers
 ├── (dashboard)/                # Route group (doesn't affect URL)
-│   ├── layout.tsx              # Dashboard layout
-│   ├── add-job/
-│   │   └── page.tsx            # /add-job
-│   ├── jobs/
-│   │   ├── page.tsx            # /jobs
-│   │   ├── loading.tsx         # Loading UI
+│   ├── layout.tsx              # Dashboard layout + DashboardNav
+│   ├── dashboard/
+│   │   ├── page.tsx            # /dashboard (jobs list + Add Job dialog)
+│   │   ├── loading.tsx
 │   │   └── [id]/
-│   │       └── page.tsx        # /jobs/[id] (dynamic route)
+│   │       └── page.tsx        # /dashboard/[id] (edit dialog via URL)
 │   └── stats/
 │       ├── page.tsx            # /stats
 │       └── loading.tsx         # Loading UI
@@ -1017,10 +1005,12 @@ Routes are protected using Clerk in `proxy.ts`:
 
 ```typescript
 const isProtectedRoute = createRouteMatcher([
-  "/add-job",
-  "/jobs(.*)",
+  "/dashboard(.*)",
   "/stats",
+  "/user-profile(.*)",
 ]);
+
+// Legacy redirects: /add-job and /jobs/* → /dashboard
 ```
 
 **How it Works:**
@@ -1032,7 +1022,7 @@ const isProtectedRoute = createRouteMatcher([
 
 ### Dynamic Routes
 
-- `/jobs/[id]` - Dynamic route for individual job pages
+- `/dashboard/[id]` - Dynamic route; opens edit job dialog
 - `[id]` is accessible via `params.id` in the page component
 
 ---
@@ -1324,8 +1314,7 @@ function CreateJobForm() {
   const onSubmit = async (data: CreateAndEditJobType) => {
     const result = await createJobAction(data);
     if (result) {
-      // Success - redirect or show toast
-      router.push("/jobs");
+      // Success — dialog closes; list updates via optimistic mutation
     } else {
       // Error - show error message
     }
@@ -1377,7 +1366,7 @@ function JobsList() {
 ### Example 3: Server-Side Data Prefetching
 
 ```tsx
-// app/jobs/page.tsx (Server Component)
+// app/(dashboard)/dashboard/page.tsx (Server Component)
 import {
   QueryClient,
   dehydrate,
@@ -1386,7 +1375,7 @@ import {
 import { getAllJobsAction } from "@/utils/actions";
 import JobsList from "@/components/JobsList";
 
-async function JobsPage() {
+async function DashboardPage() {
   const queryClient = new QueryClient();
 
   // Prefetch data on server
@@ -1412,14 +1401,18 @@ async function JobsPage() {
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher([
-  "/add-job",
-  "/jobs(.*)",
+  "/dashboard(.*)",
   "/stats",
+  "/user-profile(.*)",
 ]);
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
+  const { pathname } = req.nextUrl;
+  if (pathname === "/add-job" || pathname.startsWith("/jobs")) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
   if (isProtectedRoute(req)) {
-    auth().protect();
+    await auth.protect();
   }
 });
 ```

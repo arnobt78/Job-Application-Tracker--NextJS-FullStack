@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/_next/',
           '/api/',
-          '/add-job',
+          '/dashboard',
           '/dashboard',
           '/stats',
           '/user-profile',

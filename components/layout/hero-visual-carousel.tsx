@@ -62,7 +62,13 @@ export function HeroVisualCarousel({ className }: { className?: string }) {
             width={640}
             height={640}
             priority={index === 0}
-            loading={index === activeIndex ? 'eager' : 'lazy'}
+            loading={
+              index === 0
+                ? undefined
+                : index === activeIndex
+                  ? 'eager'
+                  : 'lazy'
+            }
             aria-hidden={index !== activeIndex}
             className={cn(
               'absolute inset-0 h-full w-full object-contain transition-all duration-700 ease-in-out',

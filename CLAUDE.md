@@ -8,7 +8,7 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 - Server actions: `await auth()` in `utils/actions.ts`
 - Test creds: `lib/auth/test-credentials.ts` → `SignInForm` dropdown
 - Custom auth UI: `SignInForm` + `SignUpForm` (sky `GlassCard`); OAuth via `AuthOAuthButtons` + `lib/auth/clerk-oauth.ts`
-- Hooks: `useGuestSignIn`, `useSignUpForm` (email verify step when Clerk requires)
+- Hooks: `useGuestSignIn`, `useSignUpForm` — post-auth redirect `/dashboard`
 
 ## Data flow (SSR + cache + instant UI)
 1. **Pages** (`force-dynamic`): prefetch in `page.tsx` → `HydrationBoundary` → client `useQuery`
@@ -26,7 +26,7 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 
 ## Routes
 - `/dashboard` — main jobs list; `/dashboard/[id]` — edit dialog via URL
-- `/add-job` — middleware-redirected to `/dashboard` (Add Job dialog)
+- `/add-job` — middleware redirect only (no page); Add Job is a dialog on `/dashboard`
 - Legacy `/jobs/*` — removed; `proxy.ts` still redirects old URLs → `/dashboard`
 
 ## Hydration
@@ -46,8 +46,8 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 
 ## UI — Landing
 - `LandingNav` + `SiteFooter` — `lib/ui/landing-chrome.ts` (h-14, no py)
-- Hero: `HeroVisualCarousel` (main.svg + job-1..4, active slide `loading="eager"`), `ScrollParallaxSection`, `ScrollStagger`
-- Sections: `lib/ui/landing-sections.ts`; copy `lib/ui/marketing-copy.ts`
+- Hero: `HeroVisualCarousel` — slide 0 `priority`; active slides `loading="eager"`; SafeImage omits `loading` when `priority` (hydration-safe)
+- Sections: `ScrollParallaxSection`, `ScrollStagger`; copy `lib/ui/marketing-copy.ts`
 - CTA shine: `cta-shine-wrap--delay-a/b` on Get Started / Try Demo
 - `TryDemoAccountButton` + `useGuestSignIn`
 

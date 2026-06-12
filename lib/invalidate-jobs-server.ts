@@ -13,7 +13,6 @@ export async function invalidateUserJobCaches(
 ): Promise<void> {
   revalidatePath('/dashboard');
   revalidatePath('/stats');
-  revalidatePath('/add-job');
   revalidatePath('/dashboard/[id]', 'page');
 
   for (const tag of allUserTags(userId)) {

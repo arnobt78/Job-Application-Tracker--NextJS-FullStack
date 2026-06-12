@@ -18,7 +18,7 @@ export default function UserProfilePage() {
     <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4">
         <Link
-          href="/add-job"
+          href="/dashboard"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />

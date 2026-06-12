@@ -21,7 +21,7 @@ export function useGuestSignIn() {
 
         if (result.status === 'complete') {
           await setActive({ session: result.createdSessionId });
-          window.location.href = '/add-job';
+          window.location.href = '/dashboard';
           return true;
         }
 
