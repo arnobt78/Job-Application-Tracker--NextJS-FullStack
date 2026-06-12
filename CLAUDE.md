@@ -53,12 +53,16 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 
 ## UI — Shared
 - `PageContainer`, `SplitContentLayout`, `GlassCard`, `glass-input`, `app-shell`, `RippleButton`
-- Scroll: `ScrollReveal`, `ScrollStagger`, `lib/ui/scroll-motion.ts`
+- Scroll: `ScrollStagger`, `lib/ui/scroll-motion.ts`
 - Skeleton: `lib/ui/dimensions.ts`
 - Errors: `app/error.tsx`, `app/global-error.tsx`
 
 ## SEO
 `lib/site-metadata.ts` — SITE_URL `https://jobify-tracker.vercel.app`
+
+## Docs
+- `README.md` — full educational guide (setup, env, architecture, reuse)
+- `.env.example` — Clerk fallbacks → `/dashboard`
 
 ## Verify
 `npm audit && npm run lint && npm run typecheck && npm run test && npm run build` (20 tests)

@@ -1,1387 +1,670 @@
 # Job Tracking Application - Next.js, TypeScript, Clerk, Prisma, React Query, PostgreSQL FullStack Project
 
-A full-featured, production-ready job tracking application built with Next.js 14+, TypeScript, Clerk, Prisma, React Query, PostgreSQL, and modern web technologies. Jobify helps job seekers efficiently organize, track, and analyze their job track journey with a beautiful, responsive dashboard.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.1-blue)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748)](https://www.prisma.io/)
+[![TanStack Query](https://img.shields.io/badge/TanStack_Query-5.90-FF4154)](https://tanstack.com/query)
+[![Clerk](https://img.shields.io/badge/Clerk-6.12-purple)](https://clerk.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791)](https://www.postgresql.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18)](https://vitest.dev/)
+
+A production-style, full-stack job application tracker built to teach modern web development patterns: App Router SSR, server actions, typed ORM access, optimistic UI, multi-layer caching, and secure authentication. Track applications, filter and search your pipeline, visualize trends, and export reports—all with a polished glassmorphic UI and dark mode support.
 
 - **Live-Demo:** [https://jobify-tracker.vercel.app/](https://jobify-tracker.vercel.app/)
 
 ![Screenshot 2025-07-01 at 15 31 44](https://github.com/user-attachments/assets/48f21eef-d40c-4e44-a585-a6b3f2417ebf) ![Screenshot 2025-07-01 at 14 33 39](https://github.com/user-attachments/assets/29e151c8-2deb-4dcd-8856-febb4c043abf) ![Screenshot 2025-07-01 at 14 48 55](https://github.com/user-attachments/assets/bf1eb91e-3b92-40a8-b78f-83ac1157919f) ![Screenshot 2025-07-01 at 14 51 02](https://github.com/user-attachments/assets/e41cb629-a0f8-4301-b926-969bf3d78cc3)
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [Features](#-features)
-- [Technology Stack](#-technology-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Environment Variables](#-environment-variables)
-- [Database Setup](#-database-setup)
-- [Running the Project](#️-running-the-project)
-- [Project Walkthrough](#-project-walkthrough)
-- [Components Guide](#-components-guide)
-- [Server Actions & API](#-server-actions--api)
-- [Routing Structure](#-routing-structure)
-- [Key Concepts](#-key-concepts)
-- [Reusable Components](#-reusable-components)
-- [Code Examples](#-code-examples)
-- [Keywords](#-keywords)
-- [Conclusion](#-conclusion)
-
----
-
-## 🎯 Overview
-
-Jobify is a comprehensive job application tracking system that allows users to:
-
-- **Track Job Applications**: Add, edit, and manage job applications with details like position, company, location, status, and employment type
-- **Search & Filter**: Search jobs by position or company name, filter by status (pending, interview, declined)
-- **Analytics Dashboard**: Visualize job application statistics with charts and graphs
-- **Export Data**: Download job application history as CSV or Excel files with monthly grouping
-- **Secure Authentication**: User-specific data with Clerk authentication
-- **Dark Mode**: Beautiful theme switching with system preference detection
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Architecture & Data Flow](#architecture--data-flow)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Database Setup](#database-setup)
+- [Running the Project](#running-the-project)
+- [Routes & Pages](#routes--pages)
+- [API Endpoints](#api-endpoints)
+- [Server Actions (Backend)](#server-actions-backend)
+- [Authentication](#authentication)
+- [State Management & Caching](#state-management--caching)
+- [Components Guide](#components-guide)
+- [Custom Hooks](#custom-hooks)
+- [Code Examples](#code-examples)
+- [Testing & Quality](#testing--quality)
+- [Deployment](#deployment)
+- [Keywords](#keywords)
+- [Conclusion](#conclusion)
+- [License](#license)
 
 ---
 
-## ✨ Features
+## Overview
+
+Jobify helps job seekers **organize**, **track**, and **analyze** their job search in one place. Each authenticated user gets a private dashboard where they can:
+
+- Add job applications (position, company, location, status, employment mode)
+- Search and filter applications
+- Edit or delete entries via glassmorphic dialogs
+- View statistics and charts (pending, interview, declined)
+- Export data as CSV or Excel
+
+The app is built as a **learning-oriented full-stack reference**: server-rendered pages for fast first paint, client-side React Query for instant interactions, and Prisma + PostgreSQL for persistent storage.
+
+---
+
+## Features
 
 ### Core Functionality
 
-- ✅ **CRUD Operations**: Create, Read, Update, Delete job applications
-- ✅ **Advanced Search**: Search by job title or company name
-- ✅ **Status Filtering**: Filter by pending, interview, or declined status
-- ✅ **Pagination**: Efficient pagination for large job lists
-- ✅ **Real-time Stats**: Dashboard with pending, interview, and declined counts
-- ✅ **Charts & Analytics**: Visual representation of application trends over time
-- ✅ **Data Export**: Download reports in CSV or Excel format with statistics
+| Feature             | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| **CRUD**            | Create, read, update, delete job applications       |
+| **Search**          | Filter by position or company name (URL-synced)     |
+| **Status filter**   | `all`, `pending`, `interview`, `declined`           |
+| **Pagination**      | Paginated job list for large datasets               |
+| **Stats dashboard** | Count cards + 6-month trend charts                  |
+| **Export**          | Download CSV/Excel with monthly grouping            |
+| **Dialogs**         | Add/Edit jobs in modal dialogs (no page navigation) |
 
 ### User Experience
 
-- ✅ **Authentication**: Secure user authentication with Clerk
-- ✅ **User Isolation**: Each user only sees their own job applications
-- ✅ **Loading States**: Skeleton loaders and loading indicators
-- ✅ **Error Handling**: Graceful error handling throughout the application
-- ✅ **Form Validation**: Client and server-side validation with Zod
-- ✅ **Toast Notifications**: User feedback for actions
-- ✅ **Theme Support**: Light, dark, and system theme modes
+- **Clerk authentication** — email/password, OAuth, guest demo sign-in
+- **Custom auth UI** — branded Sign In / Sign Up forms (no default Clerk chrome)
+- **Dark / light / system theme** — via `next-themes`
+- **Responsive layout** — mobile hamburger nav, grid cards on desktop
+- **Loading skeletons** — consistent dimensions via `lib/ui/dimensions.ts`
+- **Toast feedback** — success/error notifications
+- **Form validation** — React Hook Form + Zod (client + server)
 
-### Technical Features
+### Technical Highlights
 
-- ✅ **Server-Side Rendering**: Fast initial page loads with Next.js SSR
-- ✅ **Data Prefetching**: React Query hydration for optimal performance
-- ✅ **Type Safety**: Full TypeScript coverage
-- ✅ **Database ORM**: Prisma for type-safe database queries
-- ✅ **Responsive UI**: Mobile-first design with Tailwind CSS
-- ✅ **Component Library**: shadcn/ui for consistent, accessible components
+- **SSR prefetch + hydration** — data ready on first paint
+- **Optimistic mutations** — UI updates before server round-trip
+- **Multi-layer cache** — `unstable_cache`, tags, optional Redis read-through
+- **Cross-tab sync** — BroadcastChannel + SSE (`/api/jobs/events`)
+- **Sentry integration** — optional error tracking with browser tunnel
+- **Type-safe end-to-end** — TypeScript + Prisma + Zod
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 ### Frontend
 
-- **Next.js 14.2.1** - React framework with App Router
-- **TypeScript 5** - Type-safe JavaScript
-- **React 18** - UI library
-- **Tailwind CSS 3.3** - Utility-first CSS framework
-- **shadcn/ui** - High-quality component library
-- **Lucide React** - Icon library
-- **React Hook Form** - Form state management
-- **Zod** - Schema validation
-- **Recharts** - Chart library for analytics
+| Library             | Version | What it does                                                |
+| ------------------- | ------- | ----------------------------------------------------------- |
+| **Next.js**         | 16.x    | React framework with App Router, SSR, Server Actions        |
+| **React**           | 19.x    | UI library with Server/Client Components                    |
+| **TypeScript**      | 5.8.x   | Static typing across the codebase                           |
+| **Tailwind CSS**    | 3.4.x   | Utility-first styling                                       |
+| **shadcn/ui**       | —       | Accessible Radix-based components (Button, Dialog, Select…) |
+| **Lucide React**    | —       | Icon set                                                    |
+| **React Hook Form** | 7.x     | Form state with minimal re-renders                          |
+| **Zod**             | 3.x     | Schema validation (shared client + server)                  |
+| **Recharts**        | 2.x     | Stats page bar charts                                       |
+| **next-themes**     | —       | Theme switching without flash                               |
+| **TanStack Query**  | 5.x     | Server state, cache, optimistic updates                     |
 
-### Backend & Database
+### Backend & Data
 
-- **Next.js Server Actions** - Server-side API endpoints
-- **Prisma 5.7** - Next-generation ORM
-- **PostgreSQL** - Relational database
-- **Clerk** - Authentication and user management
+| Library                    | Version  | What it does                                  |
+| -------------------------- | -------- | --------------------------------------------- |
+| **Next.js Server Actions** | —        | Type-safe server functions (`"use server"`)   |
+| **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations     |
+| **PostgreSQL**             | —        | Relational database for job records           |
+| **Clerk**                  | 6.x      | Authentication, session, user identity        |
+| **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams |
+| **exceljs / papaparse**    | —        | Excel/CSV export generation                   |
+| **dayjs**                  | —        | Date formatting in exports                    |
 
-### State Management & Data Fetching
+### Dev & Quality
 
-- **TanStack Query (React Query) 5.14** - Server state management
-- **React Query Devtools** - Development tools
-
-### Additional Libraries
-
-- **dayjs** - Date manipulation and formatting
-- **exceljs** - Excel file generation
-- **next-themes** - Theme management
-- **class-variance-authority** - Component variant management
+| Tool       | Purpose                                         |
+| ---------- | ----------------------------------------------- |
+| **Vitest** | Unit tests (`lib/__tests__`, `hooks/__tests__`) |
+| **ESLint** | Linting (`eslint-config-next`)                  |
+| **Sentry** | Optional production error monitoring            |
 
 ---
 
-## 📁 Project Structure
+## Architecture & Data Flow
+
+Understanding the flow is key to extending this project.
+
+### Read path (SSR → client)
+
+```text
+page.tsx (force-dynamic)
+  └─ prefetchQuery on server (QueryClient)
+  └─ HydrationBoundary → dehydrate state
+       └─ Client component (JobsList, StatsContainer…)
+            └─ useQuery with same queryKey → instant data, no loading flash
+                 └─ lib/jobs/queries.ts (unstable_cache + tags + optional Redis)
+                      └─ Prisma → PostgreSQL
+```
+
+### Write path (mutation → invalidation)
+
+```text
+User action (CreateJobForm / DeleteJobButton)
+  └─ useJobsMutation (optimistic UI patch)
+       └─ Server Action (utils/actions.ts)
+            └─ Prisma write
+            └─ invalidateUserJobCaches(userId, jobId?)
+                 ├─ revalidateTag / revalidatePath (Next cache)
+                 ├─ Redis cache key delete (optional)
+                 └─ publishInvalidation → SSE stream
+                      └─ useJobsCacheSync → invalidateAllJobQueries (React Query)
+```
+
+### Why this pattern?
+
+- **SSR prefetch** eliminates loading spinners on first visit
+- **Optimistic updates** make the UI feel instant
+- **Tag-based revalidation** keeps server cache correct after mutations
+- **SSE + BroadcastChannel** keeps multiple tabs/instances in sync
+
+---
+
+## Project Structure
 
 ```bash
-job-tracking-app/
-├── app/                          # Next.js App Router directory
-│   ├── (dashboard)/              # Route group for dashboard pages
-│   │   ├── add-job/
-│   │   │   └── page.tsx          # Add new job page
-│   │   ├── jobs/
-│   │   │   ├── [id]/             # Dynamic route for job details
-│   │   │   │   └── page.tsx      # Edit job page
-│   │   │   ├── loading.tsx       # Loading UI for jobs page
-│   │   │   └── page.tsx          # All jobs listing page
-│   │   ├── stats/
-│   │   │   ├── loading.tsx       # Loading UI for stats page
-│   │   │   └── page.tsx          # Statistics dashboard page
-│   │   └── layout.tsx            # Dashboard layout (Sidebar + Navbar)
-│   ├── globals.css               # Global styles
-│   ├── layout.tsx                # Root layout with providers
-│   ├── page.tsx                  # Landing page
-│   └── providers.tsx             # React Query & Theme providers
-├── components/                   # React components
-│   ├── ui/                       # shadcn/ui components
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── form.tsx
-│   │   ├── input.tsx
-│   │   └── ...                   # Other UI components
-│   ├── ComplexButtonContainer.tsx  # Pagination buttons
-│   ├── ChartsContainer.tsx       # Analytics charts
-│   ├── CreateJobForm.tsx         # Form to create new job
-│   ├── DeleteJobButton.tsx       # Delete job button
-│   ├── DownloadDropdown.tsx      # CSV/Excel export dropdown
-│   ├── EditJobForm.tsx           # Form to edit job
-│   ├── JobCard.tsx               # Job card component
-│   ├── JobsList.tsx               # Jobs listing component
-│   ├── Navbar.tsx                # Top navigation bar
-│   ├── SearchForm.tsx            # Search and filter form
-│   ├── Sidebar.tsx               # Side navigation
-│   ├── StatsCard.tsx             # Statistics card component
-│   ├── StatsContainer.tsx        # Stats container
-│   └── ThemeToggle.tsx           # Theme switcher
-├── prisma/
-│   ├── schema.prisma             # Database schema
-│   └── seed.ts                   # Database seeding script
-├── public/                       # Static assets
-│   ├── logo.svg
-│   └── main.svg
-├── utils/
-│   ├── actions.ts                # Server actions
-│   ├── db.ts                     # Prisma client singleton
-│   ├── links.tsx                 # Navigation links
-│   └── types.ts                  # TypeScript types & Zod schemas
+18-nextjs-jobify-app/
+├── app/                              # Next.js App Router
+│   ├── page.tsx                      # Landing page (/)
+│   ├── layout.tsx                    # Root layout + providers
+│   ├── providers.tsx                 # Theme + React Query providers
+│   ├── error.tsx / global-error.tsx  # Error boundaries
+│   ├── (dashboard)/                  # Authenticated area (route group)
+│   │   ├── layout.tsx                # DashboardNav shell
+│   │   ├── dashboard/
+│   │   │   ├── page.tsx              # /dashboard — jobs list + Add Job dialog
+│   │   │   └── [id]/page.tsx         # /dashboard/[id] — edit dialog via URL
+│   │   └── stats/
+│   │       └── page.tsx              # /stats — analytics
+│   ├── sign-in/[[...sign-in]]/       # Custom sign-in page
+│   ├── sign-up/[[...sign-up]]/       # Custom sign-up page
+│   ├── user-profile/[[...user-profile]]/
+│   └── api/
+│       ├── jobs/events/route.ts      # SSE invalidation stream
+│       └── monitoring/route.ts       # Sentry browser tunnel
+├── components/                       # React components
+│   ├── layout/                       # NavShell, LandingNav, DashboardNav, hero…
+│   ├── dialogs/                      # AddJobDialog, EditJobDialog
+│   ├── pages/                        # HomePage, SignInPageContent…
+│   ├── ui/                           # shadcn primitives + GlassCard, SafeImage…
+│   ├── JobCard.tsx, JobsList.tsx     # Dashboard list UI
+│   ├── CreateJobForm.tsx             # Add job form
+│   ├── EditJobForm.tsx               # Edit job form
+│   └── SignInForm.tsx, SignUpForm.tsx
+├── hooks/
+│   ├── useJobsMutation.ts            # Optimistic CRUD mutations
+│   ├── useJobsCacheSync.ts           # SSE + BroadcastChannel sync
+│   ├── useGuestSignIn.ts             # Demo account login
+│   └── useSignUpForm.ts              # Custom sign-up flow
 ├── lib/
-│   └── utils.ts                  # Utility functions
-├── proxy.ts                      # Next.js proxy (Clerk auth protection)
-├── next.config.ts                # Next.js configuration
-├── tailwind.config.js            # Tailwind CSS configuration
-├── tsconfig.json                 # TypeScript configuration
-└── package.json                  # Dependencies and scripts
+│   ├── jobs/queries.ts               # Cached Prisma reads
+│   ├── invalidate-jobs.ts            # Client query invalidation
+│   ├── invalidate-jobs-server.ts     # Server cache bust
+│   ├── query-keys.ts                 # Canonical React Query keys
+│   ├── cache-tags.ts                 # Next.js cache tags per user
+│   ├── redis.ts                      # Optional Upstash integration
+│   ├── format-date.ts                # Hydration-safe UTC dates
+│   └── auth/clerk-oauth.ts           # OAuth redirect URLs
+├── utils/
+│   ├── actions.ts                    # Server Actions (CRUD + reads)
+│   ├── types.ts                      # JobType + Zod schema
+│   └── db.ts                         # Prisma client singleton
+├── prisma/
+│   ├── schema.prisma                 # Database schema
+│   └── seed.ts                       # Sample data script
+├── proxy.ts                          # Clerk middleware (auth + legacy redirects)
+├── next.config.ts                    # Images, headers, Sentry wrapper
+├── .env.example                      # Environment variable template
+└── docs/                             # Additional guides (walkthrough, auth, styling)
 ```
 
 ---
 
-## 🚀 Getting Started
+## Prerequisites
 
-### Prerequisites
+Before you start, install:
 
-Before you begin, ensure you have the following installed:
+| Requirement            | Notes                                       |
+| ---------------------- | ------------------------------------------- |
+| **Node.js 20+**        | LTS recommended (Node 24 default on Vercel) |
+| **npm** (or pnpm/yarn) | Package manager                             |
+| **PostgreSQL**         | Local Docker, Neon, Supabase, or VPS        |
+| **Clerk account**      | Free tier works for development             |
 
-- **Node.js** 18.x or higher
-- **npm** or **yarn** package manager
-- **PostgreSQL** database (local or cloud)
-- **Git** for version control
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/your-username/18-nextjs-jobify-app.git
-   cd 18-nextjs-jobify-app
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Set up environment variables** (see [Environment Variables](#-environment-variables) section)
-
-4. **Set up the database** (see [Database Setup](#-database-setup) section)
-
-5. **Run database migrations**
-
-   ```bash
-   npx prisma migrate dev
-   ```
-
-6. **Generate Prisma Client**
-
-   ```bash
-   npx prisma generate
-   ```
-
-7. **Start the development server**
-
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-8. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+Optional: **Upstash Redis** (production cache/SSE), **Sentry** (error tracking).
 
 ---
 
-## 🔐 Environment Variables
+## Getting Started
 
-Create a `.env.local` file in the root directory with the following variables:
-
-### Required Environment Variables
-
-```env
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxx
-CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxx
-
-# Database Connection
-DATABASE_URL="postgresql://username:password@localhost:5432/jobify_db?schema=public"
-DIRECT_URL="postgresql://username:password@localhost:5432/jobify_db?schema=public"
-```
-
-### How to Get Environment Variables
-
-#### 1. Clerk Authentication Keys
-
-**Step 1: Create a Clerk Account**
-
-- Visit [https://clerk.com](https://clerk.com)
-- Sign up for a free account
-- Create a new application
-
-**Step 2: Get Your Keys**
-
-- Go to your Clerk Dashboard
-- Navigate to **API Keys** section
-- Copy the following:
-  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_test_` or `pk_live_`)
-  - `CLERK_SECRET_KEY` (starts with `sk_test_` or `sk_live_`)
-
-**Step 3: Configure Authentication**
-
-- In Clerk Dashboard, go to **Settings** → **Paths**
-- Set **Sign-in path** to: `/sign-in`
-- Set **Sign-up path** to: `/sign-up`
-- Set **After sign-in URL** to: `/dashboard`
-- Set **After sign-up URL** to: `/dashboard`
-
-#### 2. PostgreSQL Database Connection
-
-**Option A: Local PostgreSQL**
-
-1. **Install PostgreSQL**
-   - Download from [https://www.postgresql.org/download/](https://www.postgresql.org/download/)
-   - Or use Homebrew: `brew install postgresql@14`
-
-2. **Create Database**
-
-   ```bash
-   # Start PostgreSQL service
-   brew services start postgresql@14
-   # or
-   sudo service postgresql start
-
-   # Connect to PostgreSQL
-   psql postgres
-
-   # Create database
-   CREATE DATABASE jobify_db;
-
-   # Create user (optional)
-   CREATE USER jobify_user WITH PASSWORD 'your_password';
-   GRANT ALL PRIVILEGES ON DATABASE jobify_db TO jobify_user;
-   ```
-
-3. **Connection String Format**
-
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/jobify_db?schema=public"
-   DIRECT_URL="postgresql://username:password@localhost:5432/jobify_db?schema=public"
-   ```
-
-**Option B: Cloud Database (Recommended for Production)**
-
-1. **Supabase** (Free tier available)
-   - Visit [https://supabase.com](https://supabase.com)
-   - Create a new project
-   - Go to **Settings** → **Database**
-   - Copy the **Connection string** (URI format)
-
-2. **Neon** (Free tier available)
-   - Visit [https://neon.tech](https://neon.tech)
-   - Create a new project
-   - Copy the connection string from dashboard
-
-3. **Railway** (Free tier available)
-   - Visit [https://railway.app](https://railway.app)
-   - Create a new PostgreSQL database
-   - Copy the connection string
-
-### Example `.env.local` File
-
-```env
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_51AbCdEfGhIjKlMnOpQrStUvWxYz1234567890
-CLERK_SECRET_KEY=sk_test_51AbCdEfGhIjKlMnOpQrStUvWxYz1234567890
-
-# Database (Local PostgreSQL)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/jobify_db?schema=public"
-DIRECT_URL="postgresql://postgres:postgres@localhost:5432/jobify_db?schema=public"
-
-# Optional: Node Environment
-NODE_ENV=development
-```
-
-### Security Notes
-
-- ⚠️ **Never commit `.env.local` to version control**
-- ✅ The `.env.local` file is already in `.gitignore`
-- ✅ Use different keys for development and production
-- ✅ Rotate keys if they're accidentally exposed
-
----
-
-## 🗄 Database Setup
-
-### 1. Initialize Prisma
-
-Prisma is already configured. The schema is located at `prisma/schema.prisma`.
-
-### 2. Create Database Migration
+### 1. Clone the repository
 
 ```bash
-npx prisma migrate dev --name init
+git clone https://github.com/arnobt78/Job-Application-Tracker--NextJS-FullStack.git
+cd Job-Application-Tracker--NextJS-FullStack
 ```
 
-This command will:
+### 2. Install dependencies
 
-- Create a new migration file
-- Apply the migration to your database
-- Generate the Prisma Client
+```bash
+npm install
+```
 
-### 3. Generate Prisma Client
+### 3. Configure environment variables
+
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+See [Environment Variables](#environment-variables) below for every key explained.
+
+### 4. Set up the database
 
 ```bash
 npx prisma generate
+npx prisma db push
+npm run db:seed   # optional — sample jobs
 ```
 
-### 4. (Optional) Seed the Database
-
-If you want to populate the database with sample data:
-
-```bash
-npx prisma db seed
-```
-
-### 5. View Database in Prisma Studio
-
-```bash
-npx prisma studio
-```
-
-This opens a visual database browser at [http://localhost:5555](http://localhost:5555)
-
-### Database Schema
-
-The main model is the `Job` model:
-
-```prisma
-model Job {
-  id        String   @id @default(uuid())
-  clerkId   String   // User ID from Clerk
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  position  String   // Job title
-  company   String   // Company name
-  location  String   // Job location
-  status    String   // pending, interview, declined
-  mode      String   // full-time, part-time, internship
-}
-```
-
----
-
-## ▶️ Running the Project
-
-### Development Mode
+### 5. Start the development server
 
 ```bash
 npm run dev
 ```
 
-- Runs on [http://localhost:3000](http://localhost:3000)
-- Hot reload enabled
-- React Query Devtools available
+Open [http://localhost:3000](http://localhost:3000).
 
-### Production Build
+---
+
+## Environment Variables
+
+> **Minimum to run locally:** Clerk keys + PostgreSQL `DATABASE_URL` / `DIRECT_URL`.  
+> Everything else is optional and the app degrades gracefully without it.
+
+Create `.env.local` in the project root (never commit it). A full template lives in `.env.example`.
+
+### Required
+
+| Variable                            | Description                         | How to get it                                             |
+| ----------------------------------- | ----------------------------------- | --------------------------------------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key (browser-safe)     | [Clerk Dashboard](https://dashboard.clerk.com) → API Keys |
+| `CLERK_SECRET_KEY`                  | Clerk secret key (server only)      | Same as above                                             |
+| `DATABASE_URL`                      | PostgreSQL connection string        | Your DB host (Neon, Supabase, local Postgres…)            |
+| `DIRECT_URL`                        | Direct DB URL for Prisma migrations | Usually same as `DATABASE_URL`                            |
+
+**Clerk URL settings** (local defaults — already in `.env.example`):
+
+```env
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_USER_PROFILE_URL=/user-profile
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+```
+
+Also set **After sign-in URL** and **After sign-up URL** to `/dashboard` in the Clerk Dashboard.
+
+**Example local PostgreSQL:**
+
+```env
+DATABASE_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
+DIRECT_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
+```
+
+### Optional (recommended for production)
+
+| Variable                   | Purpose                              |
+| -------------------------- | ------------------------------------ |
+| `UPSTASH_REDIS_REST_URL`   | Redis REST endpoint for cache + SSE  |
+| `UPSTASH_REDIS_REST_TOKEN` | Redis auth token                     |
+| `NEXT_PUBLIC_SENTRY_DSN`   | Browser error reporting              |
+| `SENTRY_ORG`               | Sentry organization slug             |
+| `SENTRY_PROJECT`           | Sentry project slug                  |
+| `SENTRY_AUTH_TOKEN`        | Source map upload at build time only |
+
+**Without Redis:** app uses in-memory cache + BroadcastChannel (single instance / same browser).  
+**Without Sentry:** error boundaries still work; errors are not reported externally.
+
+---
+
+## Database Setup
+
+### Schema (Job model)
+
+Defined in `prisma/schema.prisma`:
+
+```prisma
+model Job {
+  id        String   @id @default(uuid())
+  clerkId   String   // Clerk user ID — row-level isolation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  position  String
+  company   String
+  location  String
+  status    String   // pending | interview | declined
+  mode      String   // full-time | part-time | internship
+}
+```
+
+Each job belongs to one Clerk user via `clerkId`. Server actions always filter by authenticated `userId`.
+
+### Commands
 
 ```bash
-# Build the application
-npm run build
+# Generate Prisma Client after schema changes
+npm run prisma:generate
 
-# Start production server
-npm start
+# Push schema to database (dev)
+npm run prisma:push
+
+# Open visual DB browser
+npm run prisma:studio
+
+# Seed sample data
+npm run db:seed
 ```
 
-### Other Commands
+### Utility scripts
+
+| Script              | Command                     | Purpose                 |
+| ------------------- | --------------------------- | ----------------------- |
+| Inspect DB          | `npm run db:inspect`        | Debug database contents |
+| Seed test user jobs | `npm run db:seed-test-user` | Populate demo data      |
+| Fix status values   | `npm run db:fix-status`     | Data cleanup migration  |
+
+---
+
+## Running the Project
+
+| Command             | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| `npm run dev`       | Start dev server (Turbopack) at `localhost:3000`    |
+| `npm run build`     | Production build (`prisma generate` + `next build`) |
+| `npm start`         | Run production server                               |
+| `npm run lint`      | ESLint                                              |
+| `npm run typecheck` | TypeScript check                                    |
+| `npm test`          | Vitest unit tests (20 tests)                        |
+
+**Full verification (recommended before deploy):**
 
 ```bash
-# Run linter
-npm run lint
-
-# Generate Prisma Client
-npx prisma generate
-
-# Run database migrations
-npx prisma migrate dev
-
-# Open Prisma Studio
-npx prisma studio
+npm run lint && npm run typecheck && npm test && npm run build
 ```
 
 ---
 
-## 🎓 Project Walkthrough
+## Routes & Pages
 
-### 1. Landing Page (`/`)
+| Route             | Access    | Description                                        |
+| ----------------- | --------- | -------------------------------------------------- |
+| `/`               | Public    | Marketing landing page with hero carousel          |
+| `/sign-in`        | Public    | Custom sign-in form + OAuth + demo login           |
+| `/sign-up`        | Public    | Custom sign-up form + email verification           |
+| `/dashboard`      | Protected | Main jobs dashboard (list, search, Add Job dialog) |
+| `/dashboard/[id]` | Protected | Opens edit job dialog for direct URL sharing       |
+| `/stats`          | Protected | Stats cards + Recharts trend graph                 |
+| `/user-profile`   | Protected | Clerk user profile management                      |
 
-The landing page introduces Jobify with:
+**Legacy redirects** (handled in `proxy.ts`):
 
-- Hero section with app description
-- Call-to-action button to get started
-- Responsive design with logo and illustration
-
-**Key Features:**
-
-- Server-side rendered for fast initial load
-- Responsive layout (mobile-first)
-- Direct link to authentication flow
-
-### 2. Authentication Flow
-
-When users click "Get Started":
-
-1. Clerk middleware checks authentication
-2. Unauthenticated users are redirected to sign-in
-3. After sign-in/sign-up, users are redirected to `/dashboard`
-
-**Protected Routes:**
-
-- `/dashboard` - View and manage job applications (Add Job dialog)
-- `/dashboard/[id]` - Edit a specific job (dialog via URL)
-- `/stats` - View statistics dashboard
-
-**Legacy redirects** (`proxy.ts`): `/add-job` and `/jobs/*` → `/dashboard`
-
-### 3. Dashboard (`/dashboard`)
-
-**Features:**
-
-- Jobs list with search, filter, and pagination
-- Add Job via glassmorphic dialog
-- Download dropdown (CSV/Excel export)
-- Responsive grid layout (2 columns on desktop, 1 on mobile)
-
-**Form Validation (Add/Edit dialogs):**
-
-- React Hook Form + Zod schema
-- Real-time error messages
-- Toast notification on success/error
-
-**Data Flow:**
-
-1. Server pre-fetches initial data (React Query hydration)
-2. Client-side React Query manages state
-3. URL search params sync with filters
-4. Real-time updates on search/filter changes
-
-### 4. Edit Job (`/dashboard/[id]`)
-
-**Features:**
-
-- Pre-populated form with existing job data
-- Same validation as create form
-- Update job details
-- Delete job functionality
-- Server-side data prefetching
-
-### 5. Statistics Page (`/stats`)
-
-**Features:**
-
-- Three stat cards: Pending, Interview, Declined
-- Charts showing application trends (last 6 months)
-- Real-time data from database
-- Loading states with skeleton loaders
+| Old URL            | Redirects to |
+| ------------------ | ------------ |
+| `/add-job`         | `/dashboard` |
+| `/jobs`, `/jobs/*` | `/dashboard` |
 
 ---
 
-## 🧩 Components Guide
+## API Endpoints
 
-### Core Components
+This project uses **Server Actions** for most data operations. Two HTTP routes exist:
 
-#### 1. **JobsList Component**
+### `GET /api/jobs/events`
 
-**Location:** `components/JobsList.tsx`
-
-**Purpose:** Displays paginated list of job applications with search and filter capabilities.
-
-**Key Features:**
-
-- React Query for data fetching
-- URL-based search parameters
-- Pagination support
-- Download functionality integration
-
-**Usage:**
-
-```tsx
-import JobsList from "@/components/JobsList";
-
-function JobsPage() {
-  return <JobsList />;
-}
-```
-
-**Props:** None (uses URL search params)
-
-**How it Works:**
-
-1. Reads search params from URL (`search`, `jobStatus`, `page`)
-2. Uses React Query to fetch data with `getAllJobsAction`
-3. Displays jobs in responsive grid
-4. Shows pagination if more than 1 page
-5. Handles loading and empty states
-
----
-
-#### 2. **SearchForm Component**
-
-**Location:** `components/SearchForm.tsx`
-
-**Purpose:** Provides search and filter functionality for jobs.
-
-**Key Features:**
-
-- Search by position or company
-- Filter by job status
-- URL-based state management
-- Form submission handling
-
-**Usage:**
-
-```tsx
-import SearchForm from "@/components/SearchForm";
-
-function JobsPage() {
-  return (
-    <>
-      <SearchForm />
-      <JobsList />
-    </>
-  );
-}
-```
-
-**How it Works:**
-
-1. Reads current search params from URL
-2. Pre-fills form with current values
-3. On submit, updates URL with new params
-4. React Query automatically refetches with new params
-
----
-
-#### 3. **DownloadDropdown Component**
-
-**Location:** `components/DownloadDropdown.tsx`
-
-**Purpose:** Allows users to download job application data as CSV or Excel files.
-
-**Key Features:**
-
-- CSV export with proper formatting
-- Excel export with merged cells
-- Statistics summary in exported files
-- Monthly grouping with visual gaps
-- Serial numbering for easy reference
-
-**Usage:**
-
-```tsx
-import DownloadDropdown from "@/components/DownloadDropdown";
-
-function JobsPage() {
-  return (
-    <div>
-      <h2>Jobs Found</h2>
-      <DownloadDropdown />
-    </div>
-  );
-}
-```
-
-**Export Format:**
-
-- **CSV:** Simple text format, easy to open in any spreadsheet app
-- **Excel:** Proper XLSX format with merged header cells
-
-**File Structure:**
-
-```
-Job Application History
-Total Applied: X, Declined: Y, Interview: Z, Pending: W      Report Generated: DD-MMM-YYYY HH:mm
-
-No., Applied Date, Job Title, Company Name, Job Location, Role, Status
-1, 15-Oct-2025, "Software Engineer", "Tech Corp", "San Francisco", Full Time, Pending
-...
-```
-
----
-
-#### 4. **StatsContainer Component**
-
-**Location:** `components/StatsContainer.tsx`
-
-**Purpose:** Displays job application statistics in card format.
-
-**Key Features:**
-
-- Three stat cards (Pending, Interview, Declined)
-- Loading states with skeleton cards
-- Real-time data from database
-- Responsive grid layout
-
-**Usage:**
-
-```tsx
-import StatsContainer from "@/components/StatsContainer";
-
-function StatsPage() {
-  return (
-    <>
-      <StatsContainer />
-      <ChartsContainer />
-    </>
-  );
-}
-```
-
----
-
-#### 5. **ChartsContainer Component**
-
-**Location:** `components/ChartsContainer.tsx`
-
-**Purpose:** Visualizes job application trends over time.
-
-**Key Features:**
-
-- Area chart showing applications per month
-- Last 6 months of data
-- Responsive chart design
-- Loading states
-
----
-
-#### 6. **CreateJobForm Component**
-
-**Location:** `components/CreateJobForm.tsx`
-
-**Purpose:** Form to create new job applications.
-
-**Key Features:**
-
-- React Hook Form integration
-- Zod validation
-- Server action submission
-- Toast notifications
-- Automatic redirect on success
-
-**Form Fields:**
-
-- Position (required, min 2 characters)
-- Company (required, min 2 characters)
-- Location (required, min 2 characters)
-- Status (enum: pending, interview, declined)
-- Mode (enum: full-time, part-time, internship)
-
----
-
-#### 7. **EditJobForm Component**
-
-**Location:** `components/EditJobForm.tsx`
-
-**Purpose:** Form to edit existing job applications.
-
-**Key Features:**
-
-- Pre-populated with existing data
-- Same validation as create form
-- Update server action
-- Delete functionality
-- Optimistic updates
-
----
-
-### UI Components (shadcn/ui)
-
-All UI components are located in `components/ui/` and are built with:
-
-- **Radix UI** primitives for accessibility
-- **Tailwind CSS** for styling
-- **class-variance-authority** for variants
-
-**Available Components:**
-
-- `Button` - Various button styles and sizes
-- `Card` - Container component
-- `Form` - Form wrapper with validation
-- `Input` - Text input field
-- `Select` - Dropdown select
-- `DropdownMenu` - Dropdown menu component
-- `Toast` - Notification system
-- `Skeleton` - Loading placeholder
-- And more...
-
----
-
-## 🔌 Server Actions & API
-
-### Server Actions Overview
-
-Next.js Server Actions allow you to write server-side code that can be called directly from client components. All server actions are in `utils/actions.ts`.
-
-### Available Server Actions
-
-#### 1. **createJobAction**
-
-**Purpose:** Create a new job application.
-
-**Signature:**
+- **Purpose:** Server-Sent Events stream for cache invalidation after CRUD
+- **Auth:** Clerk session required (401 if unauthenticated)
+- **Used by:** `hooks/useJobsCacheSync.ts`
+- **Flow:** Client opens EventSource → receives invalidation events → React Query refetches
 
 ```typescript
-createJobAction(values: CreateAndEditJobType): Promise<JobType | null>
-```
-
-**Usage:**
-
-```tsx
-const result = await createJobAction({
-  position: "Software Engineer",
-  company: "Tech Corp",
-  location: "San Francisco",
-  status: "pending",
-  mode: "full-time",
-});
-```
-
-**What it Does:**
-
-1. Authenticates user
-2. Validates input with Zod schema
-3. Creates job record in database
-4. Associates job with user's Clerk ID
-5. Returns created job or null on error
-
----
-
-#### 2. **getAllJobsAction**
-
-**Purpose:** Fetch paginated list of jobs with optional search and filter.
-
-**Signature:**
-
-```typescript
-getAllJobsAction({
-  search?: string,
-  jobStatus?: string,
-  page?: number,
-  limit?: number
-}): Promise<{
-  jobs: JobType[],
-  count: number,
-  page: number,
-  totalPages: number
-}>
-```
-
-**Usage:**
-
-```tsx
-const result = await getAllJobsAction({
-  search: "engineer",
-  jobStatus: "pending",
-  page: 1,
-  limit: 10,
-});
-```
-
-**Features:**
-
-- User-specific data (only returns user's jobs)
-- Search by position or company
-- Filter by status
-- Pagination support
-- Returns total count for pagination
-
----
-
-#### 3. **getSingleJobAction**
-
-**Purpose:** Fetch a single job by ID.
-
-**Signature:**
-
-```typescript
-getSingleJobAction(id: string): Promise<JobType | null>
-```
-
-**Usage:**
-
-```tsx
-const job = await getSingleJobAction("job-id-123");
-```
-
-**Security:**
-
-- Only returns job if it belongs to authenticated user
-- Redirects to `/dashboard` if job not found or unauthorized
-
----
-
-#### 4. **updateJobAction**
-
-**Purpose:** Update an existing job application.
-
-**Signature:**
-
-```typescript
-updateJobAction(
-  id: string,
-  values: CreateAndEditJobType
-): Promise<JobType | null>
-```
-
-**Usage:**
-
-```tsx
-const updated = await updateJobAction("job-id-123", {
-  position: "Senior Engineer",
-  company: "Tech Corp",
-  location: "Remote",
-  status: "interview",
-  mode: "full-time",
-});
-```
-
----
-
-#### 5. **deleteJobAction**
-
-**Purpose:** Delete a job application.
-
-**Signature:**
-
-```typescript
-deleteJobAction(id: string): Promise<JobType | null>
-```
-
-**Usage:**
-
-```tsx
-const deleted = await deleteJobAction("job-id-123");
-```
-
-**Security:**
-
-- Only deletes jobs belonging to authenticated user
-- Compound where clause ensures user ownership
-
----
-
-#### 6. **getStatsAction**
-
-**Purpose:** Get statistics grouped by job status.
-
-**Signature:**
-
-```typescript
-getStatsAction(): Promise<{
-  pending: number,
-  interview: number,
-  declined: number
-}>
-```
-
-**Usage:**
-
-```tsx
-const stats = await getStatsAction();
-// Returns: { pending: 5, interview: 3, declined: 2 }
-```
-
-**How it Works:**
-
-- Uses Prisma `groupBy` to count jobs by status
-- Returns counts for each status type
-- Defaults to 0 if no jobs of that status exist
-
----
-
-#### 7. **getChartsDataAction**
-
-**Purpose:** Get job application data for charts (last 6 months).
-
-**Signature:**
-
-```typescript
-getChartsDataAction(): Promise<Array<{ date: string, count: number }>>
-```
-
-**Usage:**
-
-```tsx
-const chartData = await getChartsDataAction();
-// Returns: [{ date: "Oct 25", count: 5 }, { date: "Nov 25", count: 3 }, ...]
-```
-
----
-
-#### 8. **getAllJobsForDownloadAction**
-
-**Purpose:** Get all jobs for export (no pagination).
-
-**Signature:**
-
-```typescript
-getAllJobsForDownloadAction(): Promise<JobType[]>
-```
-
-**Usage:**
-
-```tsx
-const allJobs = await getAllJobsForDownloadAction();
-```
-
-**Note:** Used by download functionality to export complete job history.
-
----
-
-## 🛣 Routing Structure
-
-### Next.js App Router
-
-This project uses Next.js 16 App Router with the following structure:
-
-```bash
-app/
-├── page.tsx                    # Landing page (/)
-├── layout.tsx                  # Root layout
-├── providers.tsx               # Global providers
-├── (dashboard)/                # Route group (doesn't affect URL)
-│   ├── layout.tsx              # Dashboard layout + DashboardNav
-│   ├── dashboard/
-│   │   ├── page.tsx            # /dashboard (jobs list + Add Job dialog)
-│   │   ├── loading.tsx
-│   │   └── [id]/
-│   │       └── page.tsx        # /dashboard/[id] (edit dialog via URL)
-│   └── stats/
-│       ├── page.tsx            # /stats
-│       └── loading.tsx         # Loading UI
-```
-
-### Route Protection
-
-Routes are protected using Clerk in `proxy.ts`:
-
-```typescript
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/stats",
-  "/user-profile(.*)",
-]);
-
-// Legacy redirects: /add-job and /jobs/* → /dashboard
-```
-
-**How it Works:**
-
-- Middleware runs on every request
-- Checks if route is protected
-- Redirects to sign-in if user not authenticated
-- Allows access if user is authenticated
-
-### Dynamic Routes
-
-- `/dashboard/[id]` - Dynamic route; opens edit job dialog
-- `[id]` is accessible via `params.id` in the page component
-
----
-
-## 🎯 Key Concepts
-
-### 1. Server Components vs Client Components
-
-**Server Components** (default):
-
-- Run on the server
-- Can directly access database
-- No JavaScript sent to client
-- Faster initial page load
-
-**Client Components** (`"use client"`):
-
-- Run in the browser
-- Can use React hooks
-- Interactive features
-- State management
-
-**Example:**
-
-```tsx
-// Server Component (default)
-async function JobsPage() {
-  const jobs = await getAllJobsAction({});
-  return <JobsList initialJobs={jobs} />;
-}
-
-// Client Component
-("use client");
-function JobsList({ initialJobs }) {
-  const [jobs, setJobs] = useState(initialJobs);
-  // ... interactive logic
-}
-```
-
----
-
-### 2. React Query (TanStack Query)
-
-**Purpose:** Server state management and data fetching.
-
-**Key Features:**
-
-- Automatic caching
-- Background refetching
-- Loading and error states
-- Optimistic updates
-
-**Usage Pattern:**
-
-```tsx
-const { data, isPending, error } = useQuery({
-  queryKey: ["jobs", search, status, page],
-  queryFn: () => getAllJobsAction({ search, status, page }),
-});
-```
-
-**Query Keys:**
-
-- Unique identifiers for cached data
-- Changing key triggers new fetch
-- Example: `['jobs', 'engineer', 'pending', 1]`
-
-**Hydration:**
-
-- Server pre-fetches data
-- Data is "hydrated" into client cache
-- No loading spinner on initial load
-
----
-
-### 3. Server Actions
-
-**Purpose:** Server-side functions called from client components.
-
-**Benefits:**
-
-- No API routes needed
-- Type-safe
-- Automatic serialization
-- Built-in error handling
-
-**Usage:**
-
-```tsx
-"use client";
-import { createJobAction } from "@/utils/actions";
-
-function Form() {
-  const handleSubmit = async (data) => {
-    const result = await createJobAction(data);
-    // Handle result
-  };
-}
-```
-
----
-
-### 4. Prisma ORM
-
-**Purpose:** Type-safe database access.
-
-**Key Features:**
-
-- TypeScript types generated from schema
-- Type-safe queries
-- Migrations
-- Database introspection
-
-**Usage:**
-
-```typescript
-// Query
-const jobs = await prisma.job.findMany({
-  where: { clerkId: userId },
-  orderBy: { createdAt: 'desc' },
-});
-
-// Create
-const job = await prisma.job.create({
-  data: { position: "Engineer", company: "Tech Corp", ... },
-});
-```
-
----
-
-### 5. Authentication with Clerk
-
-**Purpose:** User authentication and session management.
-
-**Features:**
-
-- Pre-built UI components
-- Social login options
-- Session management
-- User metadata
-
-**Usage:**
-
-```typescript
-import { auth } from "@clerk/nextjs/server";
-
-const { userId } = auth();
-if (!userId) redirect("/");
-```
-
----
-
-## 🔄 Reusable Components
-
-### How to Reuse Components in Other Projects
-
-#### 1. **Button Component**
-
-**Location:** `components/ui/button.tsx`
-
-**Reusability:**
-
-- Copy `components/ui/button.tsx`
-- Copy `lib/utils.ts` (for `cn` function)
-- Install dependencies: `class-variance-authority`, `clsx`, `tailwind-merge`
-
-**Usage:**
-
-```tsx
-import { Button } from '@/components/ui/button';
-
-<Button variant="default" size="sm">Click me</Button>
-<Button variant="outline" size="lg">Outline</Button>
-<Button variant="destructive">Delete</Button>
-```
-
----
-
-#### 2. **Form Components**
-
-**Location:** `components/ui/form.tsx`, `components/ui/input.tsx`
-
-**Reusability:**
-
-- Copy form components from `components/ui/`
-- Install: `react-hook-form`, `@hookform/resolvers`, `zod`
-- Use with React Hook Form and Zod
-
-**Usage:**
-
-```tsx
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-const schema = z.object({
-  name: z.string().min(2),
-});
-
-function MyForm() {
-  const form = useForm({
-    resolver: zodResolver(schema),
-  });
-
-  return (
-    <Form {...form}>
-      <FormField
-        control={form.control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Name</FormLabel>
-            <FormControl>
-              <Input {...field} />
-            </FormControl>
-          </FormItem>
-        )}
-      />
-    </Form>
-  );
-}
-```
-
----
-
-#### 3. **DownloadDropdown Component**
-
-**Reusability:**
-
-- Can be adapted for any data export needs
-- Change `getAllJobsForDownloadAction` to your data fetching function
-- Modify CSV/Excel generation logic for your data structure
-
-**Adaptation Example:**
-
-```tsx
-// Change data source
-const handleDownloadCSV = async () => {
-  const data = await getYourDataAction(); // Your action
-  downloadAsCSV(data);
-};
-
-// Modify CSV generation
-const downloadAsCSV = (data: YourDataType[]) => {
-  let csvContent = "Column1,Column2,Column3\n";
-  data.forEach((item) => {
-    csvContent += `${item.field1},${item.field2},${item.field3}\n`;
-  });
-  // ... rest of download logic
+// Simplified client usage (inside useJobsCacheSync)
+const source = new EventSource("/api/jobs/events");
+source.onmessage = (event) => {
+  const { jobId } = JSON.parse(event.data);
+  invalidateAllJobQueries(queryClient, jobId, { broadcast: false });
 };
 ```
 
+### `POST /api/monitoring`
+
+- **Purpose:** Sentry browser tunnel (same-origin proxy so ad blockers don't block error reports)
+- **Optional:** Only active when `NEXT_PUBLIC_SENTRY_DSN` is set
+
 ---
 
-#### 4. **StatsCard Component**
+## Server Actions (Backend)
 
-**Reusability:**
+All server-side data logic lives in `utils/actions.ts` with `"use server"`.
 
-- Generic card component for displaying statistics
-- Can be used for any numeric data display
+| Action                                          | Purpose                               |
+| ----------------------------------------------- | ------------------------------------- |
+| `createJobAction(values)`                       | Create a new job for current user     |
+| `getAllJobsAction({ search, jobStatus, page })` | Paginated, filtered job list          |
+| `getSingleJobAction(id)`                        | Single job (redirects if not found)   |
+| `updateJobAction(id, values)`                   | Update existing job                   |
+| `deleteJobAction(id)`                           | Delete job                            |
+| `getStatsAction()`                              | Pending / interview / declined counts |
+| `getChartsDataAction()`                         | Monthly application counts (6 months) |
+| `getAllJobsForDownloadAction()`                 | All jobs for CSV/Excel export         |
 
-**Usage:**
+**Security pattern** (every action):
 
-```tsx
-import StatsCard from '@/components/StatsCard';
+```typescript
+async function authenticateAndRedirect(): Promise<string> {
+  const { userId } = await auth();
+  if (!userId) redirect("/");
+  return userId;
+}
+```
 
-<StatsCard title="Total Users" value={150} />
-<StatsCard title="Active Sessions" value={45} />
+Prisma queries always include `clerkId: userId` so users cannot access each other's data.
+
+**Validation** (shared Zod schema):
+
+```typescript
+export const createAndEditJobSchema = z.object({
+  position: z.string().min(2),
+  company: z.string().min(2),
+  location: z.string().min(2),
+  status: z.nativeEnum(JobStatus),
+  mode: z.nativeEnum(JobMode),
+});
 ```
 
 ---
 
-## 💻 Code Examples
+## Authentication
 
-### Example 1: Creating a New Job
+### Clerk integration
 
-```tsx
-"use client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createJobAction } from "@/utils/actions";
-import { createAndEditJobSchema, CreateAndEditJobType } from "@/utils/types";
+- **Middleware:** `proxy.ts` protects `/dashboard`, `/stats`, `/user-profile`
+- **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards, no Clerk footer
+- **OAuth:** `AuthOAuthButtons` + `lib/auth/clerk-oauth.ts`
+- **Demo login:** `TryDemoAccountButton` + `useGuestSignIn` (test credentials in dev)
 
-function CreateJobForm() {
-  const form = useForm<CreateAndEditJobType>({
-    resolver: zodResolver(createAndEditJobSchema),
-  });
+### Post-auth redirect
 
-  const onSubmit = async (data: CreateAndEditJobType) => {
-    const result = await createJobAction(data);
-    if (result) {
-      // Success — dialog closes; list updates via optimistic mutation
-    } else {
-      // Error - show error message
-    }
-  };
+After sign-in or sign-up, users land on **`/dashboard`**.
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>{/* Form fields */}</form>
-    </Form>
-  );
+### Reusing auth in another project
+
+1. Install `@clerk/nextjs`
+2. Add `proxy.ts` (or `middleware.ts` on older Next.js) with `clerkMiddleware`
+3. Wrap app in `<ClerkProvider>` in root layout
+4. Call `auth()` in server actions to get `userId`
+
+---
+
+## State Management & Caching
+
+### React Query keys (`lib/query-keys.ts`)
+
+```typescript
+queryKeys.jobs.list(search, jobStatus, page); // ['jobs', search, status, page]
+queryKeys.stats.all; // ['stats']
+queryKeys.charts.all; // ['charts']
+queryKeys.job.detail(id); // ['job', id]
+```
+
+### Optimistic mutations (`hooks/useJobsMutation.ts`)
+
+- **Create:** prepends new job to list cache instantly
+- **Delete:** removes job from cache before server confirms
+- **Update:** patches job detail + list entries
+
+On settle, `invalidateAllJobQueries` ensures server truth wins.
+
+### Server cache (`lib/jobs/queries.ts`)
+
+Uses Next.js `unstable_cache` with per-user tags from `lib/cache-tags.ts`. Optional Redis layer in `lib/redis.ts` adds read-through caching for production.
+
+### Hydration-safe dates
+
+`lib/format-date.ts` formats job dates in **UTC** so SSR and client render identical text (prevents React hydration mismatch):
+
+```typescript
+export function formatJobDate(value: Date | string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(value));
 }
 ```
 
 ---
 
-### Example 2: Fetching Data with React Query
+## Components Guide
+
+### Layout & navigation
+
+| Component       | Path                                   | Reuse                                                    |
+| --------------- | -------------------------------------- | -------------------------------------------------------- |
+| `NavShell`      | `components/layout/nav-shell.tsx`      | Fixed glass navbar chrome — compose with any nav content |
+| `LandingNav`    | `components/layout/landing-nav.tsx`    | Marketing page nav + theme toggle                        |
+| `DashboardNav`  | `components/layout/dashboard-nav.tsx`  | Authenticated top nav with pills + avatar                |
+| `PageContainer` | `components/layout/page-container.tsx` | Consistent max-width page wrapper                        |
+| `GlassCard`     | `components/ui/glass-card.tsx`         | Frosted card variants (`neutral`, `sky`, `violet`)       |
+
+**Example — reuse NavShell:**
 
 ```tsx
-"use client";
-import { useQuery } from "@tanstack/react-query";
-import { getAllJobsAction } from "@/utils/actions";
+import { NavShell } from "@/components/layout/nav-shell";
 
-function JobsList() {
-  const searchParams = useSearchParams();
-  const search = searchParams.get("search") || "";
-  const status = searchParams.get("jobStatus") || "all";
-  const page = Number(searchParams.get("page")) || 1;
-
-  const { data, isPending, error } = useQuery({
-    queryKey: ["jobs", search, status, page],
-    queryFn: () => getAllJobsAction({ search, jobStatus: status, page }),
-  });
-
-  if (isPending) return <div>Loading...</div>;
-  if (error) return <div>Error loading jobs</div>;
-
+export function MyNav() {
   return (
-    <div>
-      {data?.jobs.map((job) => (
-        <JobCard key={job.id} job={job} />
-      ))}
-    </div>
+    <NavShell>
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+    </NavShell>
   );
 }
 ```
 
----
+### Dashboard components
 
-### Example 3: Server-Side Data Prefetching
+| Component                            | Purpose                                   |
+| ------------------------------------ | ----------------------------------------- |
+| `JobsList`                           | React Query job grid with search params   |
+| `JobCard`                            | Single job card with edit dialog + delete |
+| `SearchForm`                         | URL-synced search + status filter         |
+| `AddJobDialog`                       | Modal with `CreateJobForm`                |
+| `EditJobDialog`                      | Modal with `EditJobForm`                  |
+| `DownloadDropdown`                   | CSV/Excel export                          |
+| `StatsContainer` / `ChartsContainer` | Stats page widgets                        |
+
+### Forms
+
+Both forms accept a **`standalone`** prop:
+
+- `standalone={true}` — renders outer `GlassCard` (standalone page use)
+- `standalone={false}` — form only (inside dialog)
 
 ```tsx
-// app/(dashboard)/dashboard/page.tsx (Server Component)
-import {
-  QueryClient,
-  dehydrate,
-  HydrationBoundary,
-} from "@tanstack/react-query";
-import { getAllJobsAction } from "@/utils/actions";
-import JobsList from "@/components/JobsList";
+<CreateJobForm standalone={false} onSuccess={() => setOpen(false)} />
+```
 
-async function DashboardPage() {
+### Landing page
+
+| Component               | Purpose                                       |
+| ----------------------- | --------------------------------------------- |
+| `HeroVisualCarousel`    | SVG carousel with glow + LCP-optimized images |
+| `ScrollStagger`         | Viewport-triggered stagger animations         |
+| `ScrollParallaxSection` | Subtle parallax sections                      |
+| `TryDemoAccountButton`  | One-click demo sign-in                        |
+
+---
+
+## Custom Hooks
+
+| Hook                   | File                  | Purpose                              |
+| ---------------------- | --------------------- | ------------------------------------ |
+| `useCreateJobMutation` | `useJobsMutation.ts`  | Optimistic job creation              |
+| `useUpdateJobMutation` | `useJobsMutation.ts`  | Optimistic job update                |
+| `useDeleteJobMutation` | `useJobsMutation.ts`  | Optimistic job delete                |
+| `useJobsCacheSync`     | `useJobsCacheSync.ts` | SSE + BroadcastChannel invalidation  |
+| `useGuestSignIn`       | `useGuestSignIn.ts`   | Demo account login flow              |
+| `useSignUpForm`        | `useSignUpForm.ts`    | Multi-step sign-up with email verify |
+
+**Reuse `useJobsMutation` in another project:**
+
+1. Copy hook + `lib/invalidate-jobs.ts` + `lib/query-keys.ts`
+2. Point mutations at your server actions
+3. Wrap app in `QueryClientProvider`
+4. Optionally add `useJobsCacheSync` for multi-tab sync
+
+---
+
+## Code Examples
+
+### SSR prefetch + client query
+
+```tsx
+// app/(dashboard)/dashboard/page.tsx
+export const dynamic = "force-dynamic";
+
+async function DashboardPage({ searchParams }) {
+  const params = await searchParams;
   const queryClient = new QueryClient();
 
-  // Prefetch data on server
   await queryClient.prefetchQuery({
-    queryKey: ["jobs", "", "all", 1],
-    queryFn: () => getAllJobsAction({}),
+    queryKey: queryKeys.jobs.list(
+      params.search ?? "",
+      params.jobStatus ?? "all",
+      1,
+    ),
+    queryFn: () =>
+      getAllJobsAction({
+        search: params.search,
+        jobStatus: params.jobStatus,
+        page: 1,
+      }),
   });
 
   return (
@@ -1392,14 +675,32 @@ async function DashboardPage() {
 }
 ```
 
----
+```tsx
+// components/JobsList.tsx (client)
+"use client";
+const { data, isPending } = useQuery({
+  queryKey: queryKeys.jobs.list(search, jobStatus, pageNumber),
+  queryFn: () => getAllJobsAction({ search, jobStatus, page: pageNumber }),
+});
+```
 
-### Example 4: Protected Route with Middleware
+### Creating a job (optimistic)
+
+```tsx
+const createMutation = useCreateJobMutation();
+createMutation.mutate({
+  position: "Frontend Engineer",
+  company: "Acme Corp",
+  location: "Remote",
+  status: "pending",
+  mode: "full-time",
+});
+```
+
+### Protected middleware
 
 ```typescript
 // proxy.ts
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/stats",
@@ -1407,241 +708,87 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { pathname } = req.nextUrl;
-  if (pathname === "/add-job" || pathname.startsWith("/jobs")) {
+  if (pathname.startsWith("/jobs") || pathname === "/add-job") {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
-  if (isProtectedRoute(req)) {
-    await auth.protect();
-  }
+  if (isProtectedRoute(req)) await auth.protect();
 });
 ```
 
 ---
 
-### Example 5: Server Action with Authentication
+## Testing & Quality
 
-```typescript
-// utils/actions.ts
-"use server";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import prisma from "./db";
+Tests live in `lib/__tests__/` and `hooks/__tests__/`.
 
-export async function createJobAction(values: CreateAndEditJobType) {
-  // Authenticate user
-  const { userId } = auth();
-  if (!userId) {
-    redirect("/");
-  }
+| Test file                  | Covers                                 |
+| -------------------------- | -------------------------------------- |
+| `format-date.test.ts`      | UTC date formatting (hydration safety) |
+| `query-keys.test.ts`       | Query key shape                        |
+| `invalidate-jobs.test.ts`  | Client cache invalidation              |
+| `cache-tags.test.ts`       | Per-user cache tags                    |
+| `chart-optimistic.test.ts` | Optimistic chart patches               |
+| `useJobsMutation.test.ts`  | Optimistic list mutations              |
 
-  // Validate and create
-  const job = await prisma.job.create({
-    data: {
-      ...values,
-      clerkId: userId,
-    },
-  });
-
-  return job;
-}
-```
-
----
-
-## 🏷 Keywords
-
-**Frontend Technologies:**
-
-- Next.js, React, TypeScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Recharts, Lucide React
-
-**Backend & Database:**
-
-- Server Actions, Prisma, PostgreSQL, Clerk Authentication
-
-**State Management:**
-
-- TanStack Query (React Query), React Hooks
-
-**Development Tools:**
-
-- TypeScript, ESLint, Prisma Studio, React Query Devtools
-
-**Features:**
-
-- CRUD Operations, Search & Filter, Pagination, Data Export, Analytics, Dark Mode, Responsive Design
-
-**Architecture:**
-
-- Server-Side Rendering (SSR), Client-Side Rendering (CSR), Server Components, Client Components, Route Protection, Data Hydration
-
-**Concepts:**
-
-- Type Safety, Form Validation, Error Handling, Loading States, Optimistic Updates, Caching
-
----
-
-## 🎓 Learning Resources
-
-### Understanding the Tech Stack
-
-1. **Next.js 14 App Router**
-   - [Next.js Documentation](https://nextjs.org/docs)
-   - [App Router Guide](https://nextjs.org/docs/app)
-
-2. **React Query (TanStack Query)**
-   - [React Query Documentation](https://tanstack.com/query/latest)
-   - [React Query Tutorial](https://tanstack.com/query/latest/docs/react/overview)
-
-3. **Prisma ORM**
-   - [Prisma Documentation](https://www.prisma.io/docs)
-   - [Prisma Getting Started](https://www.prisma.io/docs/getting-started)
-
-4. **Clerk Authentication**
-   - [Clerk Documentation](https://clerk.com/docs)
-   - [Next.js Integration](https://clerk.com/docs/quickstarts/nextjs)
-
-5. **shadcn/ui**
-   - [shadcn/ui Documentation](https://ui.shadcn.com)
-   - [Component Examples](https://ui.shadcn.com/docs/components)
-
-6. **TypeScript**
-   - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-   - [TypeScript with React](https://react-typescript-cheatsheet.netlify.app/)
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-#### 1. Database Connection Error
-
-**Problem:** `Can't reach database server`
-
-**Solutions:**
-
-- Check DATABASE_URL in `.env.local`
-- Verify PostgreSQL is running
-- Check database credentials
-- Ensure database exists
-
-#### 2. Clerk Authentication Not Working
-
-**Problem:** Redirects not working or authentication failing
-
-**Solutions:**
-
-- Verify Clerk keys in `.env.local`
-- Check Clerk dashboard settings
-- Ensure middleware is properly configured
-- Clear browser cookies and try again
-
-#### 3. Prisma Client Not Generated
-
-**Problem:** `PrismaClient is not defined`
-
-**Solutions:**
+Run tests:
 
 ```bash
-npx prisma generate
+npm test
 ```
 
-#### 4. Build Errors
+---
 
-**Problem:** Type errors or build failures
+## Deployment
 
-**Solutions:**
+### Vercel (recommended)
 
-- Run `npm install` to ensure all dependencies are installed
-- Run `npx prisma generate` to generate Prisma Client
-- Check TypeScript errors: `npm run lint`
-- Clear `.next` folder and rebuild
+1. Push to GitHub
+2. Import project in [Vercel](https://vercel.com)
+3. Add environment variables from `.env.example`
+4. Deploy — `npm run build` runs automatically
 
-#### 5. Environment Variables Not Loading
+### Production checklist
 
-**Problem:** Variables are undefined
+- [ ] Clerk production keys (`pk_live_` / `sk_live_`)
+- [ ] PostgreSQL production database
+- [ ] `DATABASE_URL` + `DIRECT_URL` in Vercel env
+- [ ] Clerk redirect URLs include your production domain
+- [ ] Optional: Upstash Redis for multi-instance cache/SSE
+- [ ] Optional: Sentry DSN + auth token for source maps
 
-**Solutions:**
-
-- Ensure file is named `.env.local` (not `.env`)
-- Restart development server after adding variables
-- Check variable names match exactly (case-sensitive)
-- Verify `NEXT_PUBLIC_` prefix for client-side variables
+See also: `docs/VERCEL_PRODUCTION_GUARDRAILS.md`
 
 ---
 
-## 🚀 Deployment
+## Keywords
 
-### Vercel (Recommended)
-
-1. **Push to GitHub**
-
-   ```bash
-   git add .
-   git commit -m "Ready for deployment"
-   git push origin main
-   ```
-
-2. **Deploy to Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your GitHub repository
-   - Add environment variables
-   - Deploy
-
-3. **Environment Variables in Vercel**
-   - Go to Project Settings → Environment Variables
-   - Add all variables from `.env.local`
-   - Redeploy after adding variables
-
-### Other Platforms
-
-**Railway:**
-
-- Connect GitHub repository
-- Add environment variables
-- Railway auto-detects Next.js and deploys
-
-**Netlify:**
-
-- Connect GitHub repository
-- Build command: `npm run build`
-- Publish directory: `.next`
-- Add environment variables
+`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `Clerk authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `Redis Streams` · `Upstash` · `Job tracker` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
 
 ---
 
-## 📝 Conclusion
+## Conclusion
 
-Jobify is a comprehensive, production-ready job application tracker that demonstrates modern web development best practices. It showcases:
+Jobify demonstrates how a modern full-stack application combines **secure authentication**, **type-safe data access**, **performant caching**, and **polished UX** in a single Next.js codebase. Use it to:
 
-- **Full-Stack Development:** Server and client components working together
-- **Type Safety:** End-to-end TypeScript coverage
-- **Modern Patterns:** Server Actions, React Query, Prisma ORM
-- **User Experience:** Responsive design, loading states, error handling
-- **Security:** Authentication, user isolation, input validation
-- **Performance:** Server-side rendering, data prefetching, caching
+- Learn App Router patterns (SSR, Server Actions, Client Components)
+- Study production-ready cache and invalidation strategies
+- Fork as a starter for dashboards, CRMs, or any CRUD app
+- Teach full-stack concepts with real, runnable code
 
-This project serves as an excellent learning resource for:
-
-- Next.js 14 App Router
-- TypeScript in React
-- Database management with Prisma
-- Authentication with Clerk
-- State management with React Query
-- Form handling with React Hook Form
-- UI development with Tailwind CSS and shadcn/ui
+Explore `docs/PROJECT_WALKTHROUGH.md` for a shorter agent-oriented reference, and `docs/` for deeper guides on auth, styling, and integrations.
 
 ---
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT). Feel free to use, modify, and distribute the code as per the terms of the license.
 
 ## Happy Coding! 🎉
 
-Feel free to use this project repository and extend this project further!
+This is an **open-source project** - feel free to use, enhance, and extend this project further!
 
-If you have any questions or want to share your work, reach out via GitHub or my portfolio at [https://arnob-mahmud.vercel.app/](https://arnob-mahmud.vercel.app/).
+If you have any questions or want to share your work, reach out via GitHub or my portfolio at [https://www.arnobmahmud.com](https://www.arnobmahmud.com).
 
 **Enjoy building and learning!** 🚀
 
 Thank you! 😊
-
----

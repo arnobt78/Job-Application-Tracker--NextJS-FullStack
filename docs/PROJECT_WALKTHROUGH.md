@@ -100,6 +100,12 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - `next.config.ts` — static Cache-Control headers scoped to production ✓
 - lint/typecheck/test(20)/build green ✓
 
+## Docs (2026-06-12)
+
+- `README.md` — complete learner guide (badges, env, routes, hooks, examples) ✓
+- `.env.example` — Clerk fallback URLs → `/dashboard` ✓
+- Dead: `components/ui/scroll-reveal.tsx` (unused; ScrollStagger covers scroll UX) ✓
+
 ## Deferred
 
 NextAuth migration, E2E Playwright, Prisma schema cleanup, PostHog.
