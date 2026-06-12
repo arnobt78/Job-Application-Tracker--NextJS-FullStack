@@ -2,9 +2,9 @@
 
 import { AuthFormDivider } from "@/components/auth/AuthFormDivider";
 import { AuthOAuthButtons } from "@/components/auth/AuthOAuthButtons";
+import { TestAccountAvatar } from "@/components/auth/test-account-avatar";
 import Link from "next/link";
 import { useState } from "react";
-import { useGuestSignIn } from "@/hooks/useGuestSignIn";
 import {
   Select,
   SelectContent,
@@ -19,30 +19,46 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GlassCard } from "@/components/ui/glass-card";
 import {
   TEST_ACCOUNTS,
+  type TestAccount,
   type TestAccountRole,
 } from "@/lib/auth/test-credentials";
+import { Loader2 } from "lucide-react";
 
-interface SignInFormProps {
+export type SignInFormProps = {
   isGuest?: boolean;
-}
+  isReady: boolean;
+  isLoading: boolean;
+  selectedRole: TestAccountRole | "";
+  onAccountChange: (role: TestAccountRole | "") => void;
+  signInWithCredentials: (email: string, password: string) => Promise<boolean>;
+  guestAccount: TestAccount;
+};
 
-export default function SignInForm({ isGuest = false }: SignInFormProps) {
-  const { signInWithCredentials, isLoading, isReady } = useGuestSignIn();
-  const guestAccount = TEST_ACCOUNTS["guest-user"];
-  const [selectedRole, setSelectedRole] = useState(isGuest ? "guest-user" : "");
-  const [email, setEmail] = useState(isGuest ? guestAccount.email : "");
-  const [password, setPassword] = useState(
-    isGuest ? guestAccount.password : "",
+export default function SignInForm({
+  isGuest = false,
+  isReady,
+  isLoading,
+  selectedRole,
+  onAccountChange,
+  signInWithCredentials,
+  guestAccount,
+}: SignInFormProps) {
+  const [email, setEmail] = useState(() =>
+    isGuest ? guestAccount.email : ""
+  );
+  const [password, setPassword] = useState(() =>
+    isGuest ? guestAccount.password : ""
   );
 
   const handleRoleSelect = (value: string) => {
     if (value === "clear") {
-      setSelectedRole("");
+      onAccountChange("");
       setEmail("");
       setPassword("");
     } else {
-      setSelectedRole(value);
-      const account = TEST_ACCOUNTS[value as TestAccountRole];
+      const role = value as TestAccountRole;
+      onAccountChange(role);
+      const account = TEST_ACCOUNTS[role];
       if (account) {
         setEmail(account.email);
         setPassword(account.password);
@@ -52,9 +68,11 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isReady) return;
+    if (!isReady || isLoading) return;
     await signInWithCredentials(email, password);
   };
+
+  const guestUserAccount = TEST_ACCOUNTS["guest-user"];
 
   if (!isReady) {
     return (
@@ -114,17 +132,26 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
               key={`select-${selectedRole || "empty"}`}
               value={selectedRole || undefined}
               onValueChange={handleRoleSelect}
+              disabled={isLoading}
             >
-              <SelectTrigger id="guest-select" className="glass-input">
+              <SelectTrigger id="guest-select" className="glass-input h-auto min-h-10 py-2">
                 <SelectValue placeholder="Select Role Based Test Account" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="guest-user">
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium">Test User</span>
-                    <span className="text-xs text-muted-foreground">
-                      test@user.com
-                    </span>
+                  <div className="flex items-center gap-3 py-1">
+                    <TestAccountAvatar
+                      name={guestUserAccount.name}
+                      email={guestUserAccount.email}
+                      imageUrl={guestUserAccount.imageUrl}
+                      size="sm"
+                    />
+                    <div className="flex min-w-0 flex-col items-start">
+                      <span className="font-medium">{guestUserAccount.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {guestUserAccount.email}
+                      </span>
+                    </div>
                   </div>
                 </SelectItem>
                 {selectedRole && (
@@ -148,6 +175,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -160,16 +188,24 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
 
           <div className="cta-shine-wrap w-full rounded-2xl">
             <Button
               type="submit"
-              className="cta-shine-button w-full"
+              className="cta-shine-button w-full gap-2"
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </div>
         </form>

@@ -2,13 +2,15 @@
 
 import { useSignIn } from '@clerk/nextjs';
 import { useCallback, useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import {
+  notifyAuthError,
+  scheduleWelcomeAfterRedirect,
+} from '@/lib/notifications/app-toast';
 import { TEST_ACCOUNTS } from '@/lib/auth/test-credentials';
 
 /** Clerk credential sign-in — shared by SignInForm and TryDemoAccountButton */
 export function useGuestSignIn() {
   const { isLoaded, signIn, setActive } = useSignIn();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const signInWithCredentials = useCallback(
@@ -21,26 +23,24 @@ export function useGuestSignIn() {
 
         if (result.status === 'complete') {
           await setActive({ session: result.createdSessionId });
+          const account = Object.values(TEST_ACCOUNTS).find(
+            (a) => a.email === identifier
+          );
+          scheduleWelcomeAfterRedirect(account?.name ?? identifier.split('@')[0] ?? 'there');
           window.location.href = '/dashboard';
           return true;
         }
 
-        toast({
-          variant: 'destructive',
-          title: 'Could not complete sign in.',
-        });
+        notifyAuthError('Could not complete sign in. Please try again.');
+        setIsLoading(false);
         return false;
       } catch {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid email or password.',
-        });
-        return false;
-      } finally {
+        notifyAuthError('Invalid email or password.');
         setIsLoading(false);
+        return false;
       }
     },
-    [isLoaded, signIn, setActive, toast]
+    [isLoaded, signIn, setActive]
   );
 
   const signInAsGuest = useCallback(async () => {

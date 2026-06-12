@@ -26,7 +26,8 @@ export default function SignUpForm() {
     if (!isReady) return;
 
     if (pendingVerification) {
-      await verifyEmail(code.trim());
+      const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      await verifyEmail(code.trim(), displayName);
       return;
     }
 

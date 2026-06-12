@@ -9,7 +9,14 @@ import {
 import type { CreateAndEditJobType, JobType } from '@/utils/types';
 import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
-import { useToast } from '@/components/ui/use-toast';
+import {
+  notifyJobCreateError,
+  notifyJobCreated,
+  notifyJobDeleted,
+  notifyJobDeleteError,
+  notifyJobUpdated,
+  notifyJobUpdateError,
+} from '@/lib/notifications/app-toast';
 import type { JobsListResult, StatsResult } from '@/lib/jobs/queries';
 import {
   bumpChartMonth,
@@ -40,7 +47,6 @@ function bumpStat(stats: StatsCache, status: string, delta: number): StatsCache 
 /** Create job — optimistic prepend to lists + stats + charts bump */
 export function useCreateJobMutation() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
@@ -91,7 +97,7 @@ export function useCreateJobMutation() {
 
       return { previousJobs, previousStats, previousCharts };
     },
-    onError: (_err, _values, context) => {
+    onError: (_err, values, context) => {
       context?.previousJobs.forEach(([key, data]) => {
         queryClient.setQueryData(key, data);
       });
@@ -101,11 +107,11 @@ export function useCreateJobMutation() {
       if (context?.previousCharts !== undefined) {
         queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
       }
-      toast({ description: 'There was an error creating the job.' });
+      notifyJobCreateError(values.position, values.company);
     },
     onSuccess: (data) => {
       if (!data) return;
-      toast({ description: 'Job created successfully.' });
+      notifyJobCreated(data);
       invalidateAfterMutation(data.id);
       // No navigation — Add Job is a dialog on /dashboard; caller handles close via mutate() onSuccess callback
     },
@@ -120,7 +126,6 @@ export function useCreateJobMutation() {
 /** Update job — optimistic patch in detail + list + stats (charts unchanged unless date edits) */
 export function useUpdateJobMutation(jobId: string) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
@@ -172,7 +177,7 @@ export function useUpdateJobMutation(jobId: string) {
 
       return { previousJobs, previousDetail, previousStats };
     },
-    onError: (_err, _values, context) => {
+    onError: (_err, values, context) => {
       context?.previousJobs.forEach(([key, data]) => {
         queryClient.setQueryData(key, data);
       });
@@ -185,11 +190,11 @@ export function useUpdateJobMutation(jobId: string) {
       if (context?.previousStats !== undefined) {
         queryClient.setQueryData(queryKeys.stats.all, context.previousStats);
       }
-      toast({ description: 'There was an error updating the job.' });
+      notifyJobUpdateError(values.position, values.company);
     },
     onSuccess: (result) => {
       if (!result) return;
-      toast({ description: 'Job updated successfully.' });
+      notifyJobUpdated(result);
       invalidateAfterMutation(jobId);
     },
     onSettled: () => {
@@ -206,7 +211,6 @@ export function useUpdateJobMutation(jobId: string) {
 /** Delete job — optimistic remove from lists + stats + charts decrement */
 export function useDeleteJobMutation(jobId: string) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
@@ -228,12 +232,14 @@ export function useDeleteJobMutation(jobId: string) {
 
       let removedStatus: string | undefined;
       let removedCreatedAt: Date | undefined;
+      let removedJob: JobType | undefined;
 
       queryClient.setQueriesData<JobsListCache>(
         { queryKey: queryKeys.jobs.all },
         (old) => {
           if (!old) return old;
           const removed = old.jobs.find((j) => j.id === jobId);
+          removedJob = removed;
           removedStatus = removed?.status;
           removedCreatedAt = removed?.createdAt
             ? new Date(removed.createdAt)
@@ -258,7 +264,7 @@ export function useDeleteJobMutation(jobId: string) {
         );
       }
 
-      return { previousJobs, previousStats, previousCharts };
+      return { previousJobs, previousStats, previousCharts, removedJob };
     },
     onError: (_err, _vars, context) => {
       context?.previousJobs.forEach(([key, data]) => {
@@ -270,12 +276,16 @@ export function useDeleteJobMutation(jobId: string) {
       if (context?.previousCharts !== undefined) {
         queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
       }
-      toast({ description: 'There was an error deleting the job.' });
+      const removed = context?.removedJob;
+      notifyJobDeleteError(
+        removed?.position ?? 'Application',
+        removed?.company ?? 'Unknown company'
+      );
     },
     onSuccess: (data) => {
       if (!data) return;
       invalidateAfterMutation(jobId);
-      toast({ description: 'Job removed successfully.' });
+      notifyJobDeleted(data);
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });

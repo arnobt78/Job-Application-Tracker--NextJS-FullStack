@@ -3,8 +3,13 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { AuthToastListener } from '@/components/auth/auth-toast-listener';
 import { useJobsCacheSync } from '@/hooks/useJobsCacheSync';
 import { useSentryUser } from '@/hooks/useSentryUser';
+
+function AuthToastSyncListener() {
+  return <AuthToastListener />;
+}
 
 function JobsCacheSyncListener() {
   useJobsCacheSync();
@@ -35,6 +40,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <JobsCacheSyncListener />
+      <AuthToastSyncListener />
       <SentryUserListener />
       {children}
       <ReactQueryDevtools initialIsOpen={false} />

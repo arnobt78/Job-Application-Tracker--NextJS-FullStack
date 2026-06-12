@@ -53,6 +53,8 @@ CRUD mutation path:
 | `components/ui/scroll-parallax-section.tsx` | Section parallax (translate only) |
 | `components/pages/` | `HomePage`, `SignInPageContent`, `SignUpPageContent`, `EditJobDialogPage` |
 | `lib/sentry/config.ts` | Sentry init + tunnel |
+| `lib/notifications/app-toast.ts` | Sonner helpers (CRUD + auth) |
+| `components/auth/auth-toast-listener.tsx` | Welcome/goodbye after redirect |
 | `proxy.ts` | Clerk auth gate |
 
 ## Invalidation coverage
@@ -111,6 +113,12 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - `README.md` — complete learner guide (badges, env, routes, hooks, examples) ✓
 - `.env.example` — Clerk fallback URLs → `/dashboard` ✓
 - Dead: `components/ui/scroll-reveal.tsx` (unused; ScrollStagger covers scroll UX) ✓
+
+## Auth + Sonner (2026-06-13)
+
+- Sign-in left panel: test account avatar + name/email; spinner while signing in ✓
+- Sonner bottom-left; dynamic CRUD + welcome/goodbye toasts ✓
+- `AuthToastListener` + sessionStorage flags for post-redirect auth toasts ✓
 
 ## Deferred
 

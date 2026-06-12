@@ -2,7 +2,11 @@
 
 import { useSignUp } from '@clerk/nextjs';
 import { useCallback, useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
+import {
+  notifySignUpError,
+  scheduleWelcomeAfterRedirect,
+} from '@/lib/notifications/app-toast';
 
 type SignUpFields = {
   firstName: string;
@@ -14,14 +18,14 @@ type SignUpFields = {
 /** Clerk credential sign-up + optional email verification step */
 export function useSignUpForm() {
   const { isLoaded, signUp, setActive } = useSignUp();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
 
   const completeSession = useCallback(
-    async (sessionId: string | null) => {
+    async (sessionId: string | null, displayName: string) => {
       if (!sessionId || !setActive) return false;
       await setActive({ session: sessionId });
+      scheduleWelcomeAfterRedirect(displayName);
       window.location.href = '/dashboard';
       return true;
     },
@@ -33,6 +37,7 @@ export function useSignUpForm() {
       if (!isLoaded || !signUp) return false;
 
       setIsLoading(true);
+      const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
       try {
         const result = await signUp.create({
           firstName: firstName.trim(),
@@ -42,32 +47,27 @@ export function useSignUpForm() {
         });
 
         if (result.status === 'complete') {
-          return completeSession(result.createdSessionId);
+          return completeSession(result.createdSessionId, displayName);
         }
 
         await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
         setPendingVerification(true);
-        toast({
-          title: 'Check your email',
+        toast.info('Check your email', {
           description: 'Enter the verification code we sent you.',
         });
         return true;
       } catch {
-        toast({
-          variant: 'destructive',
-          title: 'Could not create account.',
-          description: 'Please check your details and try again.',
-        });
+        notifySignUpError('Please check your details and try again.');
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [completeSession, isLoaded, signUp, toast]
+    [completeSession, isLoaded, signUp]
   );
 
   const verifyEmail = useCallback(
-    async (code: string) => {
+    async (code: string, displayName: string) => {
       if (!isLoaded || !signUp) return false;
 
       setIsLoading(true);
@@ -75,26 +75,19 @@ export function useSignUpForm() {
         const result = await signUp.attemptEmailAddressVerification({ code });
 
         if (result.status === 'complete') {
-          return completeSession(result.createdSessionId);
+          return completeSession(result.createdSessionId, displayName);
         }
 
-        toast({
-          variant: 'destructive',
-          title: 'Invalid verification code.',
-        });
+        notifySignUpError('Invalid verification code.');
         return false;
       } catch {
-        toast({
-          variant: 'destructive',
-          title: 'Verification failed.',
-          description: 'Check the code and try again.',
-        });
+        notifySignUpError('Check the code and try again.');
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [completeSession, isLoaded, signUp, toast]
+    [completeSession, isLoaded, signUp]
   );
 
   return {

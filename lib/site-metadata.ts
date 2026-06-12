@@ -90,10 +90,11 @@ export const siteMetadata: Metadata = {
     },
   },
 
+  // Tab icon — app/favicon.ico (Next.js file convention + explicit metadata)
   icons: {
-    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/logo.svg", type: "image/svg+xml" }],
-    shortcut: "/logo.svg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 
   openGraph: {

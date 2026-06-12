@@ -51,6 +51,17 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 - CTA shine: `cta-shine-wrap--delay-a/b` on Get Started / Try Demo
 - `TryDemoAccountButton` + `useGuestSignIn`
 
+## UI — Auth sign-in
+- `SignInPageShell` — shared state: left preview + right form
+- `AuthSignInLeadingPanel` — marketing / test account card / signing-in spinner
+- `TestAccountAvatar` + `lib/auth/avatar-url.ts` — Clerk URL or robohash; optional `imageUrl` on test account
+
+## Notifications (Sonner)
+- `components/ui/sonner.tsx` — bottom-left Toaster
+- `lib/notifications/app-toast.ts` — dynamic title + subtitle helpers
+- `AuthToastListener` in `query-provider` — welcome/goodbye via sessionStorage
+- Radix toast removed
+
 ## UI — Shared
 - `PageContainer`, `SplitContentLayout`, `GlassCard`, `glass-input`, `app-shell`, `RippleButton`
 - Scroll: `ScrollStagger`, `lib/ui/scroll-motion.ts`

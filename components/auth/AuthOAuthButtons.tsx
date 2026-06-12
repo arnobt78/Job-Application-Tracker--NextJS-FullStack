@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { CLERK_OAUTH_REDIRECT } from '@/lib/auth/clerk-oauth';
+import { setWelcomePending } from '@/lib/notifications/auth-toast-storage';
 import { OAuthStrategy } from '@clerk/types';
 import { useSignIn, useSignUp } from '@clerk/nextjs';
 
@@ -19,6 +20,7 @@ export function AuthOAuthButtons({ mode, disabled }: AuthOAuthButtonsProps) {
   const handleOAuth = (strategy: OAuthStrategy) => {
     const auth = mode === 'sign-in' ? signIn : signUp;
     if (!auth) return;
+    setWelcomePending();
     auth.authenticateWithRedirect({
       strategy,
       ...CLERK_OAUTH_REDIRECT,

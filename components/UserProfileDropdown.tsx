@@ -15,21 +15,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Settings, LogOut } from 'lucide-react';
 import { SafeImage } from '@/components/ui/safe-image';
-
-function getAvatarUrl(
-  imageUrl: string | undefined,
-  name: string | undefined,
-  email: string | undefined,
-  avatarError: boolean,
-  hasImage: boolean
-): string | null {
-  if (avatarError || !imageUrl || imageUrl.trim() === '') {
-    if (hasImage) return null;
-    const seed = name || email || 'user';
-    return `https://robohash.org/${encodeURIComponent(seed)}.png?size=80x80`;
-  }
-  return imageUrl;
-}
+import { resolveAvatarUrl } from '@/lib/auth/avatar-url';
+import {
+  scheduleGoodbyeAfterRedirect,
+} from '@/lib/notifications/app-toast';
 
 export default function UserProfileDropdown() {
   const { user } = useUser();
@@ -42,19 +31,24 @@ export default function UserProfileDropdown() {
     'User';
   const email = user?.primaryEmailAddress?.emailAddress || '';
   const hasImage = user?.hasImage ?? false;
-  const avatarUrl = getAvatarUrl(
-    user?.imageUrl,
+  const avatarUrl = resolveAvatarUrl({
+    imageUrl: user?.imageUrl,
     name,
     email,
+    hasImage,
     avatarError,
-    hasImage
-  );
+  });
+
+  const handleSignOut = () => {
+    scheduleGoodbyeAfterRedirect(name);
+    signOut({ redirectUrl: '/' });
+  };
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
-          <div className="h-9 w-9 rounded-full border-2 overflow-hidden">
+          <div className="h-9 w-9 overflow-hidden rounded-full border-2">
             {avatarUrl ? (
               <SafeImage
                 src={avatarUrl}
@@ -77,15 +71,12 @@ export default function UserProfileDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/user-profile" className="flex items-center cursor-pointer">
+          <Link href="/user-profile" className="flex cursor-pointer items-center">
             <Settings className="mr-2 h-4 w-4" />
             Manage account
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => signOut({ redirectUrl: '/' })}
-          className="cursor-pointer"
-        >
+        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />
           Sign out
         </DropdownMenuItem>

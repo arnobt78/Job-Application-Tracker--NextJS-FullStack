@@ -6,6 +6,8 @@ export interface TestAccount {
   name: string;
   email: string;
   password: string;
+  /** Optional Clerk img.clerk.com URL — robohash used when omitted */
+  imageUrl?: string;
 }
 
 export const TEST_ACCOUNTS: Record<TestAccountRole, TestAccount> = {
