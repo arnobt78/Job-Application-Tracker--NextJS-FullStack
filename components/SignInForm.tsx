@@ -31,7 +31,9 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
   const guestAccount = TEST_ACCOUNTS["guest-user"];
   const [selectedRole, setSelectedRole] = useState(isGuest ? "guest-user" : "");
   const [email, setEmail] = useState(isGuest ? guestAccount.email : "");
-  const [password, setPassword] = useState(isGuest ? guestAccount.password : "");
+  const [password, setPassword] = useState(
+    isGuest ? guestAccount.password : "",
+  );
 
   const handleRoleSelect = (value: string) => {
     if (value === "clear") {
@@ -65,17 +67,17 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
             </div>
             <div className="space-y-2">
               <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
             </div>
             <div className="space-y-2">
               <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-10 w-full rounded-md" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
             </div>
-            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
           </div>
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
@@ -86,8 +88,8 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
             </div>
           </div>
           <div className="space-y-4 mb-4">
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
           </div>
           <div className="flex justify-center">
             <Skeleton className="h-4 w-48" />
@@ -161,7 +163,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
             />
           </div>
 
-          <div className="cta-shine-wrap w-full rounded-md">
+          <div className="cta-shine-wrap w-full rounded-2xl">
             <Button
               type="submit"
               className="cta-shine-button w-full"

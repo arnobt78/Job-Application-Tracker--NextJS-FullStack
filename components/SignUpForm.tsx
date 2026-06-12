@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { AuthFormDivider } from '@/components/auth/AuthFormDivider';
-import { AuthOAuthButtons } from '@/components/auth/AuthOAuthButtons';
-import { Button } from '@/components/ui/button';
-import { GlassCard } from '@/components/ui/glass-card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useSignUpForm } from '@/hooks/useSignUpForm';
-import Link from 'next/link';
-import { useState } from 'react';
+import { AuthFormDivider } from "@/components/auth/AuthFormDivider";
+import { AuthOAuthButtons } from "@/components/auth/AuthOAuthButtons";
+import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useSignUpForm } from "@/hooks/useSignUpForm";
+import Link from "next/link";
+import { useState } from "react";
 
 /** Custom sign-up card — same sky GlassCard + layout as SignInForm (no Clerk footer) */
 export default function SignUpForm() {
   const { register, verifyEmail, isLoading, isReady, pendingVerification } =
     useSignUpForm();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,18 +42,18 @@ export default function SignUpForm() {
             <Skeleton className="h-4 w-72" />
           </div>
           <div className="mb-4 grid grid-cols-2 gap-4">
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
           </div>
           <div className="space-y-4">
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
           </div>
           <AuthFormDivider />
           <div className="space-y-4 mb-4">
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
+            <Skeleton className="h-10 w-full rounded-2xl" />
           </div>
           <Skeleton className="mx-auto h-4 w-56" />
         </GlassCard>
@@ -66,12 +66,12 @@ export default function SignUpForm() {
       <GlassCard variant="sky">
         <div className="mb-6 space-y-2">
           <h1 className="text-2xl font-bold text-foreground">
-            {pendingVerification ? 'Verify your email' : 'Create your account'}
+            {pendingVerification ? "Verify your email" : "Create your account"}
           </h1>
           <p className="text-muted-foreground">
             {pendingVerification
-              ? 'Enter the code sent to your inbox to finish signing up.'
-              : 'Fill in your details to get started.'}
+              ? "Enter the code sent to your inbox to finish signing up."
+              : "Fill in your details to get started."}
           </p>
         </div>
 
@@ -144,17 +144,17 @@ export default function SignUpForm() {
             </>
           )}
 
-          <div className="cta-shine-wrap w-full rounded-md">
+          <div className="cta-shine-wrap w-full rounded-2xl">
             <Button
               type="submit"
               className="cta-shine-button w-full"
               disabled={isLoading}
             >
               {isLoading
-                ? 'Please wait...'
+                ? "Please wait..."
                 : pendingVerification
-                  ? 'Verify & continue'
-                  : 'Create account'}
+                  ? "Verify & continue"
+                  : "Create account"}
             </Button>
           </div>
         </form>
@@ -167,7 +167,7 @@ export default function SignUpForm() {
         )}
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link
             href="/sign-in"
             className="font-medium text-primary hover:underline"

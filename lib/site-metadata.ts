@@ -17,13 +17,13 @@ export const DEFAULT_TITLE =
 export const TITLE_TEMPLATE = "%s | Jobify — Job Application Tracker";
 
 export const DEFAULT_DESCRIPTION =
-  "Jobify is a full-featured, production-ready job application tracking app for job seekers. Built with Next.js 16, TypeScript, Clerk authentication, Prisma ORM, React Query, and PostgreSQL. Track applications, analyze progress with charts and statistics, export data as CSV or Excel, and manage your job search with a beautiful, responsive dashboard.";
+  "Jobify is a full-featured, production-ready job application tracking app for job seekers. Built with Next.js 16, TypeScript, Clerk authentication, Prisma ORM, React Query, and PostgreSQL. Track applications, analyze progress with charts and statistics, export data as CSV or Excel, and manage your job track with a beautiful, responsive dashboard.";
 
 export const SEO_KEYWORDS = [
   "Jobify",
   "job tracker",
   "job application tracker",
-  "job search tracker",
+  "job track tracker",
   "job application management",
   "career tracker",
   "job hunt organizer",
@@ -125,7 +125,7 @@ export const siteMetadata: Metadata = {
     card: "summary_large_image",
     title: "Jobify — Job Tracking Application",
     description:
-      "Track job applications, analyze your progress, and export your job search data. Built with Next.js, TypeScript, Clerk, Prisma, and PostgreSQL.",
+      "Track job applications, analyze your progress, and export your job track data. Built with Next.js, TypeScript, Clerk, Prisma, and PostgreSQL.",
     creator: "@arnob_t78",
     site: "@arnob_t78",
     images: [
@@ -143,7 +143,7 @@ export const siteMetadata: Metadata = {
   other: {
     author: AUTHOR.name,
     contact: AUTHOR.email,
-    "designer": AUTHOR.name,
+    designer: AUTHOR.name,
   },
 };
 

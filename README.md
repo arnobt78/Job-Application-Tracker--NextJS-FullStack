@@ -1,6 +1,6 @@
 # Job Tracking Application - Next.js, TypeScript, Clerk, Prisma, React Query, PostgreSQL FullStack Project
 
-A full-featured, production-ready job tracking application built with Next.js 14+, TypeScript, Clerk, Prisma, React Query, PostgreSQL, and modern web technologies. Jobify helps job seekers efficiently organize, track, and analyze their job search journey with a beautiful, responsive dashboard.
+A full-featured, production-ready job tracking application built with Next.js 14+, TypeScript, Clerk, Prisma, React Query, PostgreSQL, and modern web technologies. Jobify helps job seekers efficiently organize, track, and analyze their job track journey with a beautiful, responsive dashboard.
 
 - **Live-Demo:** [https://jobify-tracker.vercel.app/](https://jobify-tracker.vercel.app/)
 
@@ -278,7 +278,6 @@ DIRECT_URL="postgresql://username:password@localhost:5432/jobify_db?schema=publi
 **Option A: Local PostgreSQL**
 
 1. **Install PostgreSQL**
-
    - Download from [https://www.postgresql.org/download/](https://www.postgresql.org/download/)
    - Or use Homebrew: `brew install postgresql@14`
 
@@ -311,14 +310,12 @@ DIRECT_URL="postgresql://username:password@localhost:5432/jobify_db?schema=publi
 **Option B: Cloud Database (Recommended for Production)**
 
 1. **Supabase** (Free tier available)
-
    - Visit [https://supabase.com](https://supabase.com)
    - Create a new project
    - Go to **Settings** → **Database**
    - Copy the **Connection string** (URI format)
 
 2. **Neon** (Free tier available)
-
    - Visit [https://neon.tech](https://neon.tech)
    - Create a new project
    - Copy the connection string from dashboard
@@ -1496,27 +1493,22 @@ export async function createJobAction(values: CreateAndEditJobType) {
 ### Understanding the Tech Stack
 
 1. **Next.js 14 App Router**
-
    - [Next.js Documentation](https://nextjs.org/docs)
    - [App Router Guide](https://nextjs.org/docs/app)
 
 2. **React Query (TanStack Query)**
-
    - [React Query Documentation](https://tanstack.com/query/latest)
    - [React Query Tutorial](https://tanstack.com/query/latest/docs/react/overview)
 
 3. **Prisma ORM**
-
    - [Prisma Documentation](https://www.prisma.io/docs)
    - [Prisma Getting Started](https://www.prisma.io/docs/getting-started)
 
 4. **Clerk Authentication**
-
    - [Clerk Documentation](https://clerk.com/docs)
    - [Next.js Integration](https://clerk.com/docs/quickstarts/nextjs)
 
 5. **shadcn/ui**
-
    - [shadcn/ui Documentation](https://ui.shadcn.com)
    - [Component Examples](https://ui.shadcn.com/docs/components)
 
@@ -1599,7 +1591,6 @@ npx prisma generate
    ```
 
 2. **Deploy to Vercel**
-
    - Go to [vercel.com](https://vercel.com)
    - Import your GitHub repository
    - Add environment variables
