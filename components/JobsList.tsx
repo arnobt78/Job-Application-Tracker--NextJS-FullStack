@@ -26,24 +26,9 @@ function JobsList() {
   const count = data?.count || 0;
   const page = data?.page || 0;
   const totalPages = data?.totalPages || 0;
+  const { heightClass, roundedClass } = UI_DIMENSIONS.jobCard;
 
-  if (isPending) {
-    const { heightClass, roundedClass } = UI_DIMENSIONS.jobCard;
-    const { heightClass: titleH, widthClass: titleW } = UI_DIMENSIONS.jobsListTitle;
-
-    return (
-      <div className="space-y-4">
-        <Skeleton className={`${titleH} ${titleW}`} />
-        <div className="grid w-full gap-8 sm:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className={`${heightClass} w-full ${roundedClass}`} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (jobs.length < 1) {
+  if (!isPending && jobs.length < 1) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
         <Briefcase className="h-10 w-10" />
@@ -54,23 +39,36 @@ function JobsList() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-semibold capitalize flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold capitalize">
             <Briefcase className="h-5 w-5 text-primary" />
-            {count} jobs found
+            {isPending ? (
+              <Skeleton className="h-7 w-36" />
+            ) : (
+              `${count} jobs found`
+            )}
           </h2>
-          <DownloadDropdown />
+          {!isPending && <DownloadDropdown />}
         </div>
-        {totalPages > 1 ? (
+        {!isPending && totalPages > 1 ? (
           <ComplexButtonContainer currentPage={page} totalPages={totalPages} />
         ) : null}
       </div>
-      <div className="grid md:grid-cols-2 gap-8">
-        {jobs.map((job) => (
-          <JobCard key={job.id} job={job} />
-        ))}
-      </div>
+
+      {isPending ? (
+        <div className="grid w-full gap-8 sm:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className={`${heightClass} w-full ${roundedClass}`} />
+          ))}
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-8">
+          {jobs.map((job) => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+      )}
     </>
   );
 }

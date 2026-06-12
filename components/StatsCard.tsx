@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import { Skeleton } from './ui/skeleton';
 import { GlassCard, type GlassVariant } from '@/components/ui/glass-card';
-import { UI_DIMENSIONS } from '@/lib/ui/dimensions';
 import { Clock, CalendarCheck, XCircle } from 'lucide-react';
 
 type StatsCardsProps = {
   title: string;
   value: number;
   variant?: GlassVariant;
+  isLoading?: boolean;
 };
 
 const statIcons: Record<string, ReactNode> = {
@@ -16,7 +16,7 @@ const statIcons: Record<string, ReactNode> = {
   'jobs declined': <XCircle className="h-6 w-6 text-rose-400" />,
 };
 
-function StatsCards({ title, value, variant = 'sky' }: StatsCardsProps) {
+function StatsCards({ title, value, variant = 'sky', isLoading = false }: StatsCardsProps) {
   return (
     <GlassCard variant={variant}>
       <div className="flex items-start justify-between gap-4">
@@ -25,16 +25,15 @@ function StatsCards({ title, value, variant = 'sky' }: StatsCardsProps) {
             {statIcons[title]}
             {title}
           </p>
-          <p className="mt-3 text-3xl font-semibold">{value}</p>
+          {isLoading ? (
+            <Skeleton className="mt-3 h-9 w-16" />
+          ) : (
+            <p className="mt-3 text-3xl font-semibold">{value}</p>
+          )}
         </div>
       </div>
     </GlassCard>
   );
-}
-
-export function StatsLoadingCard() {
-  const { heightClass, roundedClass } = UI_DIMENSIONS.statsCard;
-  return <Skeleton className={`${heightClass} w-full ${roundedClass}`} />;
 }
 
 export default StatsCards;

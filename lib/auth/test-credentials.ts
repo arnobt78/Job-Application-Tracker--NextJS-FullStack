@@ -15,6 +15,8 @@ export const TEST_ACCOUNTS: Record<TestAccountRole, TestAccount> = {
     name: 'Test User',
     email: 'test@user.com',
     password: '12345678',
+    imageUrl:
+      'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvdXBsb2FkZWQvaW1nXzNGMm53QjBwOWpQdDBxSVQzVW9vOFJPMFF5RyJ9',
   },
 };
 

@@ -9,13 +9,13 @@ type TestAccountAvatarProps = {
   name: string;
   email: string;
   imageUrl?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
   /** Preload image into browser cache when URL resolves */
   preload?: boolean;
 };
 
-const SIZE_PX = { sm: 32, md: 48, lg: 80 } as const;
+const SIZE_PX = { xs: 24, sm: 32, md: 48, lg: 80 } as const;
 
 /** Circle avatar for test accounts — Clerk URL or robohash fallback */
 export function TestAccountAvatar({

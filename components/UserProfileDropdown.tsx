@@ -39,9 +39,13 @@ export default function UserProfileDropdown() {
     avatarError,
   });
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     scheduleGoodbyeAfterRedirect(name);
-    signOut({ redirectUrl: '/' });
+    try {
+      await signOut({ redirectUrl: '/' });
+    } catch {
+      window.location.assign('/');
+    }
   };
 
   return (

@@ -2,7 +2,7 @@
 
 import { AuthFormDivider } from "@/components/auth/AuthFormDivider";
 import { AuthOAuthButtons } from "@/components/auth/AuthOAuthButtons";
-import { TestAccountAvatar } from "@/components/auth/test-account-avatar";
+import { TestAccountSelectRow } from "@/components/auth/test-account-select-row";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -134,25 +134,28 @@ export default function SignInForm({
               onValueChange={handleRoleSelect}
               disabled={isLoading}
             >
-              <SelectTrigger id="guest-select" className="glass-input h-auto min-h-10 py-2">
-                <SelectValue placeholder="Select Role Based Test Account" />
+              <SelectTrigger
+                id="guest-select"
+                className="glass-input h-10 gap-2 py-0 [&>span]:line-clamp-none"
+              >
+                {selectedRole ? (
+                  <TestAccountSelectRow
+                    name={guestUserAccount.name}
+                    email={guestUserAccount.email}
+                    imageUrl={guestUserAccount.imageUrl}
+                    className="flex-1 pr-1"
+                  />
+                ) : (
+                  <SelectValue placeholder="Select Role Based Test Account" />
+                )}
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="guest-user">
-                  <div className="flex items-center gap-3 py-1">
-                    <TestAccountAvatar
-                      name={guestUserAccount.name}
-                      email={guestUserAccount.email}
-                      imageUrl={guestUserAccount.imageUrl}
-                      size="sm"
-                    />
-                    <div className="flex min-w-0 flex-col items-start">
-                      <span className="font-medium">{guestUserAccount.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {guestUserAccount.email}
-                      </span>
-                    </div>
-                  </div>
+                <SelectItem value="guest-user" className="py-2">
+                  <TestAccountSelectRow
+                    name={guestUserAccount.name}
+                    email={guestUserAccount.email}
+                    imageUrl={guestUserAccount.imageUrl}
+                  />
                 </SelectItem>
                 {selectedRole && (
                   <SelectItem

@@ -7,118 +7,71 @@ Full-stack job application tracker. Demo: <https://jobify-tracker.vercel.app>
 ## Architecture
 
 ```bash
-page.tsx (SSR prefetch, force-dynamic)
+page.tsx (force-dynamic, non-blocking void prefetchQuery)
+  → static shell (headings, labels) in page.tsx
+  → HydrationBoundary → client useQuery (data-slot skeletons while pending)
   → lib/jobs/queries.ts (unstable_cache + tags + Redis optional)
   → utils/actions.ts (server actions, Clerk auth)
-  → components/* (client: forms, lists, charts)
 
 CRUD mutation path:
   useJobsMutation (optimistic) → server action → invalidateUserJobCaches
     → revalidateTag + revalidatePath + publishInvalidation
-    → React Query invalidate + BroadcastChannel + SSE (Redis Streams)
+    → invalidateAllJobQueries + BroadcastChannel + SSE (Redis Streams)
 ```
 
 ## Key directories
 
 | Path | Role |
-| ---- | ---- |
-| `app/(dashboard)/dashboard/` | Main jobs route (`/dashboard` + `/dashboard/[id]`) |
-| `app/(dashboard)/stats/` | Stats page |
-| `app/api/jobs/events/` | SSE invalidation stream (Clerk auth) |
+| --- | --- |
+| `app/(dashboard)/dashboard/` | Jobs route (`/dashboard`, `/dashboard/[id]`) |
+| `app/(dashboard)/stats/` | Stats — headings in `page.tsx`, data in containers |
+| `app/api/jobs/events/` | SSE invalidation (Clerk auth) |
 | `lib/jobs/queries.ts` | Cached Prisma reads |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
-| `lib/jobs/chart-optimistic.ts` | Optimistic charts cache patches |
-| `lib/redis.ts` | Read-through cache + Redis Streams |
-| `hooks/useJobsMutation.ts` | Optimistic CRUD hooks (no router.push on create) |
-| `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE sync |
-| `hooks/useGuestSignIn.ts` | Demo/test Clerk sign-in |
-| `hooks/useSignUpForm.ts` | Custom sign-up + email verify |
-| `lib/auth/clerk-oauth.ts` | Shared OAuth redirect URLs |
-| `lib/format-date.ts` | UTC-stable job date formatting (hydration-safe) |
-| `components/auth/` | `AuthOAuthButtons`, `AuthFormDivider` |
-| `components/SignInForm.tsx` | Custom sign-in card |
-| `components/SignUpForm.tsx` | Custom sign-up card (no Clerk footer) |
-| `components/layout/nav-shell.tsx` | Shared glass h-14 fixed nav chrome (server component) |
-| `components/layout/landing-nav.tsx` | Landing nav (NavShell + ThemeToggle + section links) |
-| `components/layout/auth-nav.tsx` | Auth nav (NavShell + ThemeToggle + Return Home) |
-| `components/layout/dashboard-nav.tsx` | Dashboard nav (NavShell + pills + avatar; replaces Navbar+Sidebar) |
-| `components/dialogs/add-job-dialog.tsx` | Sky glassmorphic Add Job dialog |
-| `components/dialogs/edit-job-dialog.tsx` | Violet glassmorphic Edit Job dialog (trigger or defaultOpen) |
-| `components/layout/` | `HeroVisualCarousel`, `SiteFooter`, `PageContainer`, etc. |
-| `lib/ui/landing-sections.ts` | Landing scroll anchors |
-| `lib/ui/marketing-copy.ts` | Landing + auth copy |
-| `lib/ui/marketing-assets.ts` | Hero carousel slides + glow colors |
-| `lib/ui/scroll-motion.ts` | Shared scroll-reveal tokens |
-| `components/ui/scroll-stagger.tsx` | Viewport stagger groups |
-| `components/ui/scroll-parallax-section.tsx` | Section parallax (translate only) |
-| `components/pages/` | `HomePage`, `SignInPageContent`, `SignUpPageContent`, `EditJobDialogPage` |
-| `lib/sentry/config.ts` | Sentry init + tunnel |
-| `lib/notifications/app-toast.ts` | Sonner helpers (CRUD + auth) |
-| `components/auth/auth-toast-listener.tsx` | Welcome/goodbye after redirect |
+| `hooks/useJobsMutation.ts` | Optimistic CRUD + Sonner toasts |
+| `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE |
+| `hooks/useGuestSignIn.ts` | Demo/test sign-in |
+| `lib/notifications/` | Sonner helpers + localStorage auth toast flags |
+| `components/auth/auth-toast-listener.tsx` | Route-gated welcome/goodbye |
+| `components/auth/test-account-select-row.tsx` | Inline test-account select row |
+| `components/layout/dashboard-nav.tsx` | Top nav (Dashboard/Stats + avatar) |
+| `components/dialogs/` | Add/Edit job glass dialogs |
 | `proxy.ts` | Clerk auth gate |
+
+## Instant shell pattern (2026-06-13)
+
+- **No `loading.tsx`** anywhere — removed stats route loading file
+- **Non-blocking prefetch**: `void queryClient.prefetchQuery(...)` — shell ships first
+- **Static in `page.tsx`**: Statistics title, Monthly Applications heading, My Jobs header
+- **Data-slot skeletons only**: stat numbers, chart area, job count, job cards
+- `StatsCard` — titles always visible; `isLoading` pulses value
+- `ChartsContainer` — chart body only; heading in `page.tsx`
+- `JobsList` — count row + card grid skeletons; not full-page replacement
 
 ## Invalidation coverage
 
 Every CRUD invalidates jobs/stats/charts/job(id). Optimistic patches on create/delete. Cross-tab: BroadcastChannel. Cross-instance: Redis Streams SSE.
 
-Auth/landing UI does **not** alter jobs cache paths.
+## Auth + Sonner (2026-06-13)
+
+- Test account: Clerk `imageUrl` in `test-credentials.ts`; `TestAccountSelectRow` h-10 inline layout
+- Sign-in loading: button spinner only (left panel stays preview/marketing)
+- Sonner bottom-right; CRUD + welcome/goodbye toasts
+- `AuthToastListener`: localStorage flags; welcome on `/dashboard` after paint; goodbye on `/`; single logout redirect (no flash)
 
 ## Env vars
 
 - Clerk, DATABASE_URL — required
-- UPSTASH_REDIS_* — optional (Redis cache + SSE)
-- NEXT_PUBLIC_SENTRY_DSN (+ org/project/token) — optional
+- UPSTASH*REDIS*\* — optional (Redis cache + SSE)
+- NEXT_PUBLIC_SENTRY_DSN — optional
 
 ## Verification
 
 ```bash
-npm audit && npm run lint && npm run typecheck && npm run test && npm run build
+npm run lint && npm run typecheck && npm run test && npm run build
 ```
 
-## UI audit (2026-06-11)
-
-- Landing: carousel, nav, parallax, stagger, footer chrome ✓
-- Auth: custom SignUpForm matches SignInForm ✓
-- SSR/cache/SSE/invalidation unchanged ✓
-- typecheck/lint/test(15)/build green ✓
-
-## UI overhaul (2026-06-12)
-
-- NavShell pattern: server chrome + 3 client navs (Landing/Auth/Dashboard) ✓
-- ThemeToggle on all pages (landing, sign-in, sign-up, dashboard) ✓
-- Sidebar removed; DashboardNav top-nav with pills + mobile hamburger ✓
-- Add Job + Edit Job converted to glassmorphic Shadcn Dialog ✓
-- /dashboard route (renamed from /jobs); /dashboard/[id] for direct URL edit ✓
-- Middleware redirects /add-job + legacy /jobs/* → /dashboard ✓
-- Hero carousel: active slide uses `loading="eager"` (LCP) ✓
-- Legacy `app/(dashboard)/jobs/` and `add-job/` removed; middleware redirects old URLs ✓
-- SafeImage: no `loading` prop when `priority` (fixes hero hydration mismatch) ✓
-- FormComponents: required prop + asterisk; Vitest tests passing ✓
-
-## Hydration fix (2026-06-12)
-
-- `lib/format-date.ts` — UTC-stable `formatJobDate()` in `JobCard` (React #418) ✓
-- Dead code removed: Navbar, Sidebar, LinksDropdown, `utils/links.tsx`, unused job-5..7.jpg ✓
-- `next.config.ts` — static Cache-Control headers scoped to production ✓
-- lint/typecheck/test(20)/build green ✓
-
-## Prisma cleanup (2026-06-12)
-
-- Removed unused `Task`, `Tour`, `Token` models + migration ✓
-- Added Job indexes for list/filter/sort queries ✓
-- DB: `db push` (dev) · baseline `migrate resolve --applied 20260612120000_remove_unused_models` on existing prod DB ✓
-
-## Docs (2026-06-12)
-
-- `README.md` — complete learner guide (badges, env, routes, hooks, examples) ✓
-- `.env.example` — Clerk fallback URLs → `/dashboard` ✓
-- Dead: `components/ui/scroll-reveal.tsx` (unused; ScrollStagger covers scroll UX) ✓
-
-## Auth + Sonner (2026-06-13)
-
-- Sign-in left panel: test account avatar + name/email; spinner while signing in ✓
-- Sonner bottom-left; dynamic CRUD + welcome/goodbye toasts ✓
-- `AuthToastListener` + sessionStorage flags for post-redirect auth toasts ✓
+20 tests · no Python backend · lint/typecheck/build green (2026-06-13)
 
 ## Deferred
 

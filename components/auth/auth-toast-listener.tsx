@@ -9,8 +9,12 @@ import {
   consumePendingWelcomeName,
   consumeWelcomePending,
   firstNameFrom,
+  hasPendingGoodbyeName,
+  hasPendingWelcomeName,
+  hasWelcomePending,
 } from '@/lib/notifications/auth-toast-storage';
 import { useUser } from '@clerk/nextjs';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 function displayNameFromUser(user: NonNullable<ReturnType<typeof useUser>['user']>): string {
@@ -22,45 +26,75 @@ function displayNameFromUser(user: NonNullable<ReturnType<typeof useUser>['user'
   );
 }
 
-/** Fires welcome/goodbye Sonner toasts after auth redirects (sessionStorage flags) */
+/** Defer toast until the destination route has painted */
+function afterDestinationPaint(callback: () => void): void {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(callback);
+  });
+}
+
+/** Route-gated welcome/goodbye Sonner toasts after auth redirects */
 export function AuthToastListener(): null {
+  const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
-  const prevSignedIn = useRef<boolean | null>(null);
+  const welcomeShown = useRef(false);
+  const goodbyeShown = useRef(false);
 
   useEffect(() => {
-    const welcome = consumePendingWelcomeName();
-    if (welcome) {
-      notifyWelcome(welcome);
-      return;
-    }
-    const goodbye = consumePendingGoodbyeName();
-    if (goodbye) {
-      notifyGoodbye(goodbye);
-    }
-  }, []);
+    if (!pathname.startsWith('/dashboard')) return;
+    if (welcomeShown.current) return;
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user) return;
+    const credentialPending = hasPendingWelcomeName();
+    const oauthPending = hasWelcomePending();
 
-    if (consumeWelcomePending()) {
-      notifyWelcome(firstNameFrom(displayNameFromUser(user)));
-    }
-  }, [isLoaded, isSignedIn, user]);
+    if (!credentialPending && !oauthPending) return;
 
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    if (prevSignedIn.current === null) {
-      prevSignedIn.current = isSignedIn;
+    // OAuth welcome needs Clerk user loaded for display name
+    if (oauthPending && !credentialPending && (!isLoaded || !isSignedIn || !user)) {
       return;
     }
 
-    if (!prevSignedIn.current && isSignedIn && user) {
-      notifyWelcome(firstNameFrom(displayNameFromUser(user)));
-    }
+    afterDestinationPaint(() => {
+      if (welcomeShown.current) return;
 
-    prevSignedIn.current = isSignedIn;
-  }, [isLoaded, isSignedIn, user]);
+      const pendingName = consumePendingWelcomeName();
+      if (pendingName) {
+        welcomeShown.current = true;
+        notifyWelcome(pendingName);
+        return;
+      }
+
+      if (isLoaded && isSignedIn && user && consumeWelcomePending()) {
+        welcomeShown.current = true;
+        notifyWelcome(firstNameFrom(displayNameFromUser(user)));
+      }
+    });
+  }, [pathname, isLoaded, isSignedIn, user]);
+
+  useEffect(() => {
+    if (pathname !== '/') return;
+    if (goodbyeShown.current) return;
+    if (!hasPendingGoodbyeName()) return;
+
+    let cancelled = false;
+    // Brief delay so Clerk redirect + landing paint finish before toast (avoids flash/reload swallowing it)
+    const timer = window.setTimeout(() => {
+      afterDestinationPaint(() => {
+        if (cancelled || goodbyeShown.current) return;
+
+        const goodbye = consumePendingGoodbyeName();
+        if (!goodbye) return;
+
+        goodbyeShown.current = true;
+        notifyGoodbye(goodbye);
+      });
+    }, 150);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [pathname]);
 
   return null;
 }

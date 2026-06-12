@@ -6,6 +6,7 @@
 
 - **Dropdown**: "Login with Test Account" on sign-in page
 - **Test User**: test@user.com / 12345678
+- **Avatar**: optional `imageUrl` in `lib/auth/test-credentials.ts` (Clerk Dashboard → Users → profile image URL)
 - **URL**: `/sign-in?guest=true` to pre-fill credentials
 
 ### Layout
@@ -128,7 +129,7 @@ NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/add-job
 ```bash
 npm install @clerk/nextjs next-themes
 # If using shadcn/ui (recommended):
-npx shadcn-ui@latest add dropdown-menu button input label select skeleton toast separator
+npx shadcn@latest add dropdown-menu button input label select skeleton sonner separator
 ```
 
 Required packages:
@@ -144,7 +145,7 @@ Required packages:
 ```
 app/
 ├── layout.tsx                 # ClerkProvider, html/body
-├── providers.tsx              # ThemeProvider, QueryClient, Toaster
+├── providers.tsx              # ThemeProvider, Sonner, QueryProvider
 ├── page.tsx                   # Landing (logo, CTA)
 ├── sign-in/
 │   ├── [[...sign-in]]/
@@ -172,7 +173,7 @@ components/
     ├── select.tsx
     ├── skeleton.tsx
     ├── separator.tsx
-    └── toast.tsx
+    └── sonner.tsx
 
 middleware.ts                 # clerkMiddleware + protected routes
 ```
@@ -209,7 +210,8 @@ export default function RootLayout({
 ```tsx
 "use client";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
+import { QueryProvider } from "@/providers/query-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -220,7 +222,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <Toaster />
-      {children}
+      <QueryProvider>{children}</QueryProvider>
     </ThemeProvider>
   );
 }
@@ -319,13 +321,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+import { notifyAuthError } from "@/lib/notifications/app-toast";
 
 const testAccounts = {
   "guest-user": {
     name: "Test User",
     email: "test@user.com",
     password: "12345678",
+    imageUrl: "https://img.clerk.com/...", // Clerk Dashboard → Users → profile image
   },
 };
 
@@ -335,7 +338,6 @@ interface SignInFormProps {
 
 export default function SignInForm({ isGuest = false }: SignInFormProps) {
   const { isLoaded, signIn, setActive } = useSignIn();
-  const { toast } = useToast();
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -391,10 +393,7 @@ export default function SignInForm({ isGuest = false }: SignInFormProps) {
         return;
       }
     } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Invalid email or password.",
-      });
+      notifyAuthError("Invalid email or password.");
     } finally {
       setIsLoading(false);
     }

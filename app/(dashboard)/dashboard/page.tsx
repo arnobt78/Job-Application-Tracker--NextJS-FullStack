@@ -36,9 +36,9 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
   const jobStatus = params.jobStatus ?? 'all';
   const pageNumber = Number(params.page) || 1;
 
-  // SSR prefetch — hydrates client useQuery with no loading state on first paint
+  // Non-blocking prefetch — shell renders immediately; client hydrates or refetches
   const queryClient = new QueryClient();
-  await queryClient.prefetchQuery({
+  void queryClient.prefetchQuery({
     queryKey: queryKeys.jobs.list(search, jobStatus, pageNumber),
     queryFn: () => getAllJobsAction({ search, jobStatus, page: pageNumber }),
   });

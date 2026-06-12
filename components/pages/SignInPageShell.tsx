@@ -43,10 +43,7 @@ export function SignInPageShell({ isGuest = false }: SignInPageShellProps) {
           reverseOnMobile
           minHeight="min-h-[calc(100vh-14rem)]"
           leading={
-            <AuthSignInLeadingPanel
-              selectedAccount={selectedAccount}
-              isLoading={isLoading}
-            />
+            <AuthSignInLeadingPanel selectedAccount={selectedAccount} />
           }
           trailing={
             <div className="mx-auto w-full max-w-md md:mx-0 md:max-w-none">
