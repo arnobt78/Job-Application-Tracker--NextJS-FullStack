@@ -25,12 +25,17 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: securityHeaders,
-      },
-      {
+    const routes: { source: string; headers: { key: string; value: string }[] }[] =
+      [
+        {
+          source: '/:path*',
+          headers: securityHeaders,
+        },
+      ];
+
+    // Immutable static cache — production only (avoids Next dev warning)
+    if (process.env.NODE_ENV === 'production') {
+      routes.push({
         source: '/_next/static/(.*)',
         headers: [
           {
@@ -38,8 +43,10 @@ const nextConfig: NextConfig = {
             value: 'public, max-age=31536000, immutable',
           },
         ],
-      },
-    ];
+      });
+    }
+
+    return routes;
   },
 };
 

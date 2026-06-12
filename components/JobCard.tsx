@@ -1,3 +1,6 @@
+'use client';
+
+import { formatJobDate } from '@/lib/format-date';
 import { JobType } from '@/utils/types';
 import { MapPin, Briefcase, CalendarDays, RadioTower } from 'lucide-react';
 import { Separator } from './ui/separator';
@@ -6,8 +9,9 @@ import DeleteJobButton from './DeleteJobButton';
 import { GlassCard } from '@/components/ui/glass-card';
 import { EditJobDialog } from '@/components/dialogs/edit-job-dialog';
 
+/** Job card — UTC-stable date formatting avoids hydration mismatch (React #418) */
 function JobCard({ job }: { job: JobType }) {
-  const date = new Date(job.createdAt).toLocaleDateString();
+  const date = formatJobDate(job.createdAt);
 
   return (
     <GlassCard variant="neutral" className="overflow-hidden p-0">
@@ -26,7 +30,6 @@ function JobCard({ job }: { job: JobType }) {
         <JobInfo icon={<RadioTower className="h-4 w-4" />} text={job.status} />
       </div>
       <div className="flex gap-4 p-6 pt-0">
-        {/* EditJobDialog with showTrigger renders its own Edit button — replaces RippleLink nav */}
         <EditJobDialog jobId={job.id} showTrigger />
         <DeleteJobButton id={job.id} />
       </div>

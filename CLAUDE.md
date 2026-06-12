@@ -29,12 +29,15 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 - `/add-job` and `/jobs/*` — middleware-redirected to `/dashboard`
 - Legacy `app/(dashboard)/jobs/` kept (per no-delete rule); superseded by `app/(dashboard)/dashboard/`
 
+## Hydration
+- `lib/format-date.ts` — `formatJobDate()` UTC + en-US; used in `JobCard` (fixes React #418)
+
 ## UI — Nav (3-variant NavShell pattern)
 - `NavShell` (`components/layout/nav-shell.tsx`) — shared glass h-14 fixed chrome (server component)
 - `LandingNav` — NavShell + ThemeToggle + section links + Create Account
 - `AuthNav` (`components/layout/auth-nav.tsx`) — NavShell + ThemeToggle + Return Home
 - `DashboardNav` (`components/layout/dashboard-nav.tsx`) — NavShell + nav pills (Dashboard/Stats) + ThemeToggle + avatar
-- Legacy `Navbar.tsx`, `Sidebar.tsx`, `LinksDropdown.tsx` — superseded, kept but not imported
+- Removed: `Navbar`, `Sidebar`, `LinksDropdown`, `utils/links.tsx` (superseded by DashboardNav)
 
 ## UI — Dialogs
 - `components/dialogs/add-job-dialog.tsx` — sky GlassCard Dialog, trigger button
@@ -58,7 +61,10 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 `lib/site-metadata.ts` — SITE_URL `https://jobify-tracker.vercel.app`
 
 ## Verify
-`npm audit && npm run lint && npm run typecheck && npm run test && npm run build`
+`npm audit && npm run lint && npm run typecheck && npm run test && npm run build` (20 tests)
+
+## Config
+- `next.config.ts` — Cache-Control immutable on `/_next/static` **production only** (avoids dev warning)
 
 ## Do not
 - Use `cacheComponents: true` (conflicts with `force-dynamic`)

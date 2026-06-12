@@ -35,6 +35,7 @@ CRUD mutation path:
 | `hooks/useGuestSignIn.ts` | Demo/test Clerk sign-in |
 | `hooks/useSignUpForm.ts` | Custom sign-up + email verify |
 | `lib/auth/clerk-oauth.ts` | Shared OAuth redirect URLs |
+| `lib/format-date.ts` | UTC-stable job date formatting (hydration-safe) |
 | `components/auth/` | `AuthOAuthButtons`, `AuthFormDivider` |
 | `components/SignInForm.tsx` | Custom sign-in card |
 | `components/SignUpForm.tsx` | Custom sign-up card (no Clerk footer) |
@@ -88,8 +89,14 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - Add Job + Edit Job converted to glassmorphic Shadcn Dialog ✓
 - /dashboard route (renamed from /jobs); /dashboard/[id] for direct URL edit ✓
 - Middleware redirects /add-job + /jobs/* → /dashboard ✓
-- FormComponents: required prop + asterisk; 4 Vitest tests passing ✓
-- typecheck/lint/test(4)/build green ✓
+- FormComponents: required prop + asterisk; Vitest tests passing ✓
+
+## Hydration fix (2026-06-12)
+
+- `lib/format-date.ts` — UTC-stable `formatJobDate()` in `JobCard` (React #418) ✓
+- Dead code removed: Navbar, Sidebar, LinksDropdown, `utils/links.tsx`, unused job-5..7.jpg ✓
+- `next.config.ts` — static Cache-Control headers scoped to production ✓
+- lint/typecheck/test(20)/build green ✓
 
 ## Deferred
 
