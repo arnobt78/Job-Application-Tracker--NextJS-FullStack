@@ -22,13 +22,15 @@ CRUD mutation path:
 
 | Path | Role |
 | ---- | ---- |
-| `app/(dashboard)/` | Jobs, stats, add-job, edit job pages |
+| `app/(dashboard)/dashboard/` | Main jobs route (`/dashboard` + `/dashboard/[id]`) |
+| `app/(dashboard)/jobs/` | Legacy route — middleware redirects to `/dashboard` (kept per no-delete rule) |
+| `app/(dashboard)/stats/` | Stats page — unchanged |
 | `app/api/jobs/events/` | SSE invalidation stream (Clerk auth) |
 | `lib/jobs/queries.ts` | Cached Prisma reads |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
 | `lib/jobs/chart-optimistic.ts` | Optimistic charts cache patches |
 | `lib/redis.ts` | Read-through cache + Redis Streams |
-| `hooks/useJobsMutation.ts` | Optimistic CRUD hooks |
+| `hooks/useJobsMutation.ts` | Optimistic CRUD hooks (no router.push on create) |
 | `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE sync |
 | `hooks/useGuestSignIn.ts` | Demo/test Clerk sign-in |
 | `hooks/useSignUpForm.ts` | Custom sign-up + email verify |
@@ -36,15 +38,20 @@ CRUD mutation path:
 | `components/auth/` | `AuthOAuthButtons`, `AuthFormDivider` |
 | `components/SignInForm.tsx` | Custom sign-in card |
 | `components/SignUpForm.tsx` | Custom sign-up card (no Clerk footer) |
-| `components/layout/` | `LandingNav`, `HeroVisualCarousel`, `SiteFooter`, `PageContainer` |
-| `lib/ui/landing-chrome.ts` | Navbar/footer h-14 shell |
+| `components/layout/nav-shell.tsx` | Shared glass h-14 fixed nav chrome (server component) |
+| `components/layout/landing-nav.tsx` | Landing nav (NavShell + ThemeToggle + section links) |
+| `components/layout/auth-nav.tsx` | Auth nav (NavShell + ThemeToggle + Return Home) |
+| `components/layout/dashboard-nav.tsx` | Dashboard nav (NavShell + pills + avatar; replaces Navbar+Sidebar) |
+| `components/dialogs/add-job-dialog.tsx` | Sky glassmorphic Add Job dialog |
+| `components/dialogs/edit-job-dialog.tsx` | Violet glassmorphic Edit Job dialog (trigger or defaultOpen) |
+| `components/layout/` | `HeroVisualCarousel`, `SiteFooter`, `PageContainer`, etc. |
 | `lib/ui/landing-sections.ts` | Landing scroll anchors |
 | `lib/ui/marketing-copy.ts` | Landing + auth copy |
 | `lib/ui/marketing-assets.ts` | Hero carousel slides + glow colors |
 | `lib/ui/scroll-motion.ts` | Shared scroll-reveal tokens |
 | `components/ui/scroll-stagger.tsx` | Viewport stagger groups |
 | `components/ui/scroll-parallax-section.tsx` | Section parallax (translate only) |
-| `components/pages/` | `HomePage`, `SignInPageContent`, `SignUpPageContent` |
+| `components/pages/` | `HomePage`, `SignInPageContent`, `SignUpPageContent`, `EditJobDialogPage` |
 | `lib/sentry/config.ts` | Sentry init + tunnel |
 | `proxy.ts` | Clerk auth gate |
 
@@ -72,6 +79,17 @@ npm audit && npm run lint && npm run typecheck && npm run test && npm run build
 - Auth: custom SignUpForm matches SignInForm ✓
 - SSR/cache/SSE/invalidation unchanged ✓
 - typecheck/lint/test(15)/build green ✓
+
+## UI overhaul (2026-06-12)
+
+- NavShell pattern: server chrome + 3 client navs (Landing/Auth/Dashboard) ✓
+- ThemeToggle on all pages (landing, sign-in, sign-up, dashboard) ✓
+- Sidebar removed; DashboardNav top-nav with pills + mobile hamburger ✓
+- Add Job + Edit Job converted to glassmorphic Shadcn Dialog ✓
+- /dashboard route (renamed from /jobs); /dashboard/[id] for direct URL edit ✓
+- Middleware redirects /add-job + /jobs/* → /dashboard ✓
+- FormComponents: required prop + asterisk; 4 Vitest tests passing ✓
+- typecheck/lint/test(4)/build green ✓
 
 ## Deferred
 
