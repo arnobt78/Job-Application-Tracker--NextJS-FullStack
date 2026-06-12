@@ -1,54 +1,53 @@
-# Agile V State — Jobify (18-nextjs-jobify-app)
-
-<!-- Living document — write-through on every stage transition -->
+# Agile V State — Jobify
 
 | Field | Value |
 |---|---|
-| **Project** | Jobify — Job Application Tracker |
 | **Cycle** | C1 |
-| **Stage** | 1 — Requirements (Baseline Capture) |
-| **Status** | `BASELINE_CAPTURED` — Retroactive REQ inventory from existing codebase |
-| **Pipeline Position** | Left V (Decomposition) → Next: Stage 2 Validation |
-| **Last Updated** | 2026-06-11T10:25:44Z |
-| **Agent Session** | AQMS Bootstrap — C1 Initialize |
-| **Git Baseline** | Pending capture at Human Gate 1 |
-| **Active Skills** | agile-v-core, agile-v-pipeline, agile-v-lifecycle, agile-v-compliance, agile-v-quality-gates, agile-v-product-owner + 18 agent skills (see SKILLS_REGISTRY.md) |
+| **Stage** | 1 Baseline + **UI Track** (parallel extension) |
+| **Status** | `ACTIVE` — Infinity Loop engaged |
+| **Pipeline** | Left V done (baseline) → UI synthesis in progress → Gate 1 pending |
+| **Last Updated** | 2026-06-12T12:58:22Z |
+| **Git HEAD** | `f660eb9` (main, pushed) |
+| **Active Checkpoint** | INT-0002 `ui-resume-20260612` |
+| **Skills** | 24 registered — load `agile-v-core` FIRST every prompt |
 
-## Current Focus
+## Session Protocol (every prompt)
 
-Retroactive **C1 baseline** for an existing production-ready Next.js app. All shipped features mapped to REQ-0001…REQ-0018. Extension backlog (REQ-0019+) queued for future cycles.
+1. READ `STATE.md` + `CHECKPOINTS.md`
+2. MAP task → `REQ-XXXX` (halt if none)
+3. SCOPE-V: Specify → Constrain → Orchestrate → Prove → Evolve → Verify
+4. LOG `TRACE_LOG.md` + `DECISION_LOG.md` write-through
+5. USE `build-agent-js` for code · do NOT self-verify
+6. STOP at Human Gates (INT-0001 Gate 1, Gate 2)
 
-## Stage Progress
+## Current Focus — BL-0006 (UI Polish)
 
-| Stage | Name | Status | Gate |
+| # | Task | REQ | Status |
 |---|---|---|---|
-| 1 | Requirements | ✅ Baseline captured | — |
-| 2 | Validation | ⏳ Pending | Auto → Human-Verify |
-| 3 | Synthesis | ⏸️ Deferred (baseline exists) | — |
-| 4 | Verification | ⏸️ Pending baseline audit | — |
-| 5 | Acceptance | ⏸️ Pending | Human Gate 2 |
+| 1 | Manual QA landing/auth/mobile | REQ-0013, REQ-0023 | Pending |
+| 2 | Auth shell parity (SignIn/SignUp) | REQ-0023 | Pending |
+| 3 | Revert `"job track"` typos (unstaged) | — | Pending |
+| 4 | Dashboard `Navbar.tsx` chrome (BL-0001) | REQ-0019 | Backlog |
 
-## Human Gates
+### Shipped (`f660eb9`)
 
-| Gate | Status | Scope |
+Landing carousel/nav/stagger/parallax/footer · custom `SignUpForm` · SSR/cache/SSE untouched
+
+### Do not break
+
+`force-dynamic` · `invalidate-jobs*` · `useJobsMutation` · `useJobsCacheSync` · `/api/jobs/events`
+
+## Gates
+
+| Gate | Status | Token |
 |---|---|---|
-| Gate 1 | `PENDING` | Approve C1 baseline REQs (REQ-0001…REQ-0018) |
-| Gate 2 | `NOT_REACHED` | Release / cycle acceptance |
+| Gate 1 | PENDING | `c1-gate1-baseline-20260611` |
+| Gate 2 | NOT_REACHED | — |
 
-## Pending Checkpoint
+## Agent Memory
 
-None — see CHECKPOINTS.md
+`CLAUDE.md` (local) · `docs/PROJECT_WALKTHROUGH.md`
 
-## Resume Protocol
+## Verify Before Done
 
-1. Read this file + CHECKPOINTS.md (if any `PENDING`)
-2. Load REQUIREMENTS.md for active REQ-IDs
-3. Load current stage files under `phases/XX-*/`
-4. Honor POLICY.yaml + append TRACE_LOG.md spans
-5. Apply SCOPE-V + quality gates on every task
-
-## File Integrity (Gate Snapshots)
-
-| Gate | Commit Hash | Timestamp |
-|---|---|---|
-| Bootstrap | — | 2026-06-11T10:25:44Z |
+`npm run lint && npm run typecheck && npm test && npm run build`

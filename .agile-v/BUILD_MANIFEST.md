@@ -34,6 +34,16 @@
 | ART-0028 | C1 | Config | `package.json` | REQ-0017 | Baseline |
 | ART-0029 | C1 | Docs | `README.md` | REQ-0017 | Baseline |
 | ART-0030 | C1 | Scripts | `scripts/*.ts`, `prisma/seed.ts` | REQ-0018 | Baseline |
+| ART-0031 | C1 | Page Shell | `components/pages/HomePage.tsx` | REQ-0013 | `f660eb9` |
+| ART-0032 | C1 | Layout | `components/layout/landing-nav.tsx` | REQ-0013 | `f660eb9` |
+| ART-0033 | C1 | Layout | `components/layout/hero-visual-carousel.tsx` | REQ-0013 | `f660eb9` |
+| ART-0034 | C1 | Component | `components/SignUpForm.tsx` | REQ-0001, REQ-0023 | `f660eb9` |
+| ART-0035 | C1 | Component | `components/SignInForm.tsx` | REQ-0001, REQ-0023 | Baseline+ |
+| ART-0036 | C1 | Hook | `hooks/useSignUpForm.ts` | REQ-0023 | `f660eb9` |
+| ART-0037 | C1 | Auth UI | `components/auth/AuthOAuthButtons.tsx` | REQ-0023 | `f660eb9` |
+| ART-0038 | C1 | UI | `components/ui/scroll-stagger.tsx` | REQ-0013 | `f660eb9` |
+| ART-0039 | C1 | UI | `lib/ui/landing-chrome.ts` | REQ-0013 | `f660eb9` |
+| ART-0040 | C1 | Observability | `lib/sentry/config.ts`, `app/api/monitoring/` | REQ-0022 | Prior commit |
 
 ## Build Commands
 

@@ -2,13 +2,30 @@
 
 <!-- BL-XXXX → REQ-XXXX | Maintained by agile-v-product-owner -->
 
-## BL-0001: Clerk Auth UI Enhancements
+## BL-0005: Landing + Auth Marketing UI ✅ (partial)
+
+**Type:** Feature · **Priority:** HIGH · **REQ:** REQ-0013, REQ-0001  
+**Shipped:** `f660eb9` — carousel, nav, stagger, custom SignUpForm  
+**Status:** `DONE` (QA + polish deferred)  
+**Remaining:** mobile nav links, auth page shell parity, manual QA pass
+
+---
+
+## BL-0006: UI Polish — Next Session
+
+**Type:** Enhancement · **Priority:** HIGH · **REQ:** REQ-0013, REQ-0012  
+**Story:** Polish landing/auth UI from manual QA; align dashboard chrome.  
+**Acceptance:** 1) Mobile landing QA 2) Sign-in/up layout parity 3) Revert `job track` typos 4) Dashboard navbar consistency  
+**Effort:** S · **Status:** **Next up** · **resume_token:** `ui-resume-20260612`
+
+---
+
+## BL-0001: Clerk Auth UI Enhancements (dashboard)
 
 **Type:** Enhancement · **Priority:** MEDIUM · **REQ:** REQ-0019  
-**Story:** As a user, I want flicker-free auth UI in the navbar, so that login/logout feels smooth.  
+**Story:** Flicker-free auth in **dashboard** `Navbar.tsx` (not landing nav).  
 **Acceptance:** 1) No hydration mismatch 2) No login button flash 3) Skeleton during OAuth return  
-**Effort:** M · **Dependencies:** None · **Status:** Backlog  
-**Notes:** docs/AUTH_UI_IMPLEMENTATION_GUIDE.md is NextAuth reference — adapt patterns for Clerk
+**Effort:** M · **Status:** Backlog (after BL-0006)
 
 ---
 
@@ -48,4 +65,4 @@
 | — | C1 Bootstrap | REQ-0001…0018 | CRITICAL | — | Done |
 | — | Gate 1 Approval | — | CRITICAL | — | Pending |
 
-**Next Sprint (C1 continued or C2):** BL-0003 → BL-0001 → BL-0002 → BL-0004
+**Next Sprint (UI):** BL-0006 → BL-0001 → BL-0003 → BL-0002 → BL-0004

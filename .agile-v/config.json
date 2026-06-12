@@ -2,7 +2,7 @@
   "project": {
     "name": "Jobify — Job Application Tracker",
     "repo": "18-nextjs-jobify-app",
-    "framework": "Next.js 14 App Router",
+    "framework": "Next.js 16 App Router",
     "language": "TypeScript",
     "domain_build_skill": "build-agent-js"
   },
@@ -11,12 +11,15 @@
     "cycle": "C1",
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
-    "activated": "2026-06-11T10:25:44Z"
+    "activated": "2026-06-11T10:25:44Z",
+    "reactivated": "2026-06-12T12:58:22Z",
+    "session_status": "ACTIVE"
   },
   "stack": {
-    "frontend": ["Next.js 14.2", "React 18", "Tailwind CSS", "shadcn/ui", "TanStack Query"],
-    "backend": ["Next.js Server Actions", "Prisma 5.7", "PostgreSQL"],
-    "auth": ["Clerk"],
+    "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5"],
+    "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL"],
+    "auth": ["Clerk 6"],
+    "observability": ["Sentry (optional)"],
     "deployment": ["Vercel"]
   },
   "approval_authority": {
@@ -24,9 +27,9 @@
     "gate_2": ["Project Owner"]
   },
   "model_versions": {
-    "orchestrator": { "tier": "high", "last_validated": "2026-06-11", "validated_by": "bootstrap" },
-    "build_agent": { "tier": "medium", "last_validated": "2026-06-11", "validated_by": "bootstrap" },
-    "red_team": { "tier": "medium", "last_validated": "2026-06-11", "validated_by": "bootstrap" }
+    "orchestrator": { "tier": "high", "last_validated": "2026-06-12", "validated_by": "session-reactivate" },
+    "build_agent": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "session-reactivate" },
+    "red_team": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "session-reactivate" }
   },
   "llm_provider_registry": [
     {
@@ -36,7 +39,7 @@
       "retention": "session",
       "api_data_usage": "per Cursor policy",
       "approved_for": ["source_code", "requirements", "non-PHI"],
-      "review_date": "2026-06-11"
+      "review_date": "2026-06-12"
     }
   ],
   "active_skills": {
@@ -61,8 +64,7 @@
       "compliance-auditor",
       "documentation-agent",
       "observability-planner",
-      "release-manager",
-      "schematic-generator"
+      "release-manager"
     ],
     "domain_primary": "build-agent-js"
   },
@@ -71,6 +73,13 @@
     "requirements": ".agile-v/REQUIREMENTS.md",
     "decision_log": ".agile-v/DECISION_LOG.md",
     "validation": ".agile-v/VALIDATION_SUMMARY.md",
-    "skills_registry": ".agile-v/SKILLS_REGISTRY.md"
+    "skills_registry": ".agile-v/SKILLS_REGISTRY.md",
+    "checkpoints": ".agile-v/CHECKPOINTS.md",
+    "trace_log": ".agile-v/TRACE_LOG.md"
+  },
+  "git_baseline": {
+    "head": "f660eb9",
+    "branch": "main",
+    "last_ui_commit": "f660eb9 Landing + auth UI overhaul"
   }
 }

@@ -9,3 +9,9 @@
 | 2026-06-11T10:25:44Z | specify | requirement-architect | REQ-0019…REQ-0022 | Queue C2 backlog | SUCCESS |
 | 2026-06-11T10:25:44Z | constrain | logic-gatekeeper | REQ-0001…REQ-0018 | Flag Gate 1 pending | PENDING |
 | 2026-06-11T10:25:44Z | prove | compliance-auditor | — | Risk register seeded | SUCCESS |
+| 2026-06-11T16:30:00Z | build | build-agent-js | REQ-0013, REQ-0001 | Landing UI overhaul (carousel, nav, stagger, parallax) | SUCCESS — `f660eb9` |
+| 2026-06-11T16:30:00Z | build | build-agent-js | REQ-0001 | Custom SignUpForm (Clerk headless); removed SignUpWrapper | SUCCESS — `f660eb9` |
+| 2026-06-11T16:30:00Z | prove | red-team-verifier | REQ-0015…0016 | Confirmed jobs cache/SSE/invalidation untouched | SUCCESS |
+| 2026-06-11T16:30:00Z | checkpoint | agile-v-core | — | INT-0002 UI resume token `ui-resume-20260612` | PAUSED |
+| 2026-06-12T12:58:22Z | bootstrap | agile-v-core | — | Reactivate C1 Infinity Loop; sync STATE/config/manifest | ACTIVE |
+| 2026-06-12T12:58:22Z | prove | red-team-verifier | REQ-0013, REQ-0023 | EVAL-0001 automated gates PASS @ f660eb9 | SUCCESS |

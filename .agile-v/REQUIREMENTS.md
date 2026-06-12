@@ -4,12 +4,12 @@
 
 ## Document Control
 
-| Field | Value |
-|---|---|
-| Cycle | C1 |
-| Revision | 1.0 |
-| Author | Requirement Architect (Bootstrap) |
-| Status | Draft — awaiting Logic Gatekeeper + Human Gate 1 |
+| Field    | Value                                            |
+| -------- | ------------------------------------------------ |
+| Cycle    | C1                                               |
+| Revision | 1.0                                              |
+| Author   | Requirement Architect (Bootstrap)                |
+| Status   | Draft — awaiting Logic Gatekeeper + Human Gate 1 |
 
 ---
 
@@ -22,6 +22,7 @@
 **Description:** Users SHALL authenticate via Clerk before accessing protected features.
 
 **Acceptance Criteria:**
+
 1. Sign-in at `/sign-in`, sign-up at `/sign-up`
 2. SSO callback handled at `/sign-in/sso-callback`
 3. User profile accessible at `/user-profile`
@@ -41,6 +42,7 @@
 **Description:** Authenticated users SHALL create, read, update, and delete their own job applications.
 
 **Acceptance Criteria:**
+
 1. Create job at `/add-job` with position, company, location, status, mode
 2. List all jobs at `/jobs`
 3. Edit job at `/jobs/[id]`
@@ -61,6 +63,7 @@
 **Description:** Users SHALL search jobs by position or company and filter by status.
 
 **Acceptance Criteria:**
+
 1. Search input filters by position OR company (case-insensitive)
 2. Status filter: all, pending, interview, declined
 3. Filters persist in URL search params
@@ -80,6 +83,7 @@
 **Description:** Job list SHALL paginate when results exceed page limit.
 
 **Acceptance Criteria:**
+
 1. Default page size enforced server-side
 2. Page number in URL params
 3. Pagination controls visible when totalPages > 1
@@ -98,6 +102,7 @@
 **Description:** Users SHALL view counts of jobs by status on `/stats`.
 
 **Acceptance Criteria:**
+
 1. Cards show pending, interview, declined counts
 2. Data user-scoped via clerkId
 3. Loading skeletons during fetch
@@ -116,6 +121,7 @@
 **Description:** Users SHALL see job application trends over the last 6 months.
 
 **Acceptance Criteria:**
+
 1. Area chart on stats page
 2. Monthly aggregation via `getChartsDataAction`
 3. Responsive chart container
@@ -134,6 +140,7 @@
 **Description:** Users SHALL download complete job history as CSV or Excel.
 
 **Acceptance Criteria:**
+
 1. Export includes summary header with counts
 2. Monthly grouping with serial numbers
 3. CSV and XLSX formats supported
@@ -152,6 +159,7 @@
 **Description:** Application SHALL support light, dark, and system theme modes.
 
 **Acceptance Criteria:**
+
 1. Theme toggle in navbar
 2. next-themes provider wraps app
 3. No flash on initial load
@@ -170,6 +178,7 @@
 **Description:** Protected routes SHALL be enforced server-side before page render.
 
 **Acceptance Criteria:**
+
 1. `/add-job`, `/jobs(.*)`, `/stats`, `/user-profile(.*)` protected
 2. Landing page `/` remains public
 3. Static assets excluded from middleware matcher
@@ -188,6 +197,7 @@
 **Description:** Job forms SHALL validate input client-side and server-side.
 
 **Acceptance Criteria:**
+
 1. Zod schema in `utils/types.ts`
 2. React Hook Form integration
 3. Min length rules on text fields
@@ -207,6 +217,7 @@
 **Description:** Users SHALL only access jobs where `Job.clerkId` matches their Clerk user ID.
 
 **Acceptance Criteria:**
+
 1. All server actions filter by clerkId
 2. Update/delete use compound where (id + clerkId)
 3. Unauthorized access redirects or returns null
@@ -225,6 +236,7 @@
 **Description:** Application SHALL be usable on desktop, tablet, and mobile.
 
 **Acceptance Criteria:**
+
 1. Mobile-first Tailwind layout
 2. Dashboard sidebar + navbar responsive
 3. Job grid: 2 cols desktop, 1 col mobile
@@ -236,19 +248,21 @@
 
 ## REQ-0013: Landing Page
 
-**Status:** `approved [C1]` (baseline)  
+**Status:** `approved [C1]` — **enhanced 2026-06-11** (`f660eb9`)  
 **Priority:** MEDIUM  
 **Category:** Marketing
 
 **Description:** Public landing page SHALL introduce the app and link to auth flow.
 
 **Acceptance Criteria:**
-1. Hero section at `/`
-2. CTA to get started / sign in
-3. SSR for fast initial load
+
+1. Hero at `/` — carousel (main.svg + job-1..4), Get Started + Try Demo CTAs
+2. Fixed `LandingNav` (section scroll) + `SiteFooter` (`h-14` chrome)
+3. Sections: highlights, features, about — scroll stagger + parallax
+4. SSR shell `app/page.tsx` (`force-dynamic`) + client `HomePage`
 
 **Verification:** TC-0019  
-**Artifacts:** ART-0022 (`app/page.tsx`)
+**Artifacts:** ART-0022 (`app/page.tsx`), ART-0031 (`components/pages/HomePage.tsx`), ART-0032 (`components/layout/landing-nav.tsx`), ART-0033 (`components/layout/hero-visual-carousel.tsx`)
 
 ---
 
@@ -261,6 +275,7 @@
 **Description:** Application SHALL show loading indicators and toast notifications.
 
 **Acceptance Criteria:**
+
 1. Route-level loading.tsx for jobs and stats
 2. Skeleton components during data fetch
 3. Toast on form success/error
@@ -279,6 +294,7 @@
 **Description:** Client data fetching SHALL use TanStack Query with server hydration.
 
 **Acceptance Criteria:**
+
 1. QueryClient provider in app/providers.tsx
 2. Server prefetch + HydrationBoundary on jobs page
 3. Query keys include search, status, page
@@ -297,6 +313,7 @@
 **Description:** Job data SHALL persist in PostgreSQL via Prisma ORM.
 
 **Acceptance Criteria:**
+
 1. DATABASE_URL + DIRECT_URL configured
 2. Job model migrated
 3. Prisma client singleton in utils/db.ts
@@ -316,6 +333,7 @@
 **Description:** Application SHALL deploy to Vercel with env vars for Clerk and database.
 
 **Acceptance Criteria:**
+
 1. `npm run build` succeeds
 2. Live demo documented in README
 3. Env vars documented (no secrets in repo)
@@ -334,6 +352,7 @@
 **Description:** Project SHALL include utility scripts for DB inspection and data fixes.
 
 **Acceptance Criteria:**
+
 1. Scripts: db-inspect, migrate-clerkid, fix-status, fix-future-dates, seed-test-user
 2. Runnable via npm scripts
 
@@ -344,12 +363,13 @@
 
 ## Backlog — Future Cycle (C2+)
 
-| REQ-ID | Title | Priority | Status |
-|---|---|---|---|
-| REQ-0019 | Auth UI flicker-free enhancements (Clerk navbar) | MEDIUM | `new [C2]` |
-| REQ-0020 | Prisma schema cleanup (remove unused Task/Tour/Token) | LOW | `new [C2]` |
-| REQ-0021 | Automated test suite (unit + e2e) | HIGH | `new [C2]` |
-| REQ-0022 | Observability (logging, error tracking) | MEDIUM | `new [C2]` |
+| REQ-ID   | Title                                                 | Priority | Status     |
+| -------- | ----------------------------------------------------- | -------- | ---------- |
+| REQ-0019 | Auth UI flicker-free enhancements (dashboard Navbar)  | MEDIUM   | `new [C2]` |
+| REQ-0023 | Custom auth cards (SignIn/SignUp match, no Clerk UI)  | MEDIUM   | `done [C1]` `f660eb9` |
+| REQ-0020 | Prisma schema cleanup (remove unused Task/Tour/Token) | LOW      | `new [C2]` |
+| REQ-0021 | Automated test suite (unit + e2e)                     | HIGH     | `new [C2]` |
+| REQ-0022 | Observability (logging, error tracking)               | MEDIUM   | `new [C2]` |
 
 ---
 

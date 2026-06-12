@@ -14,13 +14,14 @@
 | REQ-0010 | ART-0018, ART-0005, ART-0006 | TC-0016 | — | Baseline |
 | REQ-0011 | ART-0004 | TC-0007, TC-0017 | — | Baseline |
 | REQ-0012 | ART-0019, ART-0020, ART-0021 | TC-0018 | — | Baseline |
-| REQ-0013 | ART-0022 | TC-0019 | — | Baseline |
+| REQ-0013 | ART-0022, ART-0031, ART-0032, ART-0033 | TC-0019 | — | Enhanced `f660eb9` |
+| REQ-0023 | ART-0034 (`SignUpForm`), ART-0035 (`SignInForm`) | — | — | Done `f660eb9` |
 | REQ-0014 | ART-0023, ART-0024, ART-0025 | TC-0020 | — | Baseline |
 | REQ-0015 | ART-0026, ART-0009 | TC-0021 | — | Baseline |
 | REQ-0016 | ART-0007, ART-0027 | TC-0022 | RISK-0001 | Baseline |
 | REQ-0017 | ART-0028, ART-0029 | TC-0023 | — | Baseline |
 | REQ-0018 | ART-0030 | TC-0024 | — | Baseline |
-| REQ-0019 | — | — | — | C2 Backlog |
+| REQ-0019 | ART-0020 | — | — | C2 Backlog (dashboard) |
 | REQ-0020 | ART-0007 | — | RISK-0001 | C2 Backlog |
 | REQ-0021 | — | TC-0001…TC-0024 | RISK-0002 | C2 Backlog |
 | REQ-0022 | — | — | — | C2 Backlog |
