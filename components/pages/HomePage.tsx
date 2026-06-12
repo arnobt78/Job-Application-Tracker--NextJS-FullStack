@@ -1,5 +1,3 @@
-'use client';
-
 import { LandingNav } from '@/components/layout/landing-nav';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { AboutSection } from '@/components/pages/home/about-section';

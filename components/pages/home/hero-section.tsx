@@ -37,7 +37,7 @@ export function HeroSection() {
                 className="mt-8 flex flex-wrap items-stretch gap-4"
               >
                 <div className="cta-shine-wrap cta-shine-wrap--delay-a rounded-full">
-                  <RippleLink href="/add-job" className={HERO_CTA_CLASS}>
+                  <RippleLink href="/dashboard" className={HERO_CTA_CLASS}>
                     <Rocket className="h-4 w-4 shrink-0" />
                     Get Started
                   </RippleLink>

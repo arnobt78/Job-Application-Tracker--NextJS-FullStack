@@ -1,5 +1,3 @@
-'use client';
-
 import SignInForm from '@/components/SignInForm';
 import { AuthMarketingPanel } from '@/components/layout/auth-marketing-panel';
 import { AuthNav } from '@/components/layout/auth-nav';
