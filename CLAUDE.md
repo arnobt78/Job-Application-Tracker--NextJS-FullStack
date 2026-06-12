@@ -26,8 +26,9 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 `lib/query-keys.ts` — `jobs`, `stats`, `charts`, `job(id)`
 
 ## Routes
-- `/dashboard` — jobs list + Add Job dialog; `/dashboard/[id]` — edit dialog URL
-- `/stats` — static headings in `page.tsx`; `StatsContainer`/`ChartsContainer` pulse data only
+- `/dashboard` — shell in `page.tsx` (headers, "jobs found", filter label); `JobsCount`/`JobsPagination`/`JobsGrid` + `useJobsListQuery`
+- `/dashboard/[id]` — edit dialog URL
+- `/stats` — headings in `page.tsx`; `StatsContainer`/`ChartsContainer` pulse data only
 - Legacy `/jobs/*` removed; middleware redirects old URLs
 
 ## Hydration

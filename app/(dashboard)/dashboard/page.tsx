@@ -1,5 +1,8 @@
 import SearchForm from '@/components/SearchForm';
-import JobsList from '@/components/JobsList';
+import DownloadDropdown from '@/components/DownloadDropdown';
+import { JobsCount } from '@/components/jobs/jobs-count';
+import { JobsGrid } from '@/components/jobs/jobs-grid';
+import { JobsPagination } from '@/components/jobs/jobs-pagination';
 import { AddJobDialog } from '@/components/dialogs/add-job-dialog';
 import type { Metadata } from 'next';
 import { createPageMetadata } from '@/lib/site-metadata';
@@ -10,7 +13,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 import { getAllJobsAction } from '@/utils/actions';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Filter } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +39,6 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
   const jobStatus = params.jobStatus ?? 'all';
   const pageNumber = Number(params.page) || 1;
 
-  // Non-blocking prefetch — shell renders immediately; client hydrates or refetches
   const queryClient = new QueryClient();
   void queryClient.prefetchQuery({
     queryKey: queryKeys.jobs.list(search, jobStatus, pageNumber),
@@ -45,7 +47,6 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      {/* Page header — static server-rendered; no flash */}
       <div className="mb-8 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-bold">
@@ -56,15 +57,28 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
             Track and manage your job applications
           </p>
         </div>
-        {/* AddJobDialog — client component, renders trigger button + dialog */}
         <AddJobDialog />
       </div>
 
-      {/* Filter row — client component with URL search params */}
+      <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <Filter className="h-4 w-4" />
+        Search &amp; filter
+      </div>
       <SearchForm />
 
-      {/* Jobs grid — client component, hydrated from SSR prefetch */}
-      <JobsList />
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h2 className="flex items-center gap-2 text-xl font-semibold capitalize">
+            <Briefcase className="h-5 w-5 text-primary" />
+            <JobsCount />
+            <span>jobs found</span>
+          </h2>
+          <DownloadDropdown />
+        </div>
+        <JobsPagination />
+      </div>
+
+      <JobsGrid />
     </HydrationBoundary>
   );
 }
