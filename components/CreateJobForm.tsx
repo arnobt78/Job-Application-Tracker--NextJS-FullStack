@@ -15,7 +15,20 @@ import { useCreateJobMutation } from '@/hooks/useJobsMutation';
 import { GlassCard } from '@/components/ui/glass-card';
 import { PlusCircle } from 'lucide-react';
 
-function CreateJobForm() {
+type CreateJobFormProps = {
+  /**
+   * Called after successful job creation.
+   * Used by AddJobDialog to close the dialog after create.
+   */
+  onSuccess?: () => void;
+  /**
+   * When false, renders form content without outer GlassCard wrapper.
+   * Set to false when composing inside AddJobDialog (dialog provides its own glass chrome).
+   */
+  standalone?: boolean;
+};
+
+function CreateJobForm({ onSuccess, standalone = true }: CreateJobFormProps) {
   const form = useForm<CreateAndEditJobType>({
     resolver: zodResolver(createAndEditJobSchema),
     defaultValues: {
@@ -30,41 +43,49 @@ function CreateJobForm() {
   const { mutate, isPending } = useCreateJobMutation();
 
   function onSubmit(values: CreateAndEditJobType) {
-    mutate(values);
+    // Pass onSuccess as per-call callback — runs after hook-level onSuccess (toast + invalidation)
+    mutate(values, { onSuccess: () => onSuccess?.() });
   }
 
-  return (
-    <GlassCard variant="sky">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <h2 className="capitalize font-semibold text-4xl mb-6 flex items-center gap-2">
-            <PlusCircle className="h-8 w-8 text-sky-400" />
-            Add Job
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
-            <CustomFormField name="position" control={form.control} />
-            <CustomFormField name="company" control={form.control} />
-            <CustomFormField name="location" control={form.control} />
-            <CustomFormSelect
-              name="status"
-              control={form.control}
-              labelText="job status"
-              items={Object.values(JobStatus)}
-            />
-            <CustomFormSelect
-              name="mode"
-              control={form.control}
-              labelText="job mode"
-              items={Object.values(JobMode)}
-            />
-            <Button type="submit" className="self-end capitalize" disabled={isPending}>
-              {isPending ? 'Creating...' : 'Create Job'}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </GlassCard>
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <h2 className="mb-6 flex items-center gap-2 text-4xl font-semibold capitalize">
+          <PlusCircle className="h-8 w-8 text-sky-400" />
+          Add Job
+        </h2>
+        <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <CustomFormField name="position" control={form.control} required />
+          <CustomFormField name="company" control={form.control} required />
+          <CustomFormField name="location" control={form.control} required />
+          <CustomFormSelect
+            name="status"
+            control={form.control}
+            labelText="job status"
+            items={Object.values(JobStatus)}
+            required
+          />
+          <CustomFormSelect
+            name="mode"
+            control={form.control}
+            labelText="job mode"
+            items={Object.values(JobMode)}
+            required
+          />
+          <Button
+            type="submit"
+            className="self-end capitalize"
+            disabled={isPending}
+          >
+            {isPending ? 'Creating...' : 'Create Job'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
+
+  if (!standalone) return formContent;
+  return <GlassCard variant="sky">{formContent}</GlassCard>;
 }
 
 export default CreateJobForm;

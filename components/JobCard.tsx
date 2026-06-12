@@ -1,10 +1,10 @@
 import { JobType } from '@/utils/types';
-import { MapPin, Briefcase, CalendarDays, RadioTower, Pencil } from 'lucide-react';
+import { MapPin, Briefcase, CalendarDays, RadioTower } from 'lucide-react';
 import { Separator } from './ui/separator';
-import { RippleLink } from './ui/ripple-link';
 import JobInfo from './JobInfo';
 import DeleteJobButton from './DeleteJobButton';
 import { GlassCard } from '@/components/ui/glass-card';
+import { EditJobDialog } from '@/components/dialogs/edit-job-dialog';
 
 function JobCard({ job }: { job: JobType }) {
   const date = new Date(job.createdAt).toLocaleDateString();
@@ -26,10 +26,8 @@ function JobCard({ job }: { job: JobType }) {
         <JobInfo icon={<RadioTower className="h-4 w-4" />} text={job.status} />
       </div>
       <div className="flex gap-4 p-6 pt-0">
-        <RippleLink href={`/jobs/${job.id}`} size="sm" className="gap-1">
-          <Pencil className="h-4 w-4" />
-          Edit
-        </RippleLink>
+        {/* EditJobDialog with showTrigger renders its own Edit button — replaces RippleLink nav */}
+        <EditJobDialog jobId={job.id} showTrigger />
         <DeleteJobButton id={job.id} />
       </div>
     </GlassCard>

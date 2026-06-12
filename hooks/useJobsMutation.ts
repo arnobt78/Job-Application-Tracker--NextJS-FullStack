@@ -1,7 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
 import {
   createJobAction,
   deleteJobAction,
@@ -41,7 +40,6 @@ function bumpStat(stats: StatsCache, status: string, delta: number): StatsCache 
 /** Create job — optimistic prepend to lists + stats + charts bump */
 export function useCreateJobMutation() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { toast } = useToast();
   const { invalidateAfterMutation } = useJobsInvalidation();
 
@@ -109,7 +107,7 @@ export function useCreateJobMutation() {
       if (!data) return;
       toast({ description: 'Job created successfully.' });
       invalidateAfterMutation(data.id);
-      router.push('/jobs');
+      // No navigation — Add Job is a dialog on /dashboard; caller handles close via mutate() onSuccess callback
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });

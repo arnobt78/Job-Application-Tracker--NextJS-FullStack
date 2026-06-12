@@ -1,4 +1,4 @@
-import { AreaChart, Layers, AppWindow } from 'lucide-react';
+import { AreaChart, AppWindow } from 'lucide-react';
 
 type NavLink = {
   href: string;
@@ -6,14 +6,13 @@ type NavLink = {
   icon: React.ReactNode;
 };
 
+/**
+ * Legacy nav links array — used by LinksDropdown (kept but superseded by DashboardNav).
+ * Hrefs updated to new /dashboard route.
+ */
 const links: NavLink[] = [
   {
-    href: '/add-job',
-    label: 'add job',
-    icon: <Layers />,
-  },
-  {
-    href: '/jobs',
+    href: '/dashboard',
     label: 'all jobs',
     icon: <AppWindow />,
   },

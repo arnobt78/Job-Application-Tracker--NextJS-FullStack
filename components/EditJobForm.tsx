@@ -19,7 +19,21 @@ import { queryKeys } from '@/lib/query-keys';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Pencil } from 'lucide-react';
 
-function EditJobForm({ jobId }: { jobId: string }) {
+type EditJobFormProps = {
+  jobId: string;
+  /**
+   * Called after successful update.
+   * Used by EditJobDialog to close the dialog after save.
+   */
+  onSuccess?: () => void;
+  /**
+   * When false, renders form content without outer GlassCard wrapper.
+   * Set to false when composing inside EditJobDialog.
+   */
+  standalone?: boolean;
+};
+
+function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) {
   const { data } = useQuery({
     queryKey: queryKeys.job.detail(jobId),
     queryFn: () => getSingleJobAction(jobId),
@@ -51,41 +65,49 @@ function EditJobForm({ jobId }: { jobId: string }) {
   const { mutate, isPending } = useUpdateJobMutation(jobId);
 
   function onSubmit(values: CreateAndEditJobType) {
-    mutate(values);
+    // Pass onSuccess as per-call callback — runs after hook-level onSuccess (toast + invalidation)
+    mutate(values, { onSuccess: () => onSuccess?.() });
   }
 
-  return (
-    <GlassCard variant="violet">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <h2 className="capitalize font-semibold text-4xl mb-6 flex items-center gap-2">
-            <Pencil className="h-8 w-8 text-violet-400" />
-            Edit Job
-          </h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
-            <CustomFormField name="position" control={form.control} />
-            <CustomFormField name="company" control={form.control} />
-            <CustomFormField name="location" control={form.control} />
-            <CustomFormSelect
-              name="status"
-              control={form.control}
-              labelText="job status"
-              items={Object.values(JobStatus)}
-            />
-            <CustomFormSelect
-              name="mode"
-              control={form.control}
-              labelText="job mode"
-              items={Object.values(JobMode)}
-            />
-            <Button type="submit" className="self-end capitalize" disabled={isPending}>
-              {isPending ? 'Updating...' : 'Save Changes'}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </GlassCard>
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <h2 className="mb-6 flex items-center gap-2 text-4xl font-semibold capitalize">
+          <Pencil className="h-8 w-8 text-violet-400" />
+          Edit Job
+        </h2>
+        <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <CustomFormField name="position" control={form.control} required />
+          <CustomFormField name="company" control={form.control} required />
+          <CustomFormField name="location" control={form.control} required />
+          <CustomFormSelect
+            name="status"
+            control={form.control}
+            labelText="job status"
+            items={Object.values(JobStatus)}
+            required
+          />
+          <CustomFormSelect
+            name="mode"
+            control={form.control}
+            labelText="job mode"
+            items={Object.values(JobMode)}
+            required
+          />
+          <Button
+            type="submit"
+            className="self-end capitalize"
+            disabled={isPending}
+          >
+            {isPending ? 'Updating...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
+
+  if (!standalone) return formContent;
+  return <GlassCard variant="violet">{formContent}</GlassCard>;
 }
 
 export default EditJobForm;
