@@ -12,14 +12,16 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-12T12:58:22Z",
-    "session_status": "ACTIVE"
+    "reactivated": "2026-06-12T21:31:53Z",
+    "session_status": "ACTIVE",
+    "infinity_loop": true
   },
   "stack": {
     "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5"],
     "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL"],
     "auth": ["Clerk 6"],
     "observability": ["Sentry (optional)"],
+    "cache": ["unstable_cache", "Redis optional", "React Query", "SSE"],
     "deployment": ["Vercel"]
   },
   "approval_authority": {
@@ -27,9 +29,9 @@
     "gate_2": ["Project Owner"]
   },
   "model_versions": {
-    "orchestrator": { "tier": "high", "last_validated": "2026-06-12", "validated_by": "session-reactivate" },
-    "build_agent": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "session-reactivate" },
-    "red_team": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "session-reactivate" }
+    "orchestrator": { "tier": "high", "last_validated": "2026-06-12", "validated_by": "infinity-loop-reactivate" },
+    "build_agent": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "infinity-loop-reactivate" },
+    "red_team": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "infinity-loop-reactivate" }
   },
   "llm_provider_registry": [
     {
@@ -75,11 +77,16 @@
     "validation": ".agile-v/VALIDATION_SUMMARY.md",
     "skills_registry": ".agile-v/SKILLS_REGISTRY.md",
     "checkpoints": ".agile-v/CHECKPOINTS.md",
-    "trace_log": ".agile-v/TRACE_LOG.md"
+    "trace_log": ".agile-v/TRACE_LOG.md",
+    "backlog": ".agile-v/BACKLOG.md",
+    "build_manifest": ".agile-v/BUILD_MANIFEST.md",
+    "atm": ".agile-v/ATM.md",
+    "policy": ".agile-v/POLICY.yaml"
   },
   "git_baseline": {
-    "head": "f660eb9",
+    "head": "be950be",
     "branch": "main",
-    "last_ui_commit": "f660eb9 Landing + auth UI overhaul"
+    "last_commit": "update styling for navbar and page container and ui",
+    "working_tree": "clean"
   }
 }

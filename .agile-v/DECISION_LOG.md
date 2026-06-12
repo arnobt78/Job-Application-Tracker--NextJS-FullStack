@@ -14,3 +14,5 @@
 | 2026-06-11T16:30:00Z | Build Agent (JS) | C1 | Landing chrome `h-14` no py | Navbar/footer vertical center via flex not padding | REQ-0013 |
 | 2026-06-11T16:30:00Z | Build Agent (JS) | C1 | UI work isolated from data layer | No changes to invalidate-jobs, useJobsMutation, SSE route | REQ-0015 |
 | 2026-06-12T12:58:22Z | AQMS Orchestrator | C1 | Reactivate Agile V session; 24 skills ACTIVE; resume INT-0002 BL-0006 | C1 bootstrap complete; Gate 1 still pending | — |
+| 2026-06-12T21:00:00Z | Build Agent (JS) | C1 | Unified NavShell for landing/auth/dashboard | Single h-14 chrome; DRY nav pattern | REQ-0012 |
+| 2026-06-12T21:31:53Z | AQMS Orchestrator | C1 | INT-0002 resolved; INT-0003 active for user-driven work | BL-0006 complete at be950be | BL-0007 |

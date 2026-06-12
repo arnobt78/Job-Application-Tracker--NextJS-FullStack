@@ -2,67 +2,57 @@
 
 <!-- BL-XXXX → REQ-XXXX | Maintained by agile-v-product-owner -->
 
-## BL-0005: Landing + Auth Marketing UI ✅ (partial)
+## BL-0005: Landing + Auth Marketing UI ✅
 
-**Type:** Feature · **Priority:** HIGH · **REQ:** REQ-0013, REQ-0001  
-**Shipped:** `f660eb9` — carousel, nav, stagger, custom SignUpForm  
-**Status:** `DONE` (QA + polish deferred)  
-**Remaining:** mobile nav links, auth page shell parity, manual QA pass
+**REQ:** REQ-0013, REQ-0023 · **Shipped:** `f660eb9` · **Status:** DONE
 
 ---
 
-## BL-0006: UI Polish — Next Session
+## BL-0006: UI Polish (NavShell / Auth / Dashboard) ✅
 
-**Type:** Enhancement · **Priority:** HIGH · **REQ:** REQ-0013, REQ-0012  
-**Story:** Polish landing/auth UI from manual QA; align dashboard chrome.  
-**Acceptance:** 1) Mobile landing QA 2) Sign-in/up layout parity 3) Revert `job track` typos 4) Dashboard navbar consistency  
-**Effort:** S · **Status:** **Next up** · **resume_token:** `ui-resume-20260612`
+**REQ:** REQ-0012, REQ-0013, REQ-0019, REQ-0023  
+**Shipped:** `07fcd0e`, `d819396`, `be950be`  
+**Delivered:** NavShell, LandingNav, AuthNav, DashboardNav, SignUpForm parity, styling polish  
+**Status:** DONE · INT-0002 RESOLVED
 
 ---
 
-## BL-0001: Clerk Auth UI Enhancements (dashboard)
+## BL-0007: User-Driven Extension (active)
 
-**Type:** Enhancement · **Priority:** MEDIUM · **REQ:** REQ-0019  
-**Story:** Flicker-free auth in **dashboard** `Navbar.tsx` (not landing nav).  
-**Acceptance:** 1) No hydration mismatch 2) No login button flash 3) Skeleton during OAuth return  
-**Effort:** M · **Status:** Backlog (after BL-0006)
+**REQ:** TBD per user instruction · **Status:** **ACTIVE** · **token:** `c1-dev-20260612`  
+Map each new request → REQ-XXXX before build.
+
+---
+
+## BL-0001: Clerk Auth Flicker-Free (dashboard)
+
+**REQ:** REQ-0019 · **Status:** Backlog (partially addressed by DashboardNav)
 
 ---
 
 ## BL-0002: Prisma Schema Cleanup
 
-**Type:** Technical · **Priority:** LOW · **REQ:** REQ-0020  
-**Story:** As a developer, I want unused models removed, so that schema matches Jobify domain.  
-**Acceptance:** 1) Task/Tour/Token removed or documented 2) Migration safe 3) Build passes  
-**Effort:** S · **Dependencies:** None · **Status:** Backlog
+**REQ:** REQ-0020 · **Status:** Backlog
 
 ---
 
 ## BL-0003: Automated Test Suite
 
-**Type:** Feature · **Priority:** HIGH · **REQ:** REQ-0021  
-**Story:** As a developer, I want automated tests, so that regressions are caught in CI.  
-**Acceptance:** 1) TC-0001…TC-0024 automated or subset 2) CI runs on PR 3) Red Team signoff  
-**Effort:** L · **Dependencies:** None · **Status:** Backlog
+**REQ:** REQ-0021 · **Status:** Backlog (19 vitest tests exist; E2E pending)
 
 ---
 
-## BL-0004: Observability Setup
+## BL-0004: Observability
 
-**Type:** Enhancement · **Priority:** MEDIUM · **REQ:** REQ-0022  
-**Story:** As an operator, I want error tracking and logs, so that production issues are visible.  
-**Acceptance:** 1) Error boundary 2) Structured logging 3) Alert on critical errors  
-**Effort:** M · **Dependencies:** BL-0003 recommended · **Status:** Backlog
+**REQ:** REQ-0022 · **Status:** Backlog (Sentry integrated; full observability plan pending)
 
 ---
 
-## Sprint Plan (C1 — Bootstrap)
+## Sprint Plan
 
-**Goal:** Establish Agile V baseline and obtain Gate 1 approval.
-
-| BL-ID | Story | REQ | Priority | Est | Status |
-|---|---|---|---|---|---|
-| — | C1 Bootstrap | REQ-0001…0018 | CRITICAL | — | Done |
-| — | Gate 1 Approval | — | CRITICAL | — | Pending |
-
-**Next Sprint (UI):** BL-0006 → BL-0001 → BL-0003 → BL-0002 → BL-0004
+| Priority | BL | Status |
+|---|---|---|
+| 1 | BL-0007 | ACTIVE — await user reqs |
+| 2 | BL-0003 | Backlog |
+| 3 | BL-0002 | Backlog |
+| 4 | Gate 1 approval | PENDING |

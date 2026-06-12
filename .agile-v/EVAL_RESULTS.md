@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Last Updated | 2026-06-12T12:58:22Z |
+| Last Updated | 2026-06-12T21:31:53Z |
 | **eval_gate_status** | **NOT_RUN** |
 | **ui_slice_status** | **PASS** (automated gates @ f660eb9) |
 | Red Team | Pending |
@@ -16,6 +16,7 @@
 | Eval-ID | Date | Scope | Method | Result | Notes |
 |---|---|---|---|---|---|
 | EVAL-0001 | 2026-06-12 | UI slice f660eb9 | lint/typecheck/test/build | PASS | REQ-0013, REQ-0023 |
+| EVAL-0002 | 2026-06-12 | UI track be950be | lint/typecheck/test(19) | PASS | NavShell, REQ-0012 |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 
 ## Quality Gates Evidence (Planned)

@@ -44,6 +44,10 @@
 | ART-0038 | C1 | UI | `components/ui/scroll-stagger.tsx` | REQ-0013 | `f660eb9` |
 | ART-0039 | C1 | UI | `lib/ui/landing-chrome.ts` | REQ-0013 | `f660eb9` |
 | ART-0040 | C1 | Observability | `lib/sentry/config.ts`, `app/api/monitoring/` | REQ-0022 | Prior commit |
+| ART-0041 | C1 | Layout | `components/layout/nav-shell.tsx` | REQ-0012 | `07fcd0e` |
+| ART-0042 | C1 | Layout | `components/layout/dashboard-nav.tsx` | REQ-0012, REQ-0019 | `07fcd0e` |
+| ART-0043 | C1 | Layout | `components/layout/auth-nav.tsx` | REQ-0001, REQ-0023 | `07fcd0e` |
+| ART-0044 | C1 | Page | `app/(dashboard)/dashboard/page.tsx` | REQ-0012 | `07fcd0e` |
 
 ## Build Commands
 

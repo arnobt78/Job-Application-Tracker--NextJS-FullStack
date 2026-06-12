@@ -6,6 +6,7 @@
 |---|---|---|---|---|---|---|---|
 | — | — | — | No change requests yet | C1 bootstrap | — | — | — |
 | UI-2026-06-11 | C1 | REQ-0013, REQ-0023 | Landing + custom auth UI shipped | User UI session | ART-0031…0035 | Agent | Done `f660eb9` |
+| UI-2026-06-12 | C1 | REQ-0012, REQ-0019 | NavShell + dashboard/auth nav unification | UI extension | ART-0041…0044 | Agent | Done `be950be` |
 
 ## Change Request Template
 

@@ -13,7 +13,7 @@
 | REQ-0009 | ART-0001 | TC-0002 | — | Baseline |
 | REQ-0010 | ART-0018, ART-0005, ART-0006 | TC-0016 | — | Baseline |
 | REQ-0011 | ART-0004 | TC-0007, TC-0017 | — | Baseline |
-| REQ-0012 | ART-0019, ART-0020, ART-0021 | TC-0018 | — | Baseline |
+| REQ-0012 | ART-0019, ART-0020, ART-0021, ART-0041, ART-0042, ART-0043 | TC-0018 | — | Enhanced `07fcd0e` |
 | REQ-0013 | ART-0022, ART-0031, ART-0032, ART-0033 | TC-0019 | — | Enhanced `f660eb9` |
 | REQ-0023 | ART-0034 (`SignUpForm`), ART-0035 (`SignInForm`) | — | — | Done `f660eb9` |
 | REQ-0014 | ART-0023, ART-0024, ART-0025 | TC-0020 | — | Baseline |
