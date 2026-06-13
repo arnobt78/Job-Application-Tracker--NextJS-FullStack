@@ -5,24 +5,29 @@ import { AuthOAuthButtons } from "@/components/auth/AuthOAuthButtons";
 import { TestAccountSelectRow } from "@/components/auth/test-account-select-row";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GlassCard } from "@/components/ui/glass-card";
 import {
+  DropdownMenu,
+  DropdownMenuRadioGroup,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  GlassDropdownActionItem,
+  GlassDropdownContent,
+  GlassDropdownRadioItem,
+  GlassDropdownSeparator,
+} from "@/components/ui/glass-dropdown-menu";
+import {
   TEST_ACCOUNTS,
   type TestAccount,
   type TestAccountRole,
 } from "@/lib/auth/test-credentials";
-import { Loader2 } from "lucide-react";
+import { Eraser, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type SignInFormProps = {
   isGuest?: boolean;
@@ -51,19 +56,19 @@ export default function SignInForm({
   );
 
   const handleRoleSelect = (value: string) => {
-    if (value === "clear") {
-      onAccountChange("");
-      setEmail("");
-      setPassword("");
-    } else {
-      const role = value as TestAccountRole;
-      onAccountChange(role);
-      const account = TEST_ACCOUNTS[role];
-      if (account) {
-        setEmail(account.email);
-        setPassword(account.password);
-      }
+    const role = value as TestAccountRole;
+    onAccountChange(role);
+    const account = TEST_ACCOUNTS[role];
+    if (account) {
+      setEmail(account.email);
+      setPassword(account.password);
     }
+  };
+
+  const handleClearSelection = () => {
+    onAccountChange("");
+    setEmail("");
+    setPassword("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,45 +133,60 @@ export default function SignInForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="guest-select">Login with Test Account</Label>
-            <Select
-              key={`select-${selectedRole || "empty"}`}
-              value={selectedRole || undefined}
-              onValueChange={handleRoleSelect}
-              disabled={isLoading}
-            >
-              <SelectTrigger
-                id="guest-select"
-                className="glass-input h-10 gap-2 py-0 [&>span]:line-clamp-none"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild disabled={isLoading}>
+                <Button
+                  id="guest-select"
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "glass-input h-10 w-full justify-start gap-2 px-3 py-0 font-normal",
+                    "[&>span]:line-clamp-none"
+                  )}
+                >
+                  {selectedRole ? (
+                    <TestAccountSelectRow
+                      name={guestUserAccount.name}
+                      email={guestUserAccount.email}
+                      imageUrl={guestUserAccount.imageUrl}
+                      className="flex-1 pr-1"
+                    />
+                  ) : (
+                    <span className="text-muted-foreground">
+                      Select Role Based Test Account
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <GlassDropdownContent
+                className="w-[var(--radix-dropdown-menu-trigger-width)]"
               >
+                <DropdownMenuRadioGroup
+                  value={selectedRole || undefined}
+                  onValueChange={handleRoleSelect}
+                >
+                  <GlassDropdownRadioItem value="guest-user" label="">
+                    <TestAccountSelectRow
+                      name={guestUserAccount.name}
+                      email={guestUserAccount.email}
+                      imageUrl={guestUserAccount.imageUrl}
+                      className="flex-1"
+                    />
+                  </GlassDropdownRadioItem>
+                </DropdownMenuRadioGroup>
                 {selectedRole ? (
-                  <TestAccountSelectRow
-                    name={guestUserAccount.name}
-                    email={guestUserAccount.email}
-                    imageUrl={guestUserAccount.imageUrl}
-                    className="flex-1 pr-1"
-                  />
-                ) : (
-                  <SelectValue placeholder="Select Role Based Test Account" />
-                )}
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="guest-user" className="py-2">
-                  <TestAccountSelectRow
-                    name={guestUserAccount.name}
-                    email={guestUserAccount.email}
-                    imageUrl={guestUserAccount.imageUrl}
-                  />
-                </SelectItem>
-                {selectedRole && (
-                  <SelectItem
-                    value="clear"
-                    className="opacity-60 focus:opacity-100"
-                  >
-                    Clear Selection
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+                  <>
+                    <GlassDropdownSeparator />
+                    <GlassDropdownActionItem
+                      label="Clear Selection"
+                      icon={<Eraser className="h-4 w-4" />}
+                      onSelect={handleClearSelection}
+                      className="opacity-60 focus:opacity-100"
+                    />
+                  </>
+                ) : null}
+              </GlassDropdownContent>
+            </DropdownMenu>
           </div>
 
           <div className="space-y-2">

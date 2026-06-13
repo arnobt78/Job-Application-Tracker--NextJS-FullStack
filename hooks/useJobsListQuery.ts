@@ -1,19 +1,35 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAllJobsAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
+import { parseJobsListFilters } from '@/lib/jobs/filter-params';
 
 /** Shared jobs list query for dashboard count, pagination, and grid */
 export function useJobsListQuery() {
   const searchParams = useSearchParams();
-  const search = searchParams.get('search') || '';
-  const jobStatus = searchParams.get('jobStatus') || 'all';
-  const pageNumber = Number(searchParams.get('page')) || 1;
+  const filters = useMemo(
+    () => parseJobsListFilters(searchParams),
+    [searchParams]
+  );
 
   return useQuery({
-    queryKey: queryKeys.jobs.list(search, jobStatus, pageNumber),
-    queryFn: () => getAllJobsAction({ search, jobStatus, page: pageNumber }),
+    queryKey: queryKeys.jobs.list(
+      filters.search,
+      filters.jobStatus,
+      filters.jobMode,
+      filters.monthYear,
+      filters.page
+    ),
+    queryFn: () =>
+      getAllJobsAction({
+        search: filters.search,
+        jobStatus: filters.jobStatus,
+        jobMode: filters.jobMode,
+        monthYear: filters.monthYear,
+        page: filters.page,
+      }),
   });
 }

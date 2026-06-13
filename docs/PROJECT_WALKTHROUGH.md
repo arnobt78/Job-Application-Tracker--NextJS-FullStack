@@ -1,56 +1,51 @@
 # Jobify Project Walkthrough
 
-## What it is
-
-Full-stack job application tracker. Demo: <https://jobify-tracker.vercel.app>
+Demo: <https://jobify-tracker.vercel.app> — full-stack job application tracker.
 
 ## Architecture
 
-```bash
+```text
 page.tsx (force-dynamic, void prefetchQuery)
-  → static shell (headings, labels) in page.tsx
-  → HydrationBoundary → client useQuery (data-slot skeletons)
+  → static shell in page.tsx
+  → HydrationBoundary → client useQuery + data-slot skeletons
   → lib/jobs/queries.ts (unstable_cache + tags + Redis optional)
   → utils/actions.ts (server actions, Clerk auth)
 
-CRUD: useJobsMutation (optimistic) → server action → invalidateUserJobCaches
+CRUD: useJobsMutation (optimistic) → invalidateUserJobCaches
   → invalidateAllJobQueries + BroadcastChannel + SSE
 ```
 
-## Key directories
+## Key paths
 
 | Path | Role |
 | --- | --- |
-| `app/(dashboard)/dashboard/page.tsx` | Instant shell + `JobsCount`/`JobsGrid`/`JobsPagination` |
-| `app/(dashboard)/stats/page.tsx` | Stats shell + `StatsContainer`/`ChartsContainer` |
-| `hooks/useJobsListQuery.ts` | Shared dashboard jobs list query |
-| `components/jobs/` | `jobs-count`, `jobs-grid`, `jobs-pagination` |
+| `app/(dashboard)/dashboard/page.tsx` | Shell + `void prefetch` list + filterOptions |
+| `lib/jobs/filter-params.ts` | Shared URL filter parse/build (server + client) |
+| `lib/jobs/month-utc.ts` | UTC month buckets (matches `formatJobDate`) |
+| `hooks/useJobsListQuery.ts` | List query (uses filter-params) |
+| `hooks/useJobsListParams.ts` | URL filter write (`router.replace`) |
+| `hooks/useJobFilterOptions.ts` | Month dropdown metadata |
+| `components/jobs/` | filter-bar, count, grid, pagination |
+| `components/ui/glass-*` | dropdown, search, alert-dialog |
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + Sonner |
 | `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
-| `lib/notifications/` | Sonner + localStorage auth toast flags |
-| `proxy.ts` | Clerk auth gate |
 
-## Instant shell pattern
+## Dashboard filters
 
-- No `loading.tsx` anywhere
-- Non-blocking `void prefetchQuery` — shell ships first
-- **Dashboard `page.tsx`**: My Jobs header, Search & filter label, "jobs found" text, Download always visible
-- **Stats `page.tsx`**: Statistics header, Monthly Applications heading
-- Data-slot skeletons: count number, pagination bar, job cards, stat values, chart area
-- Removed `components/JobsList.tsx` → split into `components/jobs/*`
+URL params: `search`, `jobStatus`, `jobMode`, `monthYear`, `page` — debounced search, instant dropdowns, month options from DB (UTC).
 
 ## Invalidation
 
-Every CRUD invalidates jobs/stats/charts/job(id). Optimistic create/delete. Cross-tab + SSE unchanged.
+`invalidateAllJobQueries(['jobs'])` covers list + `filterOptions`. Every CRUD busts jobs/stats/charts/job(id). Optimistic create/delete/update.
 
-## Auth + Sonner
+## Instant shell
 
-Test account inline select · button-only sign-in loading · route-gated welcome/goodbye toasts · localStorage flags
+No `loading.tsx`. `void prefetchQuery` only — headings/labels in `page.tsx`; skeletons on count, cards, pagination, stats, chart.
 
 ## Verify
 
-`npm run lint && npm run typecheck && npm run test && npm run build` — 20 tests green (2026-06-13)
+`npm run lint && npm run typecheck && npm run test && npm run build` — 29 tests.
 
 ## Deferred
 

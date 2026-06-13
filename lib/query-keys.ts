@@ -3,8 +3,14 @@
 export const queryKeys = {
   jobs: {
     all: ['jobs'] as const,
-    list: (search: string, jobStatus: string, page: number) =>
-      ['jobs', search, jobStatus, page] as const,
+    list: (
+      search: string,
+      jobStatus: string,
+      jobMode: string,
+      monthYear: string,
+      page: number
+    ) => ['jobs', search, jobStatus, jobMode, monthYear, page] as const,
+    filterOptions: ['jobs', 'filter-options'] as const,
   },
   stats: {
     all: ['stats'] as const,

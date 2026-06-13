@@ -5,7 +5,7 @@
 ## BL-0007: User-Driven Extension (active — resume tomorrow)
 
 **REQ:** REQ-0001, REQ-0013, REQ-0014, REQ-0003 · **token:** `c1-dev-20260612`  
-**Status:** **ACTIVE** @ `a4763f4` — Infinity Loop ON; await user reqs
+**Status:** **ACTIVE** — glass filters + confirm alerts shipped (uncommitted @ `16516b2`)
 
 ### Done this track
 - Sign-in test-account preview + inline select row (`TestAccountSelectRow`)
@@ -14,9 +14,13 @@
 - Instant shell: `void prefetchQuery`, no `loading.tsx`, data-slot skeletons
 - Stats: headings in `page.tsx`; dashboard: `JobsCount`/`JobsGrid`/`JobsPagination`
 - Prisma cleanup shipped (`998d3a5`)
+- Glass dropdown primitives + `ThemeToggle` + sign-in test account dropdown
+- Instant `JobsFilterBar` (debounced search, status/mode/month URL filters)
+- Glass confirm alerts before edit dialog + delete
+- Extended `getCachedJobs` + `getJobFilterOptionsAction` + query keys
 
 ### Next when resuming
-- Manual QA (auth flows, nav perceived speed)
+- Manual QA (filters, confirms, auth flows)
 - Map any new user request → REQ-XXXX before build
 
 ---

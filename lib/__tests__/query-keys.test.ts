@@ -9,12 +9,9 @@ describe('query-keys', () => {
   });
 
   it('builds list keys from filter params', () => {
-    expect(queryKeys.jobs.list('engineer', 'pending', 2)).toEqual([
-      'jobs',
-      'engineer',
-      'pending',
-      2,
-    ]);
+    expect(
+      queryKeys.jobs.list('engineer', 'pending', 'full-time', '2026-01', 2)
+    ).toEqual(['jobs', 'engineer', 'pending', 'full-time', '2026-01', 2]);
   });
 
   it('builds detail keys from job id', () => {

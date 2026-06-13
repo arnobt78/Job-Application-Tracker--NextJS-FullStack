@@ -9,11 +9,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { GlassCard } from '@/components/ui/glass-card';
+import { GlassAlertDialog } from '@/components/ui/glass-alert-dialog';
 import { Button } from '@/components/ui/button';
 import EditJobForm from '@/components/EditJobForm';
+import type { JobType } from '@/utils/types';
 
 type EditJobDialogProps = {
-  jobId: string;
+  job: Pick<JobType, 'id' | 'position' | 'company'>;
   /**
    * When true, renders an Edit trigger button.
    * When false, use defaultOpen={true} for URL-based access (e.g. /dashboard/[id]).
@@ -34,23 +36,28 @@ type EditJobDialogProps = {
 /**
  * Glassmorphic Edit Job dialog.
  * Two usage modes:
- *  1. showTrigger=true (JobCard): renders an Edit button trigger.
+ *  1. showTrigger=true (JobCard): confirm alert → Edit dialog.
  *  2. defaultOpen=true (URL /dashboard/[id]): opens immediately; onExternalClose navigates back.
  */
 export function EditJobDialog({
-  jobId,
+  job,
   showTrigger = false,
   defaultOpen = false,
   onExternalClose,
 }: EditJobDialogProps) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [open, setOpen] = useState(defaultOpen);
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (!next && !showTrigger) {
-      // Dialog closed in URL-access mode — let caller navigate away
       onExternalClose?.();
     }
+  };
+
+  const handleConfirmEdit = () => {
+    setConfirmOpen(false);
+    setOpen(true);
   };
 
   return (
@@ -60,22 +67,36 @@ export function EditJobDialog({
           variant="outline"
           size="sm"
           className="gap-1"
-          onClick={() => setOpen(true)}
+          onClick={() => setConfirmOpen(true)}
         >
           <Pencil className="h-4 w-4" />
           Edit
         </Button>
       )}
 
+      {showTrigger && (
+        <GlassAlertDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          variant="default"
+          icon={<Pencil className="h-6 w-6" />}
+          title="Edit application?"
+          description={`${job.position} at ${job.company}`}
+          cancelLabel="Cancel"
+          confirmLabel="Edit"
+          confirmIcon={<Pencil className="h-4 w-4" aria-hidden />}
+          onConfirm={handleConfirmEdit}
+        />
+      )}
+
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="border-0 bg-transparent p-0 shadow-none sm:max-w-[660px]">
-          {/* GlassCard provides violet glassmorphic chrome; standalone=false skips inner card */}
           <GlassCard variant="violet" className="w-full">
             <DialogHeader className="sr-only">
               <DialogTitle>Edit Job</DialogTitle>
             </DialogHeader>
             <EditJobForm
-              jobId={jobId}
+              jobId={job.id}
               standalone={false}
               onSuccess={() => handleOpenChange(false)}
             />

@@ -1,58 +1,43 @@
-# Jobify — Agent Memory (compact)
+# Jobify — Agent Memory
 
 ## Stack
-Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Sentry · exceljs · Vitest
+Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Sentry · Vitest
 
 ## Auth
-- `proxy.ts` — Clerk gate (`/dashboard(.*)`, `/stats`, `/user-profile/*`); `/add-job`→`/dashboard`, `/jobs/*`→`/dashboard`
-- Test creds: `lib/auth/test-credentials.ts` (incl. Clerk `imageUrl` for test user)
-- Hooks: `useGuestSignIn`, `useSignUpForm` → redirect `/dashboard`
-- Sign-in: `SignInPageShell` + `AuthSignInLeadingPanel` (preview only, no left spinner) + `TestAccountSelectRow` (inline avatar/name/email, h-10 trigger)
+- `proxy.ts` — Clerk gate; `/jobs/*` → `/dashboard`
+- Test creds: `lib/auth/test-credentials.ts`
+- Sign-in: glass test-account dropdown + `TestAccountSelectRow`
 
-## Data flow (SSR + cache + instant UI)
-1. **Pages** (`force-dynamic`): **non-blocking** `void prefetchQuery` in `page.tsx` → shell instant → `HydrationBoundary` → client `useQuery`
-2. **No `loading.tsx`** — inline skeletons on **data slots only** (numbers, chart, job cards, count)
-3. **Reads**: `lib/jobs/queries.ts` — `unstable_cache` + tags + optional Redis
-4. **CRUD**: `utils/actions.ts` → `invalidateUserJobCaches` (`lib/invalidate-jobs-server.ts`)
-5. **Client**: `hooks/useJobsMutation.ts` (optimistic) + `invalidateAllJobQueries` (`lib/invalidate-jobs.ts`)
-6. **Cross-tab/SSE**: BroadcastChannel + `GET /api/jobs/events` via `hooks/useJobsCacheSync.ts`
+## Data flow
+1. `force-dynamic` pages · `void prefetchQuery` (never `await` before shell)
+2. No `loading.tsx` — skeletons on data slots only
+3. Reads: `lib/jobs/queries.ts` (`unstable_cache` + tags + Redis)
+4. CRUD: `utils/actions.ts` → `invalidateUserJobCaches`
+5. Client: `useJobsMutation` + `invalidateAllJobQueries`
+6. Cross-tab: `useJobsCacheSync` + `/api/jobs/events`
 
-## Notifications (Sonner)
-- `components/ui/sonner.tsx` — bottom-right
-- `lib/notifications/app-toast.ts` + `auth-toast-storage.ts` (localStorage pending flags)
-- `AuthToastListener` — route-gated: welcome on `/dashboard`, goodbye on `/`; no double logout redirect
+## Query keys (`lib/query-keys.ts`)
+`jobs.list(search, jobStatus, jobMode, monthYear, page)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)`
 
-## Query keys
-`lib/query-keys.ts` — `jobs`, `stats`, `charts`, `job(id)`
+## Filters (`lib/jobs/`)
+- `filter-types.ts` / `filter-config.ts` — types + dropdown options
+- `filter-params.ts` — **single parser** for server prefetch + client hooks
+- `month-utc.ts` — UTC month filter (aligns `formatJobDate`)
 
 ## Routes
-- `/dashboard` — shell in `page.tsx` (headers, "jobs found", filter label); `JobsCount`/`JobsPagination`/`JobsGrid` + `useJobsListQuery`
-- `/dashboard/[id]` — edit dialog URL
-- `/stats` — headings in `page.tsx`; `StatsContainer`/`ChartsContainer` pulse data only
-- Legacy `/jobs/*` removed; middleware redirects old URLs
+- `/dashboard` — `JobsFilterBar` + `JobsCount`/`JobsGrid`/`JobsPagination` · `useJobsListQuery` + `useJobFilterOptions`
+- `/dashboard/[id]` — edit dialog URL (no confirm on direct open)
+- `/stats` — instant shell + `StatsContainer`/`ChartsContainer`
+
+## Glass UI
+- `glass-dropdown-menu` (check right) · `glass-search-input` · `glass-alert-dialog` (action icons)
+- Edit/delete: confirm alert → dialog/mutate on `JobCard`
 
 ## Hydration
-- `lib/format-date.ts` — UTC `formatJobDate()` in `JobCard`
-- `SafeImage` — no `loading` when `priority`
-
-## UI — Nav
-- `NavShell` + `LandingNav` / `AuthNav` / `DashboardNav` (replaces Navbar/Sidebar)
-
-## UI — Dialogs
-- `add-job-dialog.tsx` (sky) · `edit-job-dialog.tsx` (violet)
-- Forms: `standalone` + `onSuccess` props
-
-## Prisma
-- Job model only; indexes on `clerkId`, `[clerkId, status]`, `[clerkId, createdAt]`
-- Dev: `npx prisma db push`
+- `formatJobDate` UTC in `JobCard` · `SafeImage` no `loading` when `priority`
 
 ## Verify
-`npm run lint && npm run typecheck && npm run test && npm run build` (20 tests)
-
-## Config
-- `next.config.ts` — Cache-Control immutable on `/_next/static` production only
+`npm run lint && npm run typecheck && npm run test && npm run build` (29 tests)
 
 ## Do not
-- `cacheComponents: true` (conflicts with `force-dynamic`)
-- `await prefetchQuery` before shell render (blocks static UI)
-- Touch SSR/cache/SSE/invalidation for UI-only work
+- `cacheComponents: true` · `await prefetchQuery` before shell · break SSE/invalidation for UI-only work

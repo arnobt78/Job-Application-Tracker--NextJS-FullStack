@@ -11,7 +11,7 @@
 | ART-0005 | C1 | Component | `components/CreateJobForm.tsx` | REQ-0002, REQ-0010 | Baseline |
 | ART-0006 | C1 | Component | `components/EditJobForm.tsx` | REQ-0002, REQ-0010 | Baseline |
 | ART-0007 | C1 | Schema | `prisma/schema.prisma` | REQ-0002, REQ-0016 | Baseline |
-| ART-0008 | C1 | Component | `components/SearchForm.tsx` | REQ-0003 | Baseline |
+| ART-0008 | C1 | Component | `components/jobs/jobs-filter-bar.tsx` | REQ-0003 | C1 extension |
 | ART-0009 | C1 | Component | `components/jobs/*`, `hooks/useJobsListQuery.ts` | REQ-0003, REQ-0015 | `4efaf37` (replaces JobsList) |
 | ART-0010 | C1 | Component | `components/ComplexButtonContainer.tsx` | REQ-0004 | Baseline |
 | ART-0011 | C1 | Component | `components/StatsContainer.tsx` | REQ-0005 | Baseline |
@@ -58,6 +58,13 @@
 | ART-0052 | C1 | Component | `components/jobs/jobs-count.tsx` | REQ-0003 | `4efaf37` |
 | ART-0053 | C1 | Component | `components/jobs/jobs-grid.tsx` | REQ-0003 | `4efaf37` |
 | ART-0054 | C1 | Component | `components/jobs/jobs-pagination.tsx` | REQ-0003 | `4efaf37` |
+| ART-0055 | C1 | UI | `glass-dropdown-menu`, `glass-search-input`, `glass-alert-dialog`, `alert-dialog` | REQ-0013, REQ-0014 | C1 extension |
+| ART-0056 | C1 | Component | `components/jobs/jobs-filter-bar.tsx`, `hooks/useJobsListParams.ts` | REQ-0003 | C1 extension |
+| ART-0057 | C1 | Hook | `hooks/useJobFilterOptions.ts`, `hooks/useDebouncedCallback.ts` | REQ-0003 | C1 extension |
+| ART-0058 | C1 | Server | `getCachedJobFilterOptions` in `lib/jobs/queries.ts` | REQ-0003 | C1 extension |
+| ART-0059 | C1 | Lib | `lib/jobs/filter-types.ts`, `filter-config.ts`, `lib/ui/format-label.ts` | REQ-0003 | C1 extension |
+| ART-0060 | C1 | Component | `DeleteJobButton`, `edit-job-dialog` confirm flows | REQ-0014 | C1 extension |
+| ART-0061 | C1 | Component | `ThemeToggle`, `SignInForm` glass dropdowns | REQ-0013, REQ-0023 | C1 extension |
 
 ## Deprecated / removed
 

@@ -30,8 +30,8 @@ function JobCard({ job }: { job: JobType }) {
         <JobInfo icon={<RadioTower className="h-4 w-4" />} text={job.status} />
       </div>
       <div className="flex gap-4 p-6 pt-0">
-        <EditJobDialog jobId={job.id} showTrigger />
-        <DeleteJobButton id={job.id} />
+        <EditJobDialog job={job} showTrigger />
+        <DeleteJobButton job={job} />
       </div>
     </GlassCard>
   );

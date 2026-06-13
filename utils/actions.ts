@@ -10,7 +10,9 @@ import {
   getCachedJob,
   getCachedStats,
   getCachedCharts,
+  getCachedJobFilterOptions,
 } from "@/lib/jobs/queries";
+import type { JobFilterOptions } from "@/lib/jobs/filter-types";
 
 async function authenticateAndRedirect(): Promise<string> {
   const { userId } = await auth();
@@ -44,6 +46,8 @@ export async function createJobAction(
 type GetAllJobsActionTypes = {
   search?: string;
   jobStatus?: string;
+  jobMode?: string;
+  monthYear?: string;
   page?: number;
   limit?: number;
 };
@@ -51,6 +55,8 @@ type GetAllJobsActionTypes = {
 export async function getAllJobsAction({
   search,
   jobStatus,
+  jobMode,
+  monthYear,
   page = 1,
   limit = 10,
 }: GetAllJobsActionTypes): Promise<{
@@ -66,12 +72,25 @@ export async function getAllJobsAction({
       userId,
       search ?? "",
       jobStatus ?? "all",
+      jobMode ?? "all",
+      monthYear ?? "all",
       page,
       limit
     );
   } catch (error) {
     console.error(error);
     return { jobs: [], count: 0, page: 1, totalPages: 0 };
+  }
+}
+
+export async function getJobFilterOptionsAction(): Promise<JobFilterOptions> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    return await getCachedJobFilterOptions(userId);
+  } catch (error) {
+    console.error(error);
+    return { months: [] };
   }
 }
 

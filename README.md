@@ -527,7 +527,9 @@ After sign-in or sign-up, users land on **`/dashboard`**.
 ### React Query keys (`lib/query-keys.ts`)
 
 ```typescript
-queryKeys.jobs.list(search, jobStatus, page); // ['jobs', search, status, page]
+queryKeys.jobs.list(search, jobStatus, jobMode, monthYear, page);
+// ['jobs', search, jobStatus, jobMode, monthYear, page]
+queryKeys.jobs.filterOptions; // ['jobs', 'filter-options']
 queryKeys.stats.all; // ['stats']
 queryKeys.charts.all; // ['charts']
 queryKeys.job.detail(id); // ['job', id]
@@ -649,41 +651,54 @@ Both forms accept a **`standalone`** prop:
 
 ```tsx
 // app/(dashboard)/dashboard/page.tsx
+import { parseJobsListFiltersFromSearchParamsRecord } from '@/lib/jobs/filter-params';
+
 export const dynamic = "force-dynamic";
 
 async function DashboardPage({ searchParams }) {
   const params = await searchParams;
+  const filters = parseJobsListFiltersFromSearchParamsRecord(params);
   const queryClient = new QueryClient();
 
-  await queryClient.prefetchQuery({
+  // void — shell renders instantly; prefetch does not block
+  void queryClient.prefetchQuery({
     queryKey: queryKeys.jobs.list(
-      params.search ?? "",
-      params.jobStatus ?? "all",
-      1,
+      filters.search,
+      filters.jobStatus,
+      filters.jobMode,
+      filters.monthYear,
+      filters.page,
     ),
     queryFn: () =>
       getAllJobsAction({
-        search: params.search,
-        jobStatus: params.jobStatus,
-        page: 1,
+        search: filters.search,
+        jobStatus: filters.jobStatus,
+        jobMode: filters.jobMode,
+        monthYear: filters.monthYear,
+        page: filters.page,
       }),
+  });
+  void queryClient.prefetchQuery({
+    queryKey: queryKeys.jobs.filterOptions,
+    queryFn: () => getJobFilterOptionsAction(),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <JobsList />
+      <JobsFilterBar />
+      <JobsCount />
+      <JobsPagination />
+      <JobsGrid />
     </HydrationBoundary>
   );
 }
 ```
 
 ```tsx
-// components/JobsList.tsx (client)
+// hooks/useJobsListQuery.ts (client)
 "use client";
-const { data, isPending } = useQuery({
-  queryKey: queryKeys.jobs.list(search, jobStatus, pageNumber),
-  queryFn: () => getAllJobsAction({ search, jobStatus, page: pageNumber }),
-});
+const { data, isPending } = useJobsListQuery();
+// Internally: parseJobsListFilters(searchParams) + queryKeys.jobs.list(...)
 ```
 
 ### Creating a job (optimistic)

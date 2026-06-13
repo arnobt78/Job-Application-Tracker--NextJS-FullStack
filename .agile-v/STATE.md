@@ -6,8 +6,8 @@
 | **Stage** | 1 Baseline + **UI Extension Track** (active) |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
 | **Pipeline** | UI/auth/perf shipped → Gate 1 pending → ready for user reqs |
-| **Last Updated** | 2026-06-13T23:22:00Z |
-| **Git HEAD** | `a4763f4` (main, clean, pushed) |
+| **Last Updated** | 2026-06-11T23:55:00Z |
+| **Git HEAD** | `16516b2` (uncommitted glass filters + alerts) |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -43,8 +43,9 @@
 | `cc72b0b` | Instant shells, auth toast fixes | REQ-0014, REQ-0013 |
 | `4efaf37` | Dashboard jobs split + `useJobsListQuery` | REQ-0003, REQ-0014 |
 | `a4763f4` | `.agile-v` session sync | — |
+| (pending) | Glass filters, dropdowns, confirm alerts | REQ-0003, REQ-0013, REQ-0014, REQ-0023 |
 
-**Verify @ a4763f4:** lint ✓ typecheck ✓ test 20/20 ✓
+**Verify @ HEAD:** lint ✓ typecheck ✓ test 20/20 ✓ build ✓ (uncommitted)
 
 ## Active Backlog
 

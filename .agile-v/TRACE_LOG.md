@@ -26,3 +26,6 @@
 | 2026-06-13T01:10:00Z | prove | red-team-verifier | REQ-0014…0003 | EVAL-0003 lint/typecheck/test(20)/build @ 4efaf37 | SUCCESS |
 | 2026-06-13T01:10:00Z | checkpoint | agile-v-core | — | Sync .agile-v for tomorrow resume @ 4efaf37 | PAUSED |
 | 2026-06-13T23:22:00Z | bootstrap | agile-v-core | — | Infinity Loop reactivate; sync to a4763f4; EVAL-0003 | ACTIVE |
+| 2026-06-11T23:55:00Z | build | build-agent-js | REQ-0003, REQ-0013, REQ-0014, REQ-0023 | Glass filters, dropdowns, confirm alerts | SUCCESS — uncommitted @ 16516b2 |
+| 2026-06-11T23:55:00Z | prove | red-team-verifier | REQ-0003…0014 | lint/typecheck/test(20)/build @ HEAD | SUCCESS |
+| 2026-06-12T00:10:00Z | build | build-agent-js | REQ-0003, REQ-0014, REQ-0017 | Filter-params lib, UTC months, alert icons, README | SUCCESS |

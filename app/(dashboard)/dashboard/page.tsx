@@ -1,4 +1,4 @@
-import SearchForm from '@/components/SearchForm';
+import { JobsFilterBar } from '@/components/jobs/jobs-filter-bar';
 import DownloadDropdown from '@/components/DownloadDropdown';
 import { JobsCount } from '@/components/jobs/jobs-count';
 import { JobsGrid } from '@/components/jobs/jobs-grid';
@@ -12,7 +12,11 @@ import {
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
-import { getAllJobsAction } from '@/utils/actions';
+import {
+  getAllJobsAction,
+  getJobFilterOptionsAction,
+} from '@/utils/actions';
+import { parseJobsListFiltersFromSearchParamsRecord } from '@/lib/jobs/filter-params';
 import { Briefcase, Filter } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -29,20 +33,37 @@ type DashboardPageProps = {
   searchParams: Promise<{
     search?: string;
     jobStatus?: string;
+    jobMode?: string;
+    monthYear?: string;
     page?: string;
   }>;
 };
 
 async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
-  const search = params.search ?? '';
-  const jobStatus = params.jobStatus ?? 'all';
-  const pageNumber = Number(params.page) || 1;
+  const filters = parseJobsListFiltersFromSearchParamsRecord(params);
 
   const queryClient = new QueryClient();
   void queryClient.prefetchQuery({
-    queryKey: queryKeys.jobs.list(search, jobStatus, pageNumber),
-    queryFn: () => getAllJobsAction({ search, jobStatus, page: pageNumber }),
+    queryKey: queryKeys.jobs.list(
+      filters.search,
+      filters.jobStatus,
+      filters.jobMode,
+      filters.monthYear,
+      filters.page
+    ),
+    queryFn: () =>
+      getAllJobsAction({
+        search: filters.search,
+        jobStatus: filters.jobStatus,
+        jobMode: filters.jobMode,
+        monthYear: filters.monthYear,
+        page: filters.page,
+      }),
+  });
+  void queryClient.prefetchQuery({
+    queryKey: queryKeys.jobs.filterOptions,
+    queryFn: () => getJobFilterOptionsAction(),
   });
 
   return (
@@ -64,7 +85,7 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
         <Filter className="h-4 w-4" />
         Search &amp; filter
       </div>
-      <SearchForm />
+      <JobsFilterBar />
 
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">

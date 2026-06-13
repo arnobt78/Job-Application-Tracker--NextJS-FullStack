@@ -32,7 +32,7 @@ describe('optimistic mutation rollback', () => {
   });
 
   it('removes job from list cache optimistically', () => {
-    const listKey = queryKeys.jobs.list('', 'all', 1);
+    const listKey = queryKeys.jobs.list('', 'all', 'all', 'all', 1);
     queryClient.setQueryData<JobsListResult>(listKey, {
       jobs: [
         {
@@ -60,7 +60,7 @@ describe('optimistic mutation rollback', () => {
   });
 
   it('restores snapshot on rollback after failed delete', () => {
-    const listKey = queryKeys.jobs.list('', 'all', 1);
+    const listKey = queryKeys.jobs.list('', 'all', 'all', 'all', 1);
     const original: JobsListResult = {
       jobs: [
         {
