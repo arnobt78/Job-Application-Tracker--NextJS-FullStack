@@ -3,33 +3,33 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 4 Verification (partial — UI track) |
+| Stage | 4 Verification (partial — UI + perf track) |
 | Status | `IN_PROGRESS` |
-| Last Updated | 2026-06-12T21:31:53Z |
-| Red Team | Automated gates @ be950be PASS |
+| Last Updated | 2026-06-13T23:22:00Z |
+| Red Team | EVAL-0003 @ a4763f4 PASS |
 
 ## Findings Summary
 
 ```
-Scope: Baseline + UI track through be950be | Traceability: REQ-0001…0018, REQ-0012, REQ-0013, REQ-0019, REQ-0023
-Findings: PASS: 5 / FAIL: 0 / FLAG: 1 (manual mobile QA)
+Scope: Baseline + UI/auth/perf track through a4763f4 | Traceability: REQ-0001…0023
+Findings: PASS: 6 / FAIL: 0 / FLAG: 1 (manual mobile QA)
 ```
 
 | Severity | Count | REQ-IDs | Notes |
 |---|---|---|---|
-| PASS | 5 | REQ-0012, REQ-0013, REQ-0017, REQ-0023 | lint/typecheck/test(19)/build @ be950be |
+| PASS | 6 | REQ-0003, REQ-0012, REQ-0013, REQ-0014, REQ-0020 | lint/typecheck/test(20) @ a4763f4 |
 | FLAG | 1 | REQ-0013 | Manual mobile QA recommended |
 | FAIL | 0 | — | — |
 
-## UI Track Evidence
+## Latest Evidence (EVAL-0003)
 
 | Check | Result | Commit |
 |---|---|---|
-| typecheck | PASS | be950be |
-| lint | PASS | be950be |
-| test | PASS 19/19 | be950be |
-| SSR/cache/SSE regression | PASS (no invalidate path changes) | 07fcd0e…be950be |
-| Chrome extension fetch noise | N/A (env) | not app bug |
+| lint | PASS | a4763f4 |
+| typecheck | PASS | a4763f4 |
+| test | PASS 20/20 | a4763f4 |
+| SSR/cache/SSE | PASS (no invalidate path changes) | 8ac2e6d…4efaf37 |
+| Instant shell pattern | PASS | cc72b0b, 4efaf37 |
 
 ## EvalGate (Gate 2)
 

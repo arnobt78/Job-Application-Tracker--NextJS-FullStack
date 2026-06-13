@@ -1,6 +1,6 @@
 # Cycle C1 — Active (paused 2026-06-13)
 
-**HEAD:** `4efaf37` · **Branch:** `main` · **Checkpoint:** INT-0003 `c1-dev-20260612`
+**HEAD:** `a4763f4` · **Branch:** `main` · **Checkpoint:** INT-0003 `c1-dev-20260612` · **Infinity Loop:** ON
 
 ## Shipped since bootstrap
 

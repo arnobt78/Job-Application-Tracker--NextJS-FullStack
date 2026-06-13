@@ -5,7 +5,7 @@
 ## BL-0007: User-Driven Extension (active — resume tomorrow)
 
 **REQ:** REQ-0001, REQ-0013, REQ-0014, REQ-0003 · **token:** `c1-dev-20260612`  
-**Status:** **ACTIVE** @ `4efaf37` — major slices shipped; await user QA / next reqs
+**Status:** **ACTIVE** @ `a4763f4` — Infinity Loop ON; await user reqs
 
 ### Done this track
 - Sign-in test-account preview + inline select row (`TestAccountSelectRow`)

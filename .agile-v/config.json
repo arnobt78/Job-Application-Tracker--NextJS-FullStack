@@ -12,12 +12,12 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-12T21:31:53Z",
+    "reactivated": "2026-06-13T23:22:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
   "stack": {
-    "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5"],
+    "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5", "Sonner"],
     "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL"],
     "auth": ["Clerk 6"],
     "observability": ["Sentry (optional)"],
@@ -29,9 +29,9 @@
     "gate_2": ["Project Owner"]
   },
   "model_versions": {
-    "orchestrator": { "tier": "high", "last_validated": "2026-06-12", "validated_by": "infinity-loop-reactivate" },
-    "build_agent": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "infinity-loop-reactivate" },
-    "red_team": { "tier": "medium", "last_validated": "2026-06-12", "validated_by": "infinity-loop-reactivate" }
+    "orchestrator": { "tier": "high", "last_validated": "2026-06-13", "validated_by": "infinity-loop-reactivate" },
+    "build_agent": { "tier": "medium", "last_validated": "2026-06-13", "validated_by": "infinity-loop-reactivate" },
+    "red_team": { "tier": "medium", "last_validated": "2026-06-13", "validated_by": "infinity-loop-reactivate" }
   },
   "llm_provider_registry": [
     {
@@ -41,7 +41,7 @@
       "retention": "session",
       "api_data_usage": "per Cursor policy",
       "approved_for": ["source_code", "requirements", "non-PHI"],
-      "review_date": "2026-06-12"
+      "review_date": "2026-06-13"
     }
   ],
   "active_skills": {
@@ -84,9 +84,9 @@
     "policy": ".agile-v/POLICY.yaml"
   },
   "git_baseline": {
-    "head": "be950be",
+    "head": "a4763f4",
     "branch": "main",
-    "last_commit": "update styling for navbar and page container and ui",
+    "last_commit": "docs(agile-v): sync state for session resume at 4efaf37",
     "working_tree": "clean"
   }
 }

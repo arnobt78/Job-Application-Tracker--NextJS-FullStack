@@ -4,10 +4,10 @@
 |---|---|
 | **Cycle** | C1 |
 | **Stage** | 1 Baseline + **UI Extension Track** (active) |
-| **Status** | `ACTIVE` — paused for next session |
-| **Pipeline** | UI/auth/perf shipped → Gate 1 still pending |
-| **Last Updated** | 2026-06-13T01:10:00Z |
-| **Git HEAD** | `4efaf37` (main, clean, pushed) |
+| **Status** | `ACTIVE` — Infinity Loop **ON** |
+| **Pipeline** | UI/auth/perf shipped → Gate 1 pending → ready for user reqs |
+| **Last Updated** | 2026-06-13T23:22:00Z |
+| **Git HEAD** | `a4763f4` (main, clean, pushed) |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -33,25 +33,23 @@
 | Cross-tab/SSE | `useJobsCacheSync` + `/api/jobs/events` — do not break |
 | No `cacheComponents: true` | conflicts with `force-dynamic` |
 
-## Shipped (2026-06-12 → 2026-06-13)
+## Shipped (C1 UI track)
 
 | Commit | Scope | REQ |
 |---|---|---|
-| `998d3a5` | Prisma: remove Task/Tour/Token; Job indexes | REQ-0020 |
-| `8ac2e6d` | Sign-in preview, Sonner toasts, auth toast listener | REQ-0001, REQ-0014 |
-| `cc72b0b` | Instant page shells, auth toast fixes, test-account select | REQ-0014, REQ-0013 |
-| `4efaf37` | Dashboard split: JobsCount/Grid/Pagination + `useJobsListQuery` | REQ-0014, REQ-0003 |
+| `be950be` | NavShell, dashboard nav, UI polish | REQ-0012, REQ-0013 |
+| `998d3a5` | Prisma cleanup | REQ-0020 |
+| `8ac2e6d` | Sign-in preview, Sonner, auth toasts | REQ-0001, REQ-0014 |
+| `cc72b0b` | Instant shells, auth toast fixes | REQ-0014, REQ-0013 |
+| `4efaf37` | Dashboard jobs split + `useJobsListQuery` | REQ-0003, REQ-0014 |
+| `a4763f4` | `.agile-v` session sync | — |
 
-**Verify @ 4efaf37:** lint ✓ typecheck ✓ test 20/20 ✓ build ✓
+**Verify @ a4763f4:** lint ✓ typecheck ✓ test 20/20 ✓
 
-## Resume Tomorrow — suggested next
+## Active Backlog
 
-| Priority | Item | BL | Notes |
-|---|---|---|---|
-| 1 | Manual QA sign-in/out toasts, dashboard↔stats nav | BL-0007 | User testing |
-| 2 | E2E Playwright | BL-0003 | Deferred |
-| 3 | Gate 1 human approval | INT-0001 | REQ baseline sign-off |
-| 4 | PostHog / full observability | BL-0004 | Optional |
+**BL-0007** (ACTIVE) — user-driven extension · token `c1-dev-20260612`  
+Next: BL-0003 E2E · INT-0001 Gate 1 · BL-0004 observability
 
 ## Gates
 
@@ -62,7 +60,7 @@
 
 ## Agent Memory
 
-`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · `docs/CLERK_AUTH_COMPLETE_IMPLEMENTATION_GUIDE.md`
+`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md`
 
 ## Verify Before Done
 
