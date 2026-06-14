@@ -152,12 +152,17 @@
 }
 
 /*
- * Overlay scrollbar — transparent track, thumb only on hover/scroll activity.
- * No scrollbar-gutter (no reserved width); thumb paints over content edge.
+ * Overlay scrollbar — stable gutter prevents layout shift when scroll appears/disappears
+ * (filters, login, modal lock). Track stays transparent; thumb on hover/scroll only.
  */
 html {
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
+}
+
+body {
+  scrollbar-gutter: stable;
 }
 
 html:hover {

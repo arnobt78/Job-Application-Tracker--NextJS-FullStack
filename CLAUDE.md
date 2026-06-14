@@ -30,13 +30,14 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 
 ## Glass UI
 - `glass-dropdown-menu` — `GlassDropdownTrigger` (left label + chevron) · custom-children radio rows
-- `glass-search-input` · `glass-alert-dialog` (uses `Dialog` modal=false, not AlertDialog)
+- `glass-search-input` · `glass-alert-dialog` (AlertDialog + stable gutter)
 - `glass-dialog-content` — 90vw×90vh job dialogs
 - Edit/delete: confirm → dialog/mutate on `JobCard`
 
 ## Scroll / overlays (no layout shift)
-- `OverlayScrollbar` in `providers.tsx` · overlay thumb CSS in `globals.css` (transparent track)
-- `DropdownMenu` + `Dialog` default `modal={false}` · overlay blocks wheel/touch
+- `scrollbar-gutter: stable` on html/body — reserved transparent gutter; no shift when scroll toggles
+- `OverlayScrollbar` + overlay thumb CSS (transparent track, thumb on hover/scroll)
+- `DropdownMenu` + `Dialog` default `modal={false}` · Select uses RemoveScroll in Content (gutter absorbs shift)
 - Job dialog inner scroll: `.overlay-scroll`
 
 ## Job forms (dialog)

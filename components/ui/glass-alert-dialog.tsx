@@ -3,12 +3,12 @@
 import type { ReactNode } from 'react';
 import { Loader2, X } from 'lucide-react';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -41,10 +41,7 @@ const glassVariantMap: Record<
   sky: 'sky',
 };
 
-/**
- * Glass confirm dialog — uses Dialog (modal=false) to avoid body scroll lock / layout shift.
- * Radix AlertDialog hardcodes modal=true; Dialog preserves alert UX without scrollbar hide.
- */
+/** Glass confirm alert — proper AlertDialog + scrollbar-gutter:stable prevents layout shift */
 export function GlassAlertDialog({
   open,
   onOpenChange,
@@ -62,12 +59,8 @@ export function GlassAlertDialog({
   const glassVariant = glassVariantMap[variant];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="border-0 bg-transparent p-0 shadow-none sm:max-w-md"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-      >
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="border-0 bg-transparent p-0 shadow-none sm:max-w-md">
         <GlassCard variant={glassVariant} className="p-0">
           <div className="flex gap-4 p-6">
             <div
@@ -81,21 +74,21 @@ export function GlassAlertDialog({
               {icon}
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <DialogTitle className="text-left text-lg font-semibold">
+              <AlertDialogTitle className="text-left text-lg font-semibold">
                 {title}
-              </DialogTitle>
-              <DialogDescription className="text-left text-sm">
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-left text-sm">
                 {description}
-              </DialogDescription>
+              </AlertDialogDescription>
             </div>
           </div>
           <div className="flex flex-col-reverse gap-2 border-t border-white/10 p-4 sm:flex-row sm:justify-end">
-            <DialogClose asChild>
+            <AlertDialogCancel asChild>
               <Button variant="outline" className="gap-2" disabled={loading}>
                 {cancelIcon}
                 {cancelLabel}
               </Button>
-            </DialogClose>
+            </AlertDialogCancel>
             <Button
               type="button"
               variant={variant === 'destructive' ? 'destructive' : 'default'}
@@ -112,7 +105,7 @@ export function GlassAlertDialog({
             </Button>
           </div>
         </GlassCard>
-      </DialogContent>
-    </Dialog>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

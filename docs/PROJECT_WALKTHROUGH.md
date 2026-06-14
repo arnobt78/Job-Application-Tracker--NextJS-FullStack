@@ -27,7 +27,7 @@ CRUD: useJobsMutation (optimistic) → invalidateUserJobCaches
 | `hooks/useJobFilterOptions.ts` | Month dropdown metadata |
 | `components/jobs/` | filter-bar, count, grid, pagination |
 | `components/ui/glass-*` | dropdown, search, alert-dialog, dialog-content (90vh) |
-| `components/ui/overlay-scrollbar.tsx` | Thumb-on-scroll; no gutter squeeze |
+| `components/ui/overlay-scrollbar.tsx` | Stable gutter + overlay thumb (hover/scroll) |
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + Sonner |
 | `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
@@ -46,9 +46,9 @@ No `loading.tsx`. `void prefetchQuery` only — headings/labels in `page.tsx`; s
 
 ## Scroll & overlays
 
-- Global overlay scrollbar (`globals.css` + `OverlayScrollbar`) — transparent track, thumb on hover/scroll
-- `DropdownMenu` / `Dialog` default `modal={false}` — avoids native scrollbar hide → no horizontal shift
-- `GlassAlertDialog` uses `Dialog` (Radix AlertDialog hardcodes modal lock)
+- Global overlay scrollbar + **`scrollbar-gutter: stable`** on html/body — transparent reserved gutter, no shift when scroll toggles (login, filters)
+- `DropdownMenu` / `Dialog` default `modal={false}`; `GlassAlertDialog` uses proper `AlertDialog`
+- Select Content uses Radix RemoveScroll — shift prevented by stable gutter
 - Job add/edit: `GlassDialogContent` 90vw×90vh; forms stacked; status+mode inline on sm+
 
 ## Auth UI (recent)

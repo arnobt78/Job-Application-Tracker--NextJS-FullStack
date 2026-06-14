@@ -72,6 +72,7 @@ const SelectContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
+    {/* Radix wraps content in RemoveScroll (no modal prop on Root); scrollbar-gutter:stable on html prevents shift */}
     <SelectPrimitive.Content
       ref={ref}
       className={cn(

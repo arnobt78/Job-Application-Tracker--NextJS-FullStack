@@ -14,8 +14,8 @@ function clearElementScrolling(el: Element) {
 }
 
 /**
- * Toggles `is-scrolling` during scroll activity so overlay thumb CSS can show
- * without reserving scrollbar gutter space (no layout shift / no extra padding).
+ * Toggles `is-scrolling` during scroll activity for overlay thumb visibility.
+ * Pair with `scrollbar-gutter: stable` in globals.css — gutter holds space, track stays transparent.
  */
 export function OverlayScrollbar() {
   useEffect(() => {
