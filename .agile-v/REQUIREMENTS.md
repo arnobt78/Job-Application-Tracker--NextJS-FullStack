@@ -367,7 +367,7 @@
 | -------- | ----------------------------------------------------- | -------- | ---------- |
 | REQ-0019 | Auth UI flicker-free enhancements (dashboard Navbar)  | MEDIUM   | `new [C2]` |
 | REQ-0023 | Custom auth cards (SignIn/SignUp match, no Clerk UI)  | MEDIUM   | `done [C1]` `f660eb9` |
-| REQ-0020 | Prisma schema cleanup (remove unused Task/Tour/Token) | LOW      | `new [C2]` |
+| REQ-0020 | Prisma schema cleanup (remove unused Task/Tour/Token) | LOW      | `done [C1]` `998d3a5` |
 | REQ-0021 | Automated test suite (unit + e2e)                     | HIGH     | `new [C2]` |
 | REQ-0022 | Observability (logging, error tracking)               | MEDIUM   | `new [C2]` |
 

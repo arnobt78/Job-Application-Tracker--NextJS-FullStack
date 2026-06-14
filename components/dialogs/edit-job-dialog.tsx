@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { GlassDialogContent } from '@/components/ui/glass-dialog-content';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassAlertDialog } from '@/components/ui/glass-alert-dialog';
 import { Button } from '@/components/ui/button';
@@ -90,18 +90,20 @@ export function EditJobDialog({
       )}
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="border-0 bg-transparent p-0 shadow-none sm:max-w-[660px]">
-          <GlassCard variant="violet" className="w-full">
+        <GlassDialogContent>
+          <GlassCard variant="violet" className="flex h-full w-full flex-col overflow-hidden">
             <DialogHeader className="sr-only">
               <DialogTitle>Edit Job</DialogTitle>
             </DialogHeader>
-            <EditJobForm
-              jobId={job.id}
-              standalone={false}
-              onSuccess={() => handleOpenChange(false)}
-            />
+            <div className="overlay-scroll min-h-0 flex-1 overflow-y-auto">
+              <EditJobForm
+                jobId={job.id}
+                standalone={false}
+                onSuccess={() => handleOpenChange(false)}
+              />
+            </div>
           </GlassCard>
-        </DialogContent>
+        </GlassDialogContent>
       </Dialog>
     </>
   );

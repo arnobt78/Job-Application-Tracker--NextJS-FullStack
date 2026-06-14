@@ -6,38 +6,47 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 ## Auth
 - `proxy.ts` — Clerk gate; `/jobs/*` → `/dashboard`
 - Test creds: `lib/auth/test-credentials.ts`
-- Sign-in: glass test-account dropdown + `TestAccountSelectRow`
+- Sign-in: `GlassDropdownTrigger` + `TestAccountSelectRow` · Send icon · Loader2 loading
+- Sign-up: Sparkles + Loader2 on wait · demo CTA: Loader2 on landing
 
 ## Data flow
-1. `force-dynamic` pages · `void prefetchQuery` (never `await` before shell)
-2. No `loading.tsx` — skeletons on data slots only
+1. `force-dynamic` · `void prefetchQuery` (never `await` before shell)
+2. No `loading.tsx` — data-slot skeletons only
 3. Reads: `lib/jobs/queries.ts` (`unstable_cache` + tags + Redis)
 4. CRUD: `utils/actions.ts` → `invalidateUserJobCaches`
 5. Client: `useJobsMutation` + `invalidateAllJobQueries`
 6. Cross-tab: `useJobsCacheSync` + `/api/jobs/events`
 
-## Query keys (`lib/query-keys.ts`)
+## Query keys
 `jobs.list(search, jobStatus, jobMode, monthYear, page)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)`
 
 ## Filters (`lib/jobs/`)
-- `filter-types.ts` / `filter-config.ts` — types + dropdown options
-- `filter-params.ts` — **single parser** for server prefetch + client hooks
-- `month-utc.ts` — UTC month filter (aligns `formatJobDate`)
+`filter-types` · `filter-config` · `filter-params` (single parser) · `month-utc`
 
 ## Routes
-- `/dashboard` — `JobsFilterBar` + `JobsCount`/`JobsGrid`/`JobsPagination` · `useJobsListQuery` + `useJobFilterOptions`
-- `/dashboard/[id]` — edit dialog URL (no confirm on direct open)
-- `/stats` — instant shell + `StatsContainer`/`ChartsContainer`
+- `/dashboard` — `JobsFilterBar` + count/grid/pagination
+- `/dashboard/[id]` — edit dialog URL
+- `/stats` — instant shell
 
 ## Glass UI
-- `glass-dropdown-menu` (check right) · `glass-search-input` · `glass-alert-dialog` (action icons)
-- Edit/delete: confirm alert → dialog/mutate on `JobCard`
+- `glass-dropdown-menu` — `GlassDropdownTrigger` (left label + chevron) · custom-children radio rows
+- `glass-search-input` · `glass-alert-dialog` (uses `Dialog` modal=false, not AlertDialog)
+- `glass-dialog-content` — 90vw×90vh job dialogs
+- Edit/delete: confirm → dialog/mutate on `JobCard`
+
+## Scroll / overlays (no layout shift)
+- `OverlayScrollbar` in `providers.tsx` · overlay thumb CSS in `globals.css` (transparent track)
+- `DropdownMenu` + `Dialog` default `modal={false}` · overlay blocks wheel/touch
+- Job dialog inner scroll: `.overlay-scroll`
+
+## Job forms (dialog)
+Stack: position, company, location · row: status+mode (`sm:grid-cols-2`) · full-width submit
 
 ## Hydration
-- `formatJobDate` UTC in `JobCard` · `SafeImage` no `loading` when `priority`
+`formatJobDate` UTC · `SafeImage` no `loading` when `priority`
 
 ## Verify
 `npm run lint && npm run typecheck && npm run test && npm run build` (29 tests)
 
 ## Do not
-- `cacheComponents: true` · `await prefetchQuery` before shell · break SSE/invalidation for UI-only work
+`cacheComponents: true` · `await prefetchQuery` before shell · break SSE/invalidation for UI-only work

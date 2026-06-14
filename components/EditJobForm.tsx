@@ -76,27 +76,29 @@ function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) 
           <Pencil className="h-8 w-8 text-violet-400" />
           Edit Job
         </h2>
-        <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
           <CustomFormField name="position" control={form.control} required />
           <CustomFormField name="company" control={form.control} required />
           <CustomFormField name="location" control={form.control} required />
-          <CustomFormSelect
-            name="status"
-            control={form.control}
-            labelText="job status"
-            items={Object.values(JobStatus)}
-            required
-          />
-          <CustomFormSelect
-            name="mode"
-            control={form.control}
-            labelText="job mode"
-            items={Object.values(JobMode)}
-            required
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <CustomFormSelect
+              name="status"
+              control={form.control}
+              labelText="job status"
+              items={Object.values(JobStatus)}
+              required
+            />
+            <CustomFormSelect
+              name="mode"
+              control={form.control}
+              labelText="job mode"
+              items={Object.values(JobMode)}
+              required
+            />
+          </div>
           <Button
             type="submit"
-            className="self-end capitalize"
+            className="w-full capitalize"
             disabled={isPending}
           >
             {isPending ? 'Updating...' : 'Save Changes'}

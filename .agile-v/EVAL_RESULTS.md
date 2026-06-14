@@ -5,10 +5,10 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Last Updated | 2026-06-13T23:22:00Z |
+| Last Updated | 2026-06-14T12:56:00Z |
 | **eval_gate_status** | **NOT_RUN** |
-| **ui_slice_status** | **PASS** (automated gates @ a4763f4) |
-| Red Team | Pending |
+| **ui_slice_status** | **PASS** (automated gates @ fd6f20c) |
+| Red Team | EVAL-0004 PASS |
 | Compliance Auditor | Pending |
 
 ## Eval Flywheel Record
@@ -18,6 +18,7 @@
 | EVAL-0001 | 2026-06-12 | UI slice f660eb9 | lint/typecheck/test/build | PASS | REQ-0013, REQ-0023 |
 | EVAL-0002 | 2026-06-12 | UI track be950be | lint/typecheck/test(19) | PASS | NavShell, REQ-0012 |
 | EVAL-0003 | 2026-06-13 | Auth/perf track a4763f4 | lint/typecheck/test(20) | PASS | Sonner, instant shell, jobs split |
+| EVAL-0004 | 2026-06-14 | Filters/glass track fd6f20c | lint/typecheck/test(29)/build | PASS | Glass filters, confirms, filter-params |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 
 ## Quality Gates Evidence (Planned)

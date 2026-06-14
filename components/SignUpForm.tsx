@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSignUpForm } from "@/hooks/useSignUpForm";
 import Link from "next/link";
+import { Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 /** Custom sign-up card — same sky GlassCard + layout as SignInForm (no Clerk footer) */
@@ -148,14 +149,22 @@ export default function SignUpForm() {
           <div className="cta-shine-wrap w-full rounded-2xl">
             <Button
               type="submit"
-              className="cta-shine-button w-full"
+              className="cta-shine-button w-full gap-2"
               disabled={isLoading}
             >
-              {isLoading
-                ? "Please wait..."
-                : pendingVerification
-                  ? "Verify & continue"
-                  : "Create account"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Please wait...
+                </>
+              ) : pendingVerification
+                  ? "Verify & Continue"
+                  : (
+                    <>
+                      <Sparkles className="h-4 w-4" aria-hidden />
+                      Create Account
+                    </>
+                  )}
             </Button>
           </div>
         </form>

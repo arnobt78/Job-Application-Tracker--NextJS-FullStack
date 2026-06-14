@@ -20,13 +20,14 @@ import {
   GlassDropdownContent,
   GlassDropdownRadioItem,
   GlassDropdownSeparator,
+  GlassDropdownTrigger,
 } from "@/components/ui/glass-dropdown-menu";
 import {
   TEST_ACCOUNTS,
   type TestAccount,
   type TestAccountRole,
 } from "@/lib/auth/test-credentials";
-import { Eraser, Loader2 } from "lucide-react";
+import { Eraser, Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SignInFormProps = {
@@ -135,42 +136,35 @@ export default function SignInForm({
             <Label htmlFor="guest-select">Login with Test Account</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild disabled={isLoading}>
-                <Button
-                  id="guest-select"
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "glass-input h-10 w-full justify-start gap-2 px-3 py-0 font-normal",
-                    "[&>span]:line-clamp-none"
-                  )}
-                >
+                <GlassDropdownTrigger id="guest-select">
                   {selectedRole ? (
                     <TestAccountSelectRow
                       name={guestUserAccount.name}
                       email={guestUserAccount.email}
                       imageUrl={guestUserAccount.imageUrl}
-                      className="flex-1 pr-1"
                     />
                   ) : (
                     <span className="text-muted-foreground">
                       Select Role Based Test Account
                     </span>
                   )}
-                </Button>
+                </GlassDropdownTrigger>
               </DropdownMenuTrigger>
               <GlassDropdownContent
+                align="start"
+                collisionPadding={8}
+                sideOffset={8}
                 className="w-[var(--radix-dropdown-menu-trigger-width)]"
               >
                 <DropdownMenuRadioGroup
                   value={selectedRole || undefined}
                   onValueChange={handleRoleSelect}
                 >
-                  <GlassDropdownRadioItem value="guest-user" label="">
+                  <GlassDropdownRadioItem value="guest-user">
                     <TestAccountSelectRow
                       name={guestUserAccount.name}
                       email={guestUserAccount.email}
                       imageUrl={guestUserAccount.imageUrl}
-                      className="flex-1"
                     />
                   </GlassDropdownRadioItem>
                 </DropdownMenuRadioGroup>
@@ -227,7 +221,10 @@ export default function SignInForm({
                   Signing in...
                 </>
               ) : (
-                "Sign In"
+                <>
+                  <Send className="h-4 w-4" aria-hidden />
+                  Sign In
+                </>
               )}
             </Button>
           </div>

@@ -26,7 +26,8 @@ CRUD: useJobsMutation (optimistic) → invalidateUserJobCaches
 | `hooks/useJobsListParams.ts` | URL filter write (`router.replace`) |
 | `hooks/useJobFilterOptions.ts` | Month dropdown metadata |
 | `components/jobs/` | filter-bar, count, grid, pagination |
-| `components/ui/glass-*` | dropdown, search, alert-dialog |
+| `components/ui/glass-*` | dropdown, search, alert-dialog, dialog-content (90vh) |
+| `components/ui/overlay-scrollbar.tsx` | Thumb-on-scroll; no gutter squeeze |
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + Sonner |
 | `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE |
 | `lib/invalidate-jobs*.ts` | Client + server cache bust |
@@ -42,6 +43,18 @@ URL params: `search`, `jobStatus`, `jobMode`, `monthYear`, `page` — debounced 
 ## Instant shell
 
 No `loading.tsx`. `void prefetchQuery` only — headings/labels in `page.tsx`; skeletons on count, cards, pagination, stats, chart.
+
+## Scroll & overlays
+
+- Global overlay scrollbar (`globals.css` + `OverlayScrollbar`) — transparent track, thumb on hover/scroll
+- `DropdownMenu` / `Dialog` default `modal={false}` — avoids native scrollbar hide → no horizontal shift
+- `GlassAlertDialog` uses `Dialog` (Radix AlertDialog hardcodes modal lock)
+- Job add/edit: `GlassDialogContent` 90vw×90vh; forms stacked; status+mode inline on sm+
+
+## Auth UI (recent)
+
+- `GlassDropdownTrigger` — left-aligned label + chevron (sign-in test account, filter dropdowns)
+- Sign In: Send icon · Sign-up: Sparkles · loading: Loader2 · demo CTA: Loader2
 
 ## Verify
 

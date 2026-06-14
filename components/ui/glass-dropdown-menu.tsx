@@ -1,7 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Check } from 'lucide-react';
+import { forwardRef } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
+import { Button, type ButtonProps } from '@/components/ui/button';
 import {
   DropdownMenuContent,
   DropdownMenuItem,
@@ -26,17 +28,58 @@ export function GlassDropdownContent({
   );
 }
 
+/** Chevron for glass dropdown triggers — mirrors SelectTrigger icon slot */
+export function GlassDropdownChevron({ className }: { className?: string }) {
+  return (
+    <ChevronDown
+      className={cn('h-4 w-4 shrink-0 opacity-50', className)}
+      aria-hidden
+    />
+  );
+}
+
+type GlassDropdownTriggerProps = ButtonProps;
+
+/**
+ * Shared glass dropdown trigger — left-aligned label slot + right chevron.
+ * Overrides Button default justify-center so placeholder/label stays left.
+ */
+export const GlassDropdownTrigger = forwardRef<
+  HTMLButtonElement,
+  GlassDropdownTriggerProps
+>(function GlassDropdownTrigger({ className, children, type = 'button', ...props }, ref) {
+  return (
+    <Button
+      ref={ref}
+      type={type}
+      variant="outline"
+      className={cn(
+        'glass-input h-10 w-full justify-between gap-2 px-3 py-0 font-normal text-left',
+        '[&>span]:line-clamp-none',
+        className
+      )}
+      {...props}
+    >
+      <span className="flex min-w-0 flex-1 items-center justify-start text-left">
+        {children}
+      </span>
+      <GlassDropdownChevron />
+    </Button>
+  );
+});
+
 type GlassDropdownRadioItemProps = React.ComponentProps<
   typeof DropdownMenuRadioItem
 > & {
   icon?: ReactNode;
-  label: string;
+  /** Optional when custom `children` row content is provided (e.g. TestAccountSelectRow) */
+  label?: string;
 };
 
 /** Radio item with icon + label; check indicator on the right */
 export function GlassDropdownRadioItem({
   icon,
-  label,
+  label = '',
   className,
   children,
   ...props
@@ -49,17 +92,23 @@ export function GlassDropdownRadioItem({
       )}
       {...props}
     >
-      {icon ? (
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground">
-          {icon}
-        </span>
-      ) : null}
-      <span className="flex-1 truncate">{label}</span>
+      {children ? (
+        /* Custom row (avatar + name/email) — single flex slot avoids empty label span stealing width */
+        <span className="min-w-0 flex-1 pr-6">{children}</span>
+      ) : (
+        <>
+          {icon ? (
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center text-muted-foreground">
+              {icon}
+            </span>
+          ) : null}
+          <span className="flex-1 truncate">{label}</span>
+        </>
+      )}
       <Check
         className="absolute right-2 h-4 w-4 opacity-0 group-data-[state=checked]:opacity-100"
         aria-hidden
       />
-      {children}
     </DropdownMenuRadioItem>
   );
 }

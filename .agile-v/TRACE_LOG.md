@@ -29,3 +29,11 @@
 | 2026-06-11T23:55:00Z | build | build-agent-js | REQ-0003, REQ-0013, REQ-0014, REQ-0023 | Glass filters, dropdowns, confirm alerts | SUCCESS — uncommitted @ 16516b2 |
 | 2026-06-11T23:55:00Z | prove | red-team-verifier | REQ-0003…0014 | lint/typecheck/test(20)/build @ HEAD | SUCCESS |
 | 2026-06-12T00:10:00Z | build | build-agent-js | REQ-0003, REQ-0014, REQ-0017 | Filter-params lib, UTC months, alert icons, README | SUCCESS |
+| 2026-06-14T12:56:00Z | bootstrap | agile-v-core | — | Infinity Loop reactivate; sync to fd6f20c; 24 skills ACTIVE | ACTIVE |
+| 2026-06-14T12:56:00Z | prove | red-team-verifier | REQ-0003, REQ-0013, REQ-0014, REQ-0023 | EVAL-0004 lint/typecheck/test(29)/build @ fd6f20c | SUCCESS |
+| 2026-06-14T13:11:00Z | build | build-agent-js | REQ-0001, REQ-0023 | GlassDropdownChevron + custom-children radio item fix | SUCCESS |
+| 2026-06-14T13:11:00Z | build | build-agent-js | REQ-0014, REQ-0013 | Send/Sparkles icons + demo Loader2 loading state | SUCCESS |
+| 2026-06-14T13:11:00Z | prove | red-team-verifier | REQ-0001, REQ-0013, REQ-0014, REQ-0023 | lint/typecheck/test(29)/build post-auth UI fix | SUCCESS |
+| 2026-06-14T13:34:00Z | build | build-agent-js | REQ-0014, REQ-0003 | OverlayScrollbar + modal=false DropdownMenu/Dialog | SUCCESS |
+| 2026-06-14T13:34:00Z | build | build-agent-js | REQ-0012 | GlassDialogContent 90vw/vh + job form stack layout | SUCCESS |
+| 2026-06-14T13:34:00Z | prove | red-team-verifier | REQ-0014, REQ-0003, REQ-0012 | lint/typecheck/test(29)/build scroll-lock fix | SUCCESS |

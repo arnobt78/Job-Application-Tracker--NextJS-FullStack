@@ -49,7 +49,7 @@ export default function UserProfileDropdown() {
   };
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
           <div className="h-9 w-9 overflow-hidden rounded-full border-2">

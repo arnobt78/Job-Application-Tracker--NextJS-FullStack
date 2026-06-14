@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { GlassDialogContent } from '@/components/ui/glass-dialog-content';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import CreateJobForm from '@/components/CreateJobForm';
@@ -31,15 +31,16 @@ export function AddJobDialog() {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="border-0 bg-transparent p-0 shadow-none sm:max-w-[660px]">
-          {/* GlassCard provides sky glassmorphic chrome; standalone=false skips inner card */}
-          <GlassCard variant="sky" className="w-full">
+        <GlassDialogContent>
+          <GlassCard variant="sky" className="flex h-full w-full flex-col overflow-hidden">
             <DialogHeader className="sr-only">
               <DialogTitle>Add New Job</DialogTitle>
             </DialogHeader>
-            <CreateJobForm standalone={false} onSuccess={() => setOpen(false)} />
+            <div className="overlay-scroll min-h-0 flex-1 overflow-y-auto">
+              <CreateJobForm standalone={false} onSuccess={() => setOpen(false)} />
+            </div>
           </GlassCard>
-        </DialogContent>
+        </GlassDialogContent>
       </Dialog>
     </>
   );

@@ -22,3 +22,8 @@
 | 2026-06-13T01:00:00Z | Build Agent (JS) | C1 | Split JobsList → jobs-count/grid/pagination + shared hook | Match stats instant-shell pattern | REQ-0003, REQ-0014 |
 | 2026-06-13T01:10:00Z | AQMS Orchestrator | C1 | Session pause @ `4efaf37`; sync .agile-v for tomorrow | BL-0007 active; BL-0002 done | — |
 | 2026-06-13T23:22:00Z | AQMS Orchestrator | C1 | Infinity Loop reactivated @ `a4763f4`; 24 skills ACTIVE | EVAL-0003 PASS; INT-0003 continues | BL-0007 |
+| 2026-06-14T12:56:00Z | AQMS Orchestrator | C1 | Infinity Loop reactivated @ `fd6f20c`; sync all `.agile-v/` | Glass filters committed; EVAL-0004 PASS 29/29 tests | BL-0007 |
+| 2026-06-14T13:11:00Z | Build Agent (JS) | C1 | Fix GlassDropdownRadioItem custom-children layout | Empty label span no longer steals flex width on open menu | REQ-0001, REQ-0023 |
+| 2026-06-14T13:11:00Z | Build Agent (JS) | C1 | Auth CTA icons: Send, Sparkles, Loader2 on demo | Parity with sign-in loading pattern | REQ-0014, REQ-0013 |
+| 2026-06-14T13:34:00Z | Build Agent (JS) | C1 | modal=false dropdowns/dialogs + overlay scrollbar | Prevent scrollbar hide layout shift | REQ-0014, REQ-0003 |
+| 2026-06-14T13:34:00Z | Build Agent (JS) | C1 | GlassDialogContent 90vh + stacked job forms | Dialog UX without main-page shift | REQ-0012, REQ-0014 |

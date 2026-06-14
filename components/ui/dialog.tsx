@@ -6,7 +6,12 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Dialog = DialogPrimitive.Root
+const Dialog = ({
+  modal = false,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>) => (
+  <DialogPrimitive.Root modal={modal} {...props} />
+);
 
 const DialogTrigger = DialogPrimitive.Trigger
 
@@ -17,13 +22,21 @@ const DialogClose = DialogPrimitive.Close
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
+>(({ className, onWheel, onTouchMove, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
       "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
+    onWheel={(e) => {
+      e.preventDefault();
+      onWheel?.(e);
+    }}
+    onTouchMove={(e) => {
+      e.preventDefault();
+      onTouchMove?.(e);
+    }}
     {...props}
   />
 ))

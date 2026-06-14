@@ -2,10 +2,10 @@
 
 <!-- BL-XXXX → REQ-XXXX | Maintained by agile-v-product-owner -->
 
-## BL-0007: User-Driven Extension (active — resume tomorrow)
+## BL-0007: User-Driven Extension (active)
 
-**REQ:** REQ-0001, REQ-0013, REQ-0014, REQ-0003 · **token:** `c1-dev-20260612`  
-**Status:** **ACTIVE** — glass filters + confirm alerts shipped (uncommitted @ `16516b2`)
+**REQ:** REQ-0001, REQ-0013, REQ-0014, REQ-0003, REQ-0023 · **token:** `c1-dev-20260612`  
+**Status:** **ACTIVE** — glass filters + confirms shipped @ `fd6f20c`
 
 ### Done this track
 - Sign-in test-account preview + inline select row (`TestAccountSelectRow`)
@@ -18,10 +18,12 @@
 - Instant `JobsFilterBar` (debounced search, status/mode/month URL filters)
 - Glass confirm alerts before edit dialog + delete
 - Extended `getCachedJobs` + `getJobFilterOptionsAction` + query keys
+- Filter-params lib, UTC months, alert icons, README sync (`fd6f20c`)
 
 ### Next when resuming
-- Manual QA (filters, confirms, auth flows)
 - Map any new user request → REQ-XXXX before build
+- Manual QA (filters, confirms, auth flows)
+- Gate 1 baseline approval (INT-0001)
 
 ---
 
@@ -51,7 +53,7 @@
 
 ## BL-0003: Automated Test Suite
 
-**REQ:** REQ-0021 · **Status:** Backlog (20 vitest tests; E2E Playwright pending)
+**REQ:** REQ-0021 · **Status:** Backlog (29 vitest tests; E2E Playwright pending)
 
 ---
 
@@ -65,7 +67,7 @@
 
 | Priority | BL | Status |
 |---|---|---|
-| 1 | BL-0007 | ACTIVE — resume @ `4efaf37` |
+| 1 | BL-0007 | ACTIVE — user reqs @ `fd6f20c` |
 | 2 | BL-0003 | Backlog (E2E) |
 | 3 | Gate 1 approval | PENDING |
 | 4 | BL-0004 | Backlog |

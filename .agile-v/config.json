@@ -12,7 +12,7 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-13T23:22:00Z",
+    "reactivated": "2026-06-14T12:56:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
@@ -84,9 +84,9 @@
     "policy": ".agile-v/POLICY.yaml"
   },
   "git_baseline": {
-    "head": "a4763f4",
+    "head": "fd6f20c",
     "branch": "main",
-    "last_commit": "docs(agile-v): sync state for session resume at 4efaf37",
+    "last_commit": "feat(dashboard): glass filters, confirms, and filter-param consistency",
     "working_tree": "clean"
   }
 }

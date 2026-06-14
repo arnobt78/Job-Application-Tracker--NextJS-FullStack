@@ -1,16 +1,16 @@
-# Cycle C1 — Active (paused 2026-06-13)
+# Cycle C1 — Active
 
-**HEAD:** `a4763f4` · **Branch:** `main` · **Checkpoint:** INT-0003 `c1-dev-20260612` · **Infinity Loop:** ON
+**HEAD:** `fd6f20c` · **Branch:** `main` · **Checkpoint:** INT-0003 `c1-dev-20260612` · **Infinity Loop:** ON
 
 ## Shipped since bootstrap
 
-Baseline app → landing/auth UI → NavShell/dashboard → Prisma cleanup → Sonner/auth UX → instant page shells
+Baseline app → landing/auth UI → NavShell/dashboard → Prisma cleanup → Sonner/auth UX → instant page shells → glass filters/confirms
 
 ## Resume checklist
 
-1. `git pull` · confirm `4efaf37`
+1. `git pull` · confirm `fd6f20c`
 2. Read `STATE.md`, `BACKLOG.md` (BL-0007), `CLAUDE.md`
-3. `npm run lint && npm run typecheck && npm test && npm run build`
+3. `npm run lint && npm run typecheck && npm test && npm run build` (29 tests)
 4. Gate 1 still pending (INT-0001)
 
 ## Archive at Gate 2

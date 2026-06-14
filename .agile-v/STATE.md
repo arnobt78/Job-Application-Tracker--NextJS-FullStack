@@ -5,9 +5,9 @@
 | **Cycle** | C1 |
 | **Stage** | 1 Baseline + **UI Extension Track** (active) |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
-| **Pipeline** | UI/auth/perf shipped → Gate 1 pending → ready for user reqs |
-| **Last Updated** | 2026-06-11T23:55:00Z |
-| **Git HEAD** | `16516b2` (uncommitted glass filters + alerts) |
+| **Pipeline** | UI/auth/perf/filters shipped → Gate 1 pending → ready for user reqs |
+| **Last Updated** | 2026-06-14T12:56:00Z |
+| **Git HEAD** | `fd6f20c` (clean) |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -43,14 +43,14 @@
 | `cc72b0b` | Instant shells, auth toast fixes | REQ-0014, REQ-0013 |
 | `4efaf37` | Dashboard jobs split + `useJobsListQuery` | REQ-0003, REQ-0014 |
 | `a4763f4` | `.agile-v` session sync | — |
-| (pending) | Glass filters, dropdowns, confirm alerts | REQ-0003, REQ-0013, REQ-0014, REQ-0023 |
+| `fd6f20c` | Glass filters, dropdowns, confirm alerts, filter-params | REQ-0003, REQ-0013, REQ-0014, REQ-0023 |
 
-**Verify @ HEAD:** lint ✓ typecheck ✓ test 20/20 ✓ build ✓ (uncommitted)
+**Verify @ HEAD:** lint ✓ typecheck ✓ test 29/29 ✓ build ✓
 
 ## Active Backlog
 
 **BL-0007** (ACTIVE) — user-driven extension · token `c1-dev-20260612`  
-Next: BL-0003 E2E · INT-0001 Gate 1 · BL-0004 observability
+Next: user reqs → REQ mapping · BL-0003 E2E · INT-0001 Gate 1 · BL-0004 observability
 
 ## Gates
 

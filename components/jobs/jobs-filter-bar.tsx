@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { JobMode } from '@/utils/types';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuRadioGroup,
@@ -20,6 +19,7 @@ import {
 import {
   GlassDropdownContent,
   GlassDropdownRadioItem,
+  GlassDropdownTrigger,
 } from '@/components/ui/glass-dropdown-menu';
 import { GlassSearchInput } from '@/components/ui/glass-search-input';
 import {
@@ -70,18 +70,21 @@ function FilterDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            'glass-input h-10 w-full justify-start gap-2 px-3 font-normal',
-            'shadow-[0_12px_40px_rgba(2,132,199,0.15)]'
-          )}
+        <GlassDropdownTrigger
+          className="shadow-[0_12px_40px_rgba(2,132,199,0.15)]"
         >
-          <span className="shrink-0 text-muted-foreground">{triggerIcon}</span>
-          <span className="truncate">{triggerLabel}</span>
-        </Button>
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="shrink-0 text-muted-foreground">{triggerIcon}</span>
+            <span className="truncate">{triggerLabel}</span>
+          </span>
+        </GlassDropdownTrigger>
       </DropdownMenuTrigger>
-      <GlassDropdownContent align={align} className="w-[var(--radix-dropdown-menu-trigger-width)]">
+      <GlassDropdownContent
+        align={align}
+        collisionPadding={8}
+        sideOffset={8}
+        className="w-[var(--radix-dropdown-menu-trigger-width)]"
+      >
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
           {options.map((option) => (
             <GlassDropdownRadioItem
