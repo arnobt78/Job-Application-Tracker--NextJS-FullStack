@@ -13,7 +13,7 @@ force-dynamic
   utils/actions.ts (Clerk)
 
 Client: useQueryBodyLoading → skeleton only on cold cache
-CRUD: useJobsMutation (optimistic) → invalidateAllJobQueries + SSE + BroadcastChannel
+CRUD: useJobsMutation (optimistic) → onSuccess invalidateAll+broadcast · onSettled invalidateAll (no re-broadcast) · SSE · BroadcastChannel
 ```
 
 ## Key paths
@@ -46,7 +46,7 @@ CRUD: useJobsMutation (optimistic) → invalidateAllJobQueries + SSE + Broadcast
 
 ## Invalidation
 
-`invalidateAllJobQueries`: jobs.all, stats, charts, filterOptions, job.detail(id). Server: `invalidateUserJobCaches` + tags + Redis + SSE.
+`invalidateAllJobQueries`: jobs.all, stats, charts, filterOptions, job.detail(id). Mutations: onSuccess broadcasts once; onSettled resyncs all keys without re-broadcast. Server: `invalidateUserJobCaches` + tags + Redis + SSE.
 
 ## Verify
 
