@@ -113,10 +113,11 @@ export function useCreateJobMutation() {
       invalidateAfterMutation(data.id);
       // No navigation — Add Job is a dialog on /dashboard; caller handles close via mutate() onSuccess callback
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.charts.all });
+    onSettled: (data) => {
+      // Full bust incl. filterOptions — no second cross-tab ping (onSuccess already broadcast)
+      invalidateAllJobQueries(queryClient, data?.id ?? undefined, {
+        broadcast: false,
+      });
     },
   });
 }
@@ -206,12 +207,7 @@ export function useUpdateJobMutation(jobId: string) {
       invalidateAfterMutation(jobId);
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.charts.all });
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.job.detail(jobId),
-      });
+      invalidateAllJobQueries(queryClient, jobId, { broadcast: false });
     },
   });
 }
@@ -294,9 +290,7 @@ export function useDeleteJobMutation(jobId: string) {
       notifyJobDeleted(data);
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.charts.all });
+      invalidateAllJobQueries(queryClient, jobId, { broadcast: false });
     },
   });
 }
