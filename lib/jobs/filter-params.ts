@@ -64,3 +64,18 @@ export function buildJobsListSearchParams(
   if (filters.page > 1) params.set('page', String(filters.page));
   return params;
 }
+
+/** True when any filter differs from defaults (search, status, mode, or month) */
+export function hasActiveJobsFilters(filters: JobsListFilters): boolean {
+  return (
+    filters.search.length > 0 ||
+    filters.jobStatus !== DEFAULT_JOBS_LIST_FILTERS.jobStatus ||
+    filters.jobMode !== DEFAULT_JOBS_LIST_FILTERS.jobMode ||
+    filters.monthYear !== DEFAULT_JOBS_LIST_FILTERS.monthYear
+  );
+}
+
+/** Reset all list filters to defaults (page 1) */
+export function clearedJobsListFilters(): JobsListFilters {
+  return { ...DEFAULT_JOBS_LIST_FILTERS };
+}

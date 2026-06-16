@@ -373,6 +373,26 @@
 
 ---
 
+## REQ-0024: Agile V Session Governance and Traceability
+
+**Status:** `approved [C1]` (process governance)  
+**Priority:** HIGH  
+**Category:** Process / Quality
+
+**Description:** The project workflow SHALL keep `.agile-v/` active for every development prompt with traceable REQ mapping, lifecycle continuity, and write-through evidence logs.
+
+**Acceptance Criteria:**
+
+1. Every session starts by reading `STATE.md` + `CHECKPOINTS.md` before implementation
+2. User requests are mapped to one or more `REQ-XXXX` IDs (or a new REQ is added before work)
+3. `TRACE_LOG.md` and `DECISION_LOG.md` are append-only and updated in-session for significant work
+4. `STATE.md`, `VALIDATION_SUMMARY.md`, and `SKILLS_REGISTRY.md` stay in sync with current cycle and active checkpoint
+
+**Verification:** TC-0025 (process audit)  
+**Artifacts:** ART-0062 (`.agile-v/STATE.md`), ART-0063 (`.agile-v/SKILLS_REGISTRY.md`), ART-0064 (`.agile-v/TRACE_LOG.md`), ART-0065 (`.agile-v/DECISION_LOG.md`), ART-0066 (`.agile-v/PLAYBOOK.md`)
+
+---
+
 ## Traceability Matrix Reference
 
 See ATM.md for full REQ → ART → TC mapping.

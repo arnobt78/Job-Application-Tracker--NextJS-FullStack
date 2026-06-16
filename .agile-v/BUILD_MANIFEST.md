@@ -65,6 +65,11 @@
 | ART-0059 | C1 | Lib | `lib/jobs/filter-types.ts`, `filter-config.ts`, `filter-params.ts`, `month-utc.ts`, `lib/ui/format-label.ts` | REQ-0003 | `fd6f20c` |
 | ART-0060 | C1 | Component | `DeleteJobButton`, `edit-job-dialog` confirm flows | REQ-0014 | `fd6f20c` |
 | ART-0061 | C1 | Component | `ThemeToggle`, `SignInForm` glass dropdowns | REQ-0013, REQ-0023 | `fd6f20c` |
+| ART-0062 | C1 | Process State | `.agile-v/STATE.md` | REQ-0024 | Governance sync `1615de6` |
+| ART-0063 | C1 | Skills Registry | `.agile-v/SKILLS_REGISTRY.md` | REQ-0024 | Governance sync `1615de6` |
+| ART-0064 | C1 | Trace Log | `.agile-v/TRACE_LOG.md` | REQ-0024 | Governance sync `1615de6` |
+| ART-0065 | C1 | Decision Log | `.agile-v/DECISION_LOG.md` | REQ-0024 | Governance sync `1615de6` |
+| ART-0066 | C1 | Playbook | `.agile-v/PLAYBOOK.md` | REQ-0024 | One-command operating guide |
 
 ## Deprecated / removed
 

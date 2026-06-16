@@ -37,12 +37,12 @@ async function StatsPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="flex items-center gap-2 text-3xl font-bold">
           <BarChart2 className="h-7 w-7 text-primary" />
           Statistics
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Track your application trends and status breakdown
         </p>
       </div>
@@ -50,7 +50,7 @@ async function StatsPage() {
       <StatsContainer />
 
       <GlassCard variant="sky" className="mt-16">
-        <h2 className="mb-8 flex items-center justify-center gap-2 text-center text-4xl font-semibold">
+        <h2 className="mb-6 flex items-center justify-center gap-2 text-center text-4xl font-semibold">
           <BarChart3 className="h-8 w-8 text-sky-400" />
           Monthly Applications
         </h2>

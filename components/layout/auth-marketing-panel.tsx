@@ -1,21 +1,16 @@
-import { GlassCard } from '@/components/ui/glass-card';
-import { MARKETING_COPY } from '@/lib/ui/marketing-copy';
-import { cn } from '@/lib/utils';
-import type { LucideIcon } from 'lucide-react';
-import {
-  BarChart3,
-  Filter,
-  RefreshCw,
-  ShieldCheck,
-} from 'lucide-react';
+import { GlassCard } from "@/components/ui/glass-card";
+import { MARKETING_COPY } from "@/lib/ui/marketing-copy";
+import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
+import { BarChart3, Filter, RefreshCw, ShieldCheck } from "lucide-react";
 
-type AuthVariant = 'sign-in' | 'sign-up';
+type AuthVariant = "sign-in" | "sign-up";
 
 const AUTH_FEATURES: { icon: LucideIcon; label: string }[] = [
-  { icon: RefreshCw, label: 'Real-time sync' },
-  { icon: Filter, label: 'Smart filters' },
-  { icon: BarChart3, label: 'Analytics charts' },
-  { icon: ShieldCheck, label: 'Secure Clerk auth' },
+  { icon: RefreshCw, label: "Real-time sync" },
+  { icon: Filter, label: "Smart filters" },
+  { icon: BarChart3, label: "Analytics charts" },
+  { icon: ShieldCheck, label: "Secure Clerk auth" },
 ];
 
 type AuthMarketingPanelProps = {
@@ -24,18 +19,20 @@ type AuthMarketingPanelProps = {
 };
 
 /** Static left-column copy for auth pages — no images */
-export function AuthMarketingPanel({ variant, className }: AuthMarketingPanelProps) {
+export function AuthMarketingPanel({
+  variant,
+  className,
+}: AuthMarketingPanelProps) {
   const copy = MARKETING_COPY[variant];
 
   return (
-    <div className={cn('flex flex-col gap-6', className)}>
+    <div className={cn("flex flex-col gap-4 sm:p-6", className)}>
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary/90">
           {copy.eyebrow}
         </p>
-        <h1 className="mt-3 text-3xl font-bold sm:text-4xl lg:text-5xl">
-          {copy.title}{' '}
-          <span className="text-primary">{copy.highlight}</span>
+        <h1 className="mt-2 text-xl sm:text-2xl font-semibold">
+          {copy.title} <span className="text-primary">{copy.highlight}</span>
         </h1>
         <p className="mt-4 max-w-xl leading-relaxed text-muted-foreground">
           {copy.body}

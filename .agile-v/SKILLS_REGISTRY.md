@@ -2,9 +2,9 @@
 
 <!-- Load agile-v-core FIRST on every session | Apply SCOPE-V on every task -->
 
-## Activation Status: **ACTIVE** (Infinity Loop · 2026-06-14T12:56:00Z)
+## Activation Status: **ACTIVE** (Infinity Loop · 2026-06-16T12:46:37Z)
 
-Cycle C1 · Git `fd6f20c` · Checkpoint INT-0003 `c1-dev-20260612` · **24 skills registered**
+Cycle C1 · Git `1615de6` · Checkpoint INT-0003 `c1-dev-20260612` · **24 skills registered**
 
 All skills below are registered for this project. Orchestrator loads framework skills + role-appropriate agent skills per task.
 
@@ -87,3 +87,10 @@ All skills below are registered for this project. Orchestrator loads framework s
 | C2 planning | core → lifecycle → product-owner |
 
 ⭐ = Primary domain skill for Jobify
+
+## This Chat Binding
+
+- User instruction `/agile-v-core` applied for this session.
+- Process scope linked to `REQ-0024` for governance traceability.
+- Continue from INT-0003 unless user requests Human Gate flow.
+- **Startup guide:** `.agile-v/PLAYBOOK.md` — paste one-command block in any new chat.

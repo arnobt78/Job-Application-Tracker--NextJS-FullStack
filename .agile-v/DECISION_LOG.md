@@ -27,3 +27,8 @@
 | 2026-06-14T13:11:00Z | Build Agent (JS) | C1 | Auth CTA icons: Send, Sparkles, Loader2 on demo | Parity with sign-in loading pattern | REQ-0014, REQ-0013 |
 | 2026-06-14T13:34:00Z | Build Agent (JS) | C1 | modal=false dropdowns/dialogs + overlay scrollbar | Prevent scrollbar hide layout shift | REQ-0014, REQ-0003 |
 | 2026-06-14T13:34:00Z | Build Agent (JS) | C1 | GlassDialogContent 90vh + stacked job forms | Dialog UX without main-page shift | REQ-0012, REQ-0014 |
+| 2026-06-16T12:46:37Z | AQMS Orchestrator | C1 | Resume and re-activate Agile V Infinity Loop from INT-0003 | User requested `/agile-v-core` continuation and full process readiness | REQ-0024 |
+| 2026-06-16T12:46:37Z | Requirement Architect | C1 | Add governance requirement for persistent Agile V traceability | Formalize always-on process behavior with auditable acceptance criteria | REQ-0024 |
+| 2026-06-16T13:00:00Z | Documentation Agent | C1 | Create `.agile-v/PLAYBOOK.md` one-command operating guide | User requested faster session startup with task routing and file map | REQ-0024 |
+| 2026-06-16T14:31:00Z | Build Agent (JS) | C1 | Dashboard UI redesign — section headers, clear filters, results toolbar, pagination fix | User plan: REQ-0003/0012/0014 dashboard polish | REQ-0003, REQ-0012, REQ-0014 |
+| 2026-06-16T15:41:00Z | Build Agent (JS) | C1 | Extract stats-optimistic lib; full portfolio bumps on CRUD | Status+mode+total instant updates; README sync | REQ-0014, REQ-0015 |

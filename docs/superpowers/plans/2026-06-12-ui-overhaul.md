@@ -13,6 +13,7 @@
 ## File Map
 
 **New files:**
+
 - `components/layout/nav-shell.tsx` — shared nav chrome (server component)
 - `components/layout/auth-nav.tsx` — auth pages navbar (logo + ThemeToggle + Return Home)
 - `components/layout/dashboard-nav.tsx` — dashboard navbar (logo + nav links + ThemeToggle + avatar)
@@ -24,6 +25,7 @@
 - `components/__tests__/FormComponents.test.tsx` — required prop tests
 
 **Modified files:**
+
 - `components/layout/landing-nav.tsx` — migrate to NavShell, add ThemeToggle
 - `components/pages/SignInPageContent.tsx` — replace SiteLogo header with AuthNav
 - `components/pages/SignUpPageContent.tsx` — replace SiteLogo header with AuthNav
@@ -37,6 +39,7 @@
 - `utils/links.tsx` — update hrefs to /dashboard
 
 **Kept but no longer imported (not deleted per project rules):**
+
 - `components/Navbar.tsx` — superseded by DashboardNav
 - `components/Sidebar.tsx` — superseded by DashboardNav
 - `components/LinksDropdown.tsx` — superseded by DashboardNav mobile menu
@@ -46,15 +49,16 @@
 ## Task 1: NavShell — shared nav chrome
 
 **Files:**
+
 - Create: `components/layout/nav-shell.tsx`
 
 - [ ] **Step 1: Create NavShell**
 
 ```tsx
 // components/layout/nav-shell.tsx
-import { PageContainer } from '@/components/layout/page-container';
-import { cn } from '@/lib/utils';
-import type { PropsWithChildren } from 'react';
+import { PageContainer } from "@/components/layout/page-container";
+import { cn } from "@/lib/utils";
+import type { PropsWithChildren } from "react";
 
 type NavShellProps = PropsWithChildren<{ className?: string }>;
 
@@ -67,8 +71,8 @@ export function NavShell({ children, className }: NavShellProps) {
   return (
     <header
       className={cn(
-        'pointer-events-none fixed inset-x-0 top-0 z-50 h-14 backdrop-blur-sm',
-        className
+        "pointer-events-none fixed inset-x-0 top-0 z-50 h-14 backdrop-blur-sm",
+        className,
       )}
     >
       <PageContainer
@@ -94,6 +98,7 @@ git commit -m "feat: add NavShell shared nav chrome component"
 ## Task 2: Update LandingNav — add ThemeToggle, migrate to NavShell
 
 **Files:**
+
 - Modify: `components/layout/landing-nav.tsx`
 
 - [ ] **Step 1: Replace LandingNav content**
@@ -101,22 +106,22 @@ git commit -m "feat: add NavShell shared nav chrome component"
 Full new content for `components/layout/landing-nav.tsx`:
 
 ```tsx
-'use client';
+"use client";
 
-import { NavShell } from '@/components/layout/nav-shell';
-import { SiteLogo } from '@/components/layout/site-logo';
-import ThemeToggle from '@/components/ThemeToggle';
-import { RippleLink } from '@/components/ui/ripple-link';
-import { LANDING_SECTIONS } from '@/lib/ui/landing-sections';
-import { cn } from '@/lib/utils';
-import { UserPlus } from 'lucide-react';
+import { NavShell } from "@/components/layout/nav-shell";
+import { SiteLogo } from "@/components/layout/site-logo";
+import ThemeToggle from "@/components/ThemeToggle";
+import { RippleLink } from "@/components/ui/ripple-link";
+import { LANDING_SECTIONS } from "@/lib/ui/landing-sections";
+import { cn } from "@/lib/utils";
+import { UserPlus } from "lucide-react";
 
 /** Fixed landing page nav — logo scroll-to-top | section links | ThemeToggle + CTA */
 export function LandingNav() {
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -124,7 +129,7 @@ export function LandingNav() {
       {/* Logo — click scrolls to hero */}
       <button
         type="button"
-        onClick={() => scrollToSection('hero')}
+        onClick={() => scrollToSection("hero")}
         className="flex h-full shrink-0 items-center rounded-lg transition hover:opacity-90"
         aria-label="Scroll to top"
       >
@@ -142,8 +147,8 @@ export function LandingNav() {
             type="button"
             onClick={() => scrollToSection(section.id)}
             className={cn(
-              'flex h-8 items-center rounded-full px-3 text-sm font-medium text-foreground/75',
-              'transition hover:bg-white/10 hover:text-foreground'
+              "flex h-8 items-center rounded-full px-3 text-sm font-medium text-foreground/75",
+              "transition hover:bg-white/10 hover:text-foreground",
             )}
           >
             {section.label}
@@ -189,19 +194,20 @@ git commit -m "feat: migrate LandingNav to NavShell, add ThemeToggle"
 ## Task 3: AuthNav — minimal auth page navbar
 
 **Files:**
+
 - Create: `components/layout/auth-nav.tsx`
 
 - [ ] **Step 1: Create AuthNav**
 
 ```tsx
 // components/layout/auth-nav.tsx
-'use client';
+"use client";
 
-import { NavShell } from '@/components/layout/nav-shell';
-import { SiteLogo } from '@/components/layout/site-logo';
-import ThemeToggle from '@/components/ThemeToggle';
-import { RippleLink } from '@/components/ui/ripple-link';
-import { Home } from 'lucide-react';
+import { NavShell } from "@/components/layout/nav-shell";
+import { SiteLogo } from "@/components/layout/site-logo";
+import ThemeToggle from "@/components/ThemeToggle";
+import { RippleLink } from "@/components/ui/ripple-link";
+import { Home } from "lucide-react";
 
 /**
  * Minimal navbar for sign-in and sign-up pages.
@@ -242,40 +248,41 @@ git commit -m "feat: add AuthNav for sign-in/sign-up pages"
 ## Task 4: DashboardNav — full dashboard top navbar
 
 **Files:**
+
 - Create: `components/layout/dashboard-nav.tsx`
 
 - [ ] **Step 1: Create DashboardNav**
 
 ```tsx
 // components/layout/dashboard-nav.tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { NavShell } from '@/components/layout/nav-shell';
-import { SiteLogo } from '@/components/layout/site-logo';
-import ThemeToggle from '@/components/ThemeToggle';
-import UserProfileDropdown from '@/components/UserProfileDropdown';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { NavShell } from "@/components/layout/nav-shell";
+import { SiteLogo } from "@/components/layout/site-logo";
+import ThemeToggle from "@/components/ThemeToggle";
+import UserProfileDropdown from "@/components/UserProfileDropdown";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { AlignLeft, BarChart2, LayoutDashboard } from 'lucide-react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { AlignLeft, BarChart2, LayoutDashboard } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /** Dashboard nav links — logo links here, active state tracked by pathname */
 const NAV_LINKS = [
   {
-    href: '/dashboard',
-    label: 'Dashboard',
+    href: "/dashboard",
+    label: "Dashboard",
     icon: <LayoutDashboard className="h-4 w-4" />,
   },
   {
-    href: '/stats',
-    label: 'Stats',
+    href: "/stats",
+    label: "Stats",
     icon: <BarChart2 className="h-4 w-4" />,
   },
 ] as const;
@@ -306,8 +313,8 @@ export function DashboardNav() {
       >
         {NAV_LINKS.map((link) => {
           const isActive =
-            link.href === '/dashboard'
-              ? pathname === '/dashboard' || pathname.startsWith('/dashboard/')
+            link.href === "/dashboard"
+              ? pathname === "/dashboard" || pathname.startsWith("/dashboard/")
               : pathname === link.href;
 
           return (
@@ -315,10 +322,10 @@ export function DashboardNav() {
               key={link.href}
               href={link.href}
               className={cn(
-                'flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition',
+                "flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition",
                 isActive
-                  ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
-                  : 'text-foreground/75 hover:bg-white/10 hover:text-foreground'
+                  ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                  : "text-foreground/75 hover:bg-white/10 hover:text-foreground",
               )}
             >
               {link.icon}
@@ -373,6 +380,7 @@ git commit -m "feat: add DashboardNav — replaces legacy Navbar + Sidebar"
 ## Task 5: FormComponents — add required prop + asterisk
 
 **Files:**
+
 - Create: `components/__tests__/FormComponents.test.tsx`
 - Modify: `components/FormComponents.tsx`
 
@@ -380,71 +388,79 @@ git commit -m "feat: add DashboardNav — replaces legacy Navbar + Sidebar"
 
 ```tsx
 // components/__tests__/FormComponents.test.tsx
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { useForm } from 'react-hook-form';
-import { CustomFormField, CustomFormSelect } from '@/components/FormComponents';
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { useForm } from "react-hook-form";
+import { CustomFormField, CustomFormSelect } from "@/components/FormComponents";
 
 /** Minimal form context wrapper needed by react-hook-form components */
-function WithForm({ children }: { children: (ctrl: ReturnType<typeof useForm>['control']) => React.ReactNode }) {
-  const { control } = useForm({ defaultValues: { position: '', status: 'pending' } });
+function WithForm({
+  children,
+}: {
+  children: (ctrl: ReturnType<typeof useForm>["control"]) => React.ReactNode;
+}) {
+  const { control } = useForm({
+    defaultValues: { position: "", status: "pending" },
+  });
   return <form>{children(control)}</form>;
 }
 
-describe('CustomFormField required prop', () => {
-  it('renders no asterisk when required is omitted', () => {
+describe("CustomFormField required prop", () => {
+  it("renders no asterisk when required is omitted", () => {
     const { container } = render(
       <WithForm>
         {(control) => <CustomFormField name="position" control={control} />}
-      </WithForm>
+      </WithForm>,
     );
-    expect(container.querySelector('.text-destructive')).toBeNull();
+    expect(container.querySelector(".text-destructive")).toBeNull();
   });
 
-  it('renders destructive asterisk when required is true', () => {
+  it("renders destructive asterisk when required is true", () => {
     const { container } = render(
       <WithForm>
-        {(control) => <CustomFormField name="position" control={control} required />}
-      </WithForm>
+        {(control) => (
+          <CustomFormField name="position" control={control} required />
+        )}
+      </WithForm>,
     );
-    expect(container.querySelector('.text-destructive')).not.toBeNull();
-    expect(container.querySelector('.text-destructive')?.textContent).toBe('*');
+    expect(container.querySelector(".text-destructive")).not.toBeNull();
+    expect(container.querySelector(".text-destructive")?.textContent).toBe("*");
   });
 });
 
-describe('CustomFormSelect required prop', () => {
-  it('renders no asterisk when required is omitted', () => {
+describe("CustomFormSelect required prop", () => {
+  it("renders no asterisk when required is omitted", () => {
     const { container } = render(
       <WithForm>
         {(control) => (
           <CustomFormSelect
             name="status"
             control={control}
-            items={['pending', 'interview']}
+            items={["pending", "interview"]}
             labelText="job status"
           />
         )}
-      </WithForm>
+      </WithForm>,
     );
-    expect(container.querySelector('.text-destructive')).toBeNull();
+    expect(container.querySelector(".text-destructive")).toBeNull();
   });
 
-  it('renders destructive asterisk when required is true', () => {
+  it("renders destructive asterisk when required is true", () => {
     const { container } = render(
       <WithForm>
         {(control) => (
           <CustomFormSelect
             name="status"
             control={control}
-            items={['pending', 'interview']}
+            items={["pending", "interview"]}
             labelText="job status"
             required
           />
         )}
-      </WithForm>
+      </WithForm>,
     );
-    expect(container.querySelector('.text-destructive')).not.toBeNull();
-    expect(container.querySelector('.text-destructive')?.textContent).toBe('*');
+    expect(container.querySelector(".text-destructive")).not.toBeNull();
+    expect(container.querySelector(".text-destructive")?.textContent).toBe("*");
   });
 });
 ```
@@ -462,22 +478,22 @@ Expected: tests fail with "required is not a valid prop" or similar type error.
 Full new content for `components/FormComponents.tsx`:
 
 ```tsx
-import { Control } from 'react-hook-form';
+import { Control } from "react-hook-form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from './ui/input';
+} from "@/components/ui/form";
+import { Input } from "./ui/input";
 
 type CustomFormFieldProps = {
   name: string;
@@ -486,7 +502,11 @@ type CustomFormFieldProps = {
   required?: boolean;
 };
 
-export function CustomFormField({ name, control, required = false }: CustomFormFieldProps) {
+export function CustomFormField({
+  name,
+  control,
+  required = false,
+}: CustomFormFieldProps) {
   return (
     <FormField
       control={control}
@@ -576,6 +596,7 @@ git commit -m "feat: add required prop with asterisk to CustomFormField and Cust
 ## Task 6: useCreateJobMutation — remove router.push navigation
 
 **Files:**
+
 - Modify: `hooks/useJobsMutation.ts`
 
 The mutation currently calls `router.push('/jobs')` after create. With Add Job as a dialog on `/dashboard`, no navigation is needed — the dialog closes and the optimistic update already shows the new job.
@@ -587,18 +608,22 @@ In `hooks/useJobsMutation.ts`, make these two changes:
 1. Remove `useRouter` from the import at the top:
 
 Change:
+
 ```ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 ```
+
 To:
+
 ```ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 ```
 
 2. Inside `useCreateJobMutation`, remove `const router = useRouter();` and change `onSuccess`:
 
 Change:
+
 ```ts
 export function useCreateJobMutation() {
   const queryClient = useQueryClient();
@@ -617,6 +642,7 @@ export function useCreateJobMutation() {
 ```
 
 To:
+
 ```ts
 export function useCreateJobMutation() {
   const queryClient = useQueryClient();
@@ -653,6 +679,7 @@ git commit -m "refactor: remove router.push from useCreateJobMutation (Add Job i
 ## Task 7: CreateJobForm — add onSuccess + standalone props
 
 **Files:**
+
 - Modify: `components/CreateJobForm.tsx`
 
 - [ ] **Step 1: Update CreateJobForm**
@@ -660,22 +687,22 @@ git commit -m "refactor: remove router.push from useCreateJobMutation (Add Job i
 Full new content for `components/CreateJobForm.tsx`:
 
 ```tsx
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import {
   JobStatus,
   JobMode,
   createAndEditJobSchema,
   CreateAndEditJobType,
-} from '@/utils/types';
-import { Form } from '@/components/ui/form';
-import { Button } from './ui/button';
-import { CustomFormField, CustomFormSelect } from './FormComponents';
-import { useCreateJobMutation } from '@/hooks/useJobsMutation';
-import { GlassCard } from '@/components/ui/glass-card';
-import { PlusCircle } from 'lucide-react';
+} from "@/utils/types";
+import { Form } from "@/components/ui/form";
+import { Button } from "./ui/button";
+import { CustomFormField, CustomFormSelect } from "./FormComponents";
+import { useCreateJobMutation } from "@/hooks/useJobsMutation";
+import { GlassCard } from "@/components/ui/glass-card";
+import { PlusCircle } from "lucide-react";
 
 type CreateJobFormProps = {
   /**
@@ -694,9 +721,9 @@ function CreateJobForm({ onSuccess, standalone = true }: CreateJobFormProps) {
   const form = useForm<CreateAndEditJobType>({
     resolver: zodResolver(createAndEditJobSchema),
     defaultValues: {
-      position: '',
-      company: '',
-      location: '',
+      position: "",
+      company: "",
+      location: "",
       status: JobStatus.Pending,
       mode: JobMode.FullTime,
     },
@@ -739,7 +766,7 @@ function CreateJobForm({ onSuccess, standalone = true }: CreateJobFormProps) {
             className="self-end capitalize"
             disabled={isPending}
           >
-            {isPending ? 'Creating...' : 'Create Job'}
+            {isPending ? "Creating..." : "Create Job"}
           </Button>
         </div>
       </form>
@@ -773,6 +800,7 @@ git commit -m "feat: add onSuccess + standalone props to CreateJobForm"
 ## Task 8: EditJobForm — add onSuccess + standalone props
 
 **Files:**
+
 - Modify: `components/EditJobForm.tsx`
 
 - [ ] **Step 1: Update EditJobForm**
@@ -780,26 +808,26 @@ git commit -m "feat: add onSuccess + standalone props to CreateJobForm"
 Full new content for `components/EditJobForm.tsx`:
 
 ```tsx
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import {
   JobStatus,
   JobMode,
   createAndEditJobSchema,
   CreateAndEditJobType,
-} from '@/utils/types';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
-import { CustomFormField, CustomFormSelect } from './FormComponents';
-import { useQuery } from '@tanstack/react-query';
-import { getSingleJobAction } from '@/utils/actions';
-import { useUpdateJobMutation } from '@/hooks/useJobsMutation';
-import { queryKeys } from '@/lib/query-keys';
-import { GlassCard } from '@/components/ui/glass-card';
-import { Pencil } from 'lucide-react';
+} from "@/utils/types";
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
+import { CustomFormField, CustomFormSelect } from "./FormComponents";
+import { useQuery } from "@tanstack/react-query";
+import { getSingleJobAction } from "@/utils/actions";
+import { useUpdateJobMutation } from "@/hooks/useJobsMutation";
+import { queryKeys } from "@/lib/query-keys";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Pencil } from "lucide-react";
 
 type EditJobFormProps = {
   jobId: string;
@@ -815,7 +843,11 @@ type EditJobFormProps = {
   standalone?: boolean;
 };
 
-function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) {
+function EditJobForm({
+  jobId,
+  onSuccess,
+  standalone = true,
+}: EditJobFormProps) {
   const { data } = useQuery({
     queryKey: queryKeys.job.detail(jobId),
     queryFn: () => getSingleJobAction(jobId),
@@ -824,9 +856,9 @@ function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) 
   const form = useForm<CreateAndEditJobType>({
     resolver: zodResolver(createAndEditJobSchema),
     defaultValues: {
-      position: '',
-      company: '',
-      location: '',
+      position: "",
+      company: "",
+      location: "",
       status: JobStatus.Pending,
       mode: JobMode.FullTime,
     },
@@ -881,7 +913,7 @@ function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) 
             className="self-end capitalize"
             disabled={isPending}
           >
-            {isPending ? 'Updating...' : 'Save Changes'}
+            {isPending ? "Updating..." : "Save Changes"}
           </Button>
         </div>
       </form>
@@ -907,6 +939,7 @@ git commit -m "feat: add onSuccess + standalone props to EditJobForm"
 ## Task 9: Install Shadcn Dialog + AddJobDialog
 
 **Files:**
+
 - Create: `components/ui/dialog.tsx` (via CLI)
 - Create: `components/dialogs/add-job-dialog.tsx`
 
@@ -934,19 +967,19 @@ mkdir -p /Users/arnob_t78/Projects/ReactJS/react-course/18-nextjs-jobify-app/com
 
 ```tsx
 // components/dialogs/add-job-dialog.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { useState } from "react";
+import { PlusCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { GlassCard } from '@/components/ui/glass-card';
-import { Button } from '@/components/ui/button';
-import CreateJobForm from '@/components/CreateJobForm';
+} from "@/components/ui/dialog";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import CreateJobForm from "@/components/CreateJobForm";
 
 /**
  * Glassmorphic Add Job dialog with trigger button.
@@ -973,7 +1006,10 @@ export function AddJobDialog() {
             <DialogHeader className="sr-only">
               <DialogTitle>Add New Job</DialogTitle>
             </DialogHeader>
-            <CreateJobForm standalone={false} onSuccess={() => setOpen(false)} />
+            <CreateJobForm
+              standalone={false}
+              onSuccess={() => setOpen(false)}
+            />
           </GlassCard>
         </DialogContent>
       </Dialog>
@@ -994,25 +1030,26 @@ git commit -m "feat: install Shadcn Dialog, add glassmorphic AddJobDialog"
 ## Task 10: EditJobDialog
 
 **Files:**
+
 - Create: `components/dialogs/edit-job-dialog.tsx`
 
 - [ ] **Step 1: Create EditJobDialog**
 
 ```tsx
 // components/dialogs/edit-job-dialog.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { useState } from "react";
+import { Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { GlassCard } from '@/components/ui/glass-card';
-import { Button } from '@/components/ui/button';
-import EditJobForm from '@/components/EditJobForm';
+} from "@/components/ui/dialog";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import EditJobForm from "@/components/EditJobForm";
 
 type EditJobDialogProps = {
   jobId: string;
@@ -1101,6 +1138,7 @@ git commit -m "feat: add glassmorphic EditJobDialog with trigger + defaultOpen m
 ## Task 11: /dashboard page route
 
 **Files:**
+
 - Create: `app/(dashboard)/dashboard/page.tsx`
 
 This is the new main page: page header (title + Add Job dialog trigger) + SearchForm + JobsList, SSR-prefetched.
@@ -1113,27 +1151,27 @@ mkdir -p /Users/arnob_t78/Projects/ReactJS/react-course/18-nextjs-jobify-app/app
 
 ```tsx
 // app/(dashboard)/dashboard/page.tsx
-import SearchForm from '@/components/SearchForm';
-import JobsList from '@/components/JobsList';
-import { AddJobDialog } from '@/components/dialogs/add-job-dialog';
-import type { Metadata } from 'next';
-import { createPageMetadata } from '@/lib/site-metadata';
-import { queryKeys } from '@/lib/query-keys';
+import SearchForm from "@/components/SearchForm";
+import JobsList from "@/components/JobsList";
+import { AddJobDialog } from "@/components/dialogs/add-job-dialog";
+import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/site-metadata";
+import { queryKeys } from "@/lib/query-keys";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from '@tanstack/react-query';
-import { getAllJobsAction } from '@/utils/actions';
-import { Briefcase } from 'lucide-react';
+} from "@tanstack/react-query";
+import { getAllJobsAction } from "@/utils/actions";
+import { Briefcase } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Dashboard',
+  title: "Dashboard",
   description:
-    'View, search, and filter all your job applications. Add new applications and track your progress.',
-  path: '/dashboard',
+    "View, search, and filter all your job applications. Add new applications and track your progress.",
+  path: "/dashboard",
   noIndex: true,
 });
 
@@ -1147,8 +1185,8 @@ type DashboardPageProps = {
 
 async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
-  const search = params.search ?? '';
-  const jobStatus = params.jobStatus ?? 'all';
+  const search = params.search ?? "";
+  const jobStatus = params.jobStatus ?? "all";
   const pageNumber = Number(params.page) || 1;
 
   // SSR prefetch — hydrates client useQuery with no loading state on first paint
@@ -1161,7 +1199,7 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       {/* Page header — static server-rendered; no flash */}
-      <div className="mb-8 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-3xl font-bold">
             <Briefcase className="h-7 w-7 text-primary" />
@@ -1207,6 +1245,7 @@ git commit -m "feat: add /dashboard page with header, AddJobDialog trigger, SSR 
 ## Task 12: /dashboard/[id] page route
 
 **Files:**
+
 - Create: `app/(dashboard)/dashboard/[id]/page.tsx` (server, SSR prefetch)
 - Create: `components/pages/edit-job-dialog-page.tsx` (client, useRouter)
 
@@ -1216,10 +1255,10 @@ This page supports direct URL access to an edit dialog. Server component prefetc
 
 ```tsx
 // components/pages/edit-job-dialog-page.tsx
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { EditJobDialog } from '@/components/dialogs/edit-job-dialog';
+import { useRouter } from "next/navigation";
+import { EditJobDialog } from "@/components/dialogs/edit-job-dialog";
 
 type EditJobDialogPageProps = { jobId: string };
 
@@ -1234,7 +1273,7 @@ export function EditJobDialogPage({ jobId }: EditJobDialogPageProps) {
     <EditJobDialog
       jobId={jobId}
       defaultOpen={true}
-      onExternalClose={() => router.push('/dashboard')}
+      onExternalClose={() => router.push("/dashboard")}
     />
   );
 }
@@ -1248,23 +1287,23 @@ mkdir -p "/Users/arnob_t78/Projects/ReactJS/react-course/18-nextjs-jobify-app/ap
 
 ```tsx
 // app/(dashboard)/dashboard/[id]/page.tsx
-import { EditJobDialogPage } from '@/components/pages/edit-job-dialog-page';
-import { queryKeys } from '@/lib/query-keys';
-import { getSingleJobAction } from '@/utils/actions';
+import { EditJobDialogPage } from "@/components/pages/edit-job-dialog-page";
+import { queryKeys } from "@/lib/query-keys";
+import { getSingleJobAction } from "@/utils/actions";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from '@tanstack/react-query';
-import type { Metadata } from 'next';
-import { createPageMetadata } from '@/lib/site-metadata';
+} from "@tanstack/react-query";
+import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/site-metadata";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Edit Job',
-  description: 'Update or delete a job application in your Jobify tracker.',
-  path: '/dashboard',
+  title: "Edit Job",
+  description: "Update or delete a job application in your Jobify tracker.",
+  path: "/dashboard",
   noIndex: true,
 });
 
@@ -1306,6 +1345,7 @@ git commit -m "feat: add /dashboard/[id] route — SSR prefetch + pre-opened Edi
 ## Task 13: JobCard — EditJobDialog trigger
 
 **Files:**
+
 - Modify: `components/JobCard.tsx`
 
 Replace the `RippleLink href="/jobs/${job.id}"` Edit button with `EditJobDialog showTrigger`.
@@ -1315,20 +1355,20 @@ Replace the `RippleLink href="/jobs/${job.id}"` Edit button with `EditJobDialog 
 Full new content for `components/JobCard.tsx`:
 
 ```tsx
-import { JobType } from '@/utils/types';
-import { MapPin, Briefcase, CalendarDays, RadioTower } from 'lucide-react';
-import { Separator } from './ui/separator';
-import JobInfo from './JobInfo';
-import DeleteJobButton from './DeleteJobButton';
-import { GlassCard } from '@/components/ui/glass-card';
-import { EditJobDialog } from '@/components/dialogs/edit-job-dialog';
+import { JobType } from "@/utils/types";
+import { MapPin, Briefcase, CalendarDays, RadioTower } from "lucide-react";
+import { Separator } from "./ui/separator";
+import JobInfo from "./JobInfo";
+import DeleteJobButton from "./DeleteJobButton";
+import { GlassCard } from "@/components/ui/glass-card";
+import { EditJobDialog } from "@/components/dialogs/edit-job-dialog";
 
 function JobCard({ job }: { job: JobType }) {
   const date = new Date(job.createdAt).toLocaleDateString();
 
   return (
     <GlassCard variant="neutral" className="overflow-hidden p-0">
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <h3 className="flex items-center gap-2 text-xl font-semibold">
           <Briefcase className="h-5 w-5 text-primary" />
           {job.position}
@@ -1336,13 +1376,13 @@ function JobCard({ job }: { job: JobType }) {
         <p className="mt-1 text-muted-foreground">{job.company}</p>
       </div>
       <Separator />
-      <div className="grid grid-cols-2 gap-4 p-6">
+      <div className="grid grid-cols-2 gap-4 p-4 sm:p-6">
         <JobInfo icon={<Briefcase className="h-4 w-4" />} text={job.mode} />
         <JobInfo icon={<MapPin className="h-4 w-4" />} text={job.location} />
         <JobInfo icon={<CalendarDays className="h-4 w-4" />} text={date} />
         <JobInfo icon={<RadioTower className="h-4 w-4" />} text={job.status} />
       </div>
-      <div className="flex gap-4 p-6 pt-0">
+      <div className="flex gap-4 p-4 sm:p-6 pt-0">
         {/* EditJobDialog with showTrigger renders its own Edit button — replaces RippleLink nav */}
         <EditJobDialog jobId={job.id} showTrigger />
         <DeleteJobButton id={job.id} />
@@ -1366,6 +1406,7 @@ git commit -m "feat: replace JobCard edit link with EditJobDialog trigger"
 ## Task 14: Dashboard layout — remove sidebar, use DashboardNav
 
 **Files:**
+
 - Modify: `app/(dashboard)/layout.tsx`
 
 - [ ] **Step 1: Update dashboard layout**
@@ -1373,11 +1414,11 @@ git commit -m "feat: replace JobCard edit link with EditJobDialog trigger"
 Full new content for `app/(dashboard)/layout.tsx`:
 
 ```tsx
-import { DashboardNav } from '@/components/layout/dashboard-nav';
-import { PageContainer } from '@/components/layout/page-container';
-import { PropsWithChildren } from 'react';
+import { DashboardNav } from "@/components/layout/dashboard-nav";
+import { PageContainer } from "@/components/layout/page-container";
+import { PropsWithChildren } from "react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * Dashboard layout — full-width top-nav only.
@@ -1422,6 +1463,7 @@ git commit -m "feat: remove sidebar from dashboard layout, use DashboardNav"
 ## Task 15: Auth pages — use AuthNav
 
 **Files:**
+
 - Modify: `components/pages/SignInPageContent.tsx`
 - Modify: `components/pages/SignUpPageContent.tsx`
 
@@ -1430,14 +1472,14 @@ git commit -m "feat: remove sidebar from dashboard layout, use DashboardNav"
 Full new content for `components/pages/SignInPageContent.tsx`:
 
 ```tsx
-'use client';
+"use client";
 
-import SignInForm from '@/components/SignInForm';
-import { AuthMarketingPanel } from '@/components/layout/auth-marketing-panel';
-import { AuthNav } from '@/components/layout/auth-nav';
-import { PageContainer } from '@/components/layout/page-container';
-import { SiteFooter } from '@/components/layout/site-footer';
-import { SplitContentLayout } from '@/components/layout/split-content-layout';
+import SignInForm from "@/components/SignInForm";
+import { AuthMarketingPanel } from "@/components/layout/auth-marketing-panel";
+import { AuthNav } from "@/components/layout/auth-nav";
+import { PageContainer } from "@/components/layout/page-container";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SplitContentLayout } from "@/components/layout/split-content-layout";
 
 type SignInPageContentProps = {
   isGuest?: boolean;
@@ -1474,14 +1516,14 @@ export function SignInPageContent({ isGuest = false }: SignInPageContentProps) {
 Full new content for `components/pages/SignUpPageContent.tsx`:
 
 ```tsx
-'use client';
+"use client";
 
-import SignUpForm from '@/components/SignUpForm';
-import { AuthMarketingPanel } from '@/components/layout/auth-marketing-panel';
-import { AuthNav } from '@/components/layout/auth-nav';
-import { PageContainer } from '@/components/layout/page-container';
-import { SiteFooter } from '@/components/layout/site-footer';
-import { SplitContentLayout } from '@/components/layout/split-content-layout';
+import SignUpForm from "@/components/SignUpForm";
+import { AuthMarketingPanel } from "@/components/layout/auth-marketing-panel";
+import { AuthNav } from "@/components/layout/auth-nav";
+import { PageContainer } from "@/components/layout/page-container";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SplitContentLayout } from "@/components/layout/split-content-layout";
 
 /** Auth layout — AuthNav top, marketing copy left, form right; pt-14 clears fixed navbar */
 export function SignUpPageContent() {
@@ -1521,6 +1563,7 @@ git commit -m "feat: replace standalone logo header with AuthNav in sign-in/sign
 ## Task 16: Middleware — update routes + add redirects
 
 **Files:**
+
 - Modify: `proxy.ts`
 
 - [ ] **Step 1: Update proxy.ts**
@@ -1536,26 +1579,26 @@ Full new content for `proxy.ts`:
  *   /add-job → /dashboard  (legacy route removed; Add Job is now a dialog)
  *   /jobs/*  → /dashboard  (route renamed to /dashboard)
  */
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/stats',
-  '/user-profile(.*)',
+  "/dashboard(.*)",
+  "/stats",
+  "/user-profile(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
 
   // Redirect legacy /add-job to /dashboard
-  if (pathname === '/add-job') {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+  if (pathname === "/add-job") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Redirect legacy /jobs routes to /dashboard
-  if (pathname.startsWith('/jobs')) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+  if (pathname.startsWith("/jobs")) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   if (isProtectedRoute(req)) {
@@ -1564,7 +1607,7 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };
 ```
 
@@ -1580,6 +1623,7 @@ git commit -m "feat: update middleware — protect /dashboard, redirect /add-job
 ## Task 17: utils/links — update hrefs
 
 **Files:**
+
 - Modify: `utils/links.tsx`
 
 The `links` array is used by legacy `LinksDropdown` (kept but no longer imported in main layout). Update hrefs so if it's referenced anywhere else, it points to correct routes.
@@ -1589,7 +1633,7 @@ The `links` array is used by legacy `LinksDropdown` (kept but no longer imported
 Full new content for `utils/links.tsx`:
 
 ```tsx
-import { AreaChart, AppWindow } from 'lucide-react';
+import { AreaChart, AppWindow } from "lucide-react";
 
 type NavLink = {
   href: string;
@@ -1603,13 +1647,13 @@ type NavLink = {
  */
 const links: NavLink[] = [
   {
-    href: '/dashboard',
-    label: 'all jobs',
+    href: "/dashboard",
+    label: "all jobs",
     icon: <AppWindow />,
   },
   {
-    href: '/stats',
-    label: 'stats',
+    href: "/stats",
+    label: "stats",
     icon: <AreaChart />,
   },
 ];
@@ -1667,6 +1711,7 @@ cd /Users/arnob_t78/Projects/ReactJS/react-course/18-nextjs-jobify-app && npm ru
 ```
 
 Manual checks:
+
 1. Landing page (`/`) — navbar has logo | section links | ThemeToggle | Create Account
 2. Sign-in (`/sign-in`) — AuthNav with logo | ThemeToggle | Return Home; form visible
 3. Sign-up (`/sign-up`) — same AuthNav treatment
@@ -1691,20 +1736,20 @@ git commit -m "chore: ui overhaul complete — NavShell, AuthNav, DashboardNav, 
 
 ## Spec Coverage Verification
 
-| Spec Section | Covered By |
-|---|---|
-| §1 Route Architecture | Task 11, 12, 16, 17 |
-| §2a NavShell | Task 1 |
-| §2b LandingNav ThemeToggle | Task 2 |
-| §2c AuthNav | Task 3 |
-| §2d DashboardNav | Task 4 |
-| §3 Dashboard Layout | Task 14 |
-| §4 Dashboard Page | Task 11 |
-| §5 AddJobDialog | Task 9 |
-| §6 EditJobDialog + JobCard + /dashboard/[id] | Task 10, 12, 13 |
-| §7 Auth Pages AuthNav | Task 15 |
-| §8 Landing ThemeToggle | Task 2 |
-| §9 FormComponents required | Task 5 |
-| §10 Data flow (no changes) | ✓ unchanged |
-| §11 Files list | All tasks |
-| §12 Non-goals | ✓ not touched |
+| Spec Section                                 | Covered By          |
+| -------------------------------------------- | ------------------- |
+| §1 Route Architecture                        | Task 11, 12, 16, 17 |
+| §2a NavShell                                 | Task 1              |
+| §2b LandingNav ThemeToggle                   | Task 2              |
+| §2c AuthNav                                  | Task 3              |
+| §2d DashboardNav                             | Task 4              |
+| §3 Dashboard Layout                          | Task 14             |
+| §4 Dashboard Page                            | Task 11             |
+| §5 AddJobDialog                              | Task 9              |
+| §6 EditJobDialog + JobCard + /dashboard/[id] | Task 10, 12, 13     |
+| §7 Auth Pages AuthNav                        | Task 15             |
+| §8 Landing ThemeToggle                       | Task 2              |
+| §9 FormComponents required                   | Task 5              |
+| §10 Data flow (no changes)                   | ✓ unchanged         |
+| §11 Files list                               | All tasks           |
+| §12 Non-goals                                | ✓ not touched       |

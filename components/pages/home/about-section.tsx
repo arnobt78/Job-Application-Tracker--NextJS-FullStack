@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { PageContainer } from '@/components/layout/page-container';
-import { RippleLink } from '@/components/ui/ripple-link';
-import { ScrollParallaxSection } from '@/components/ui/scroll-parallax-section';
-import { ScrollStagger } from '@/components/ui/scroll-stagger';
-import { MARKETING_COPY } from '@/lib/ui/marketing-copy';
+import { PageContainer } from "@/components/layout/page-container";
+import { RippleLink } from "@/components/ui/ripple-link";
+import { ScrollParallaxSection } from "@/components/ui/scroll-parallax-section";
+import { ScrollStagger } from "@/components/ui/scroll-stagger";
+import { MARKETING_COPY } from "@/lib/ui/marketing-copy";
 
 const copy = MARKETING_COPY.about;
 
@@ -15,11 +15,15 @@ export function AboutSection() {
       <PageContainer className="grid w-full gap-10 sm:grid-cols-2 sm:items-center">
         <ScrollStagger staggerMs={110}>
           <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
-            {copy.heading}{' '}
+            {copy.heading}{" "}
             <span className="text-primary">{copy.headingHighlight}</span>
           </h2>
-          <p className="mt-4 leading-relaxed text-foreground/85">{copy.body1}</p>
-          <p className="mt-4 leading-relaxed text-foreground/85">{copy.body2}</p>
+          <p className="mt-4 leading-relaxed text-foreground/85">
+            {copy.body1}
+          </p>
+          <p className="mt-4 leading-relaxed text-foreground/85">
+            {copy.body2}
+          </p>
         </ScrollStagger>
 
         <div className="rounded-[28px] border border-white/15 bg-background/70 p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
@@ -27,7 +31,7 @@ export function AboutSection() {
             <p className="text-sm uppercase tracking-[0.3em] text-primary">
               {copy.ctaEyebrow}
             </p>
-            <p className="mt-4 text-xl font-semibold text-foreground">
+            <p className="mt-4 text-lg font-semibold text-foreground">
               {copy.ctaTitle}
             </p>
             <div className="mt-6 inline-block rounded-full">

@@ -49,11 +49,9 @@ export default function SignInForm({
   signInWithCredentials,
   guestAccount,
 }: SignInFormProps) {
-  const [email, setEmail] = useState(() =>
-    isGuest ? guestAccount.email : ""
-  );
+  const [email, setEmail] = useState(() => (isGuest ? guestAccount.email : ""));
   const [password, setPassword] = useState(() =>
-    isGuest ? guestAccount.password : ""
+    isGuest ? guestAccount.password : "",
   );
 
   const handleRoleSelect = (value: string) => {
@@ -127,7 +125,7 @@ export default function SignInForm({
     <div className="w-full max-w-md">
       <GlassCard variant="sky">
         <div className="space-y-2 mb-6">
-          <h1 className="text-2xl font-bold">Welcome back</h1>
+          <h1 className="text-xl font-bold">Welcome back</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
 

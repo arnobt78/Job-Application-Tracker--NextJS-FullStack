@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildJobsListSearchParams,
+  clearedJobsListFilters,
+  hasActiveJobsFilters,
   parseJobsListFilters,
   parseJobsListFiltersFromSearchParamsRecord,
 } from '@/lib/jobs/filter-params';
@@ -41,5 +43,29 @@ describe('filter-params', () => {
       new URLSearchParams({ page: '0' })
     );
     expect(filters.page).toBe(1);
+  });
+
+  it('hasActiveJobsFilters is false for defaults', () => {
+    expect(hasActiveJobsFilters(DEFAULT_JOBS_LIST_FILTERS)).toBe(false);
+  });
+
+  it('hasActiveJobsFilters is true when any filter differs', () => {
+    expect(
+      hasActiveJobsFilters({ ...DEFAULT_JOBS_LIST_FILTERS, search: 'dev' })
+    ).toBe(true);
+    expect(
+      hasActiveJobsFilters({ ...DEFAULT_JOBS_LIST_FILTERS, jobStatus: 'pending' })
+    ).toBe(true);
+    expect(
+      hasActiveJobsFilters({ ...DEFAULT_JOBS_LIST_FILTERS, jobMode: 'full-time' })
+    ).toBe(true);
+    expect(
+      hasActiveJobsFilters({ ...DEFAULT_JOBS_LIST_FILTERS, monthYear: '2026-01' })
+    ).toBe(true);
+  });
+
+  it('clearedJobsListFilters returns fresh defaults', () => {
+    expect(clearedJobsListFilters()).toEqual(DEFAULT_JOBS_LIST_FILTERS);
+    expect(clearedJobsListFilters()).not.toBe(DEFAULT_JOBS_LIST_FILTERS);
   });
 });

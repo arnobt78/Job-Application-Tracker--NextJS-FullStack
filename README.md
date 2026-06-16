@@ -682,13 +682,21 @@ async function DashboardPage({ searchParams }) {
     queryKey: queryKeys.jobs.filterOptions,
     queryFn: () => getJobFilterOptionsAction(),
   });
+  void queryClient.prefetchQuery({
+    queryKey: queryKeys.stats.all,
+    queryFn: () => getStatsAction(),
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      <DashboardPageHeader />
+      <PageSectionHeader {...filterCopy} icon={SlidersHorizontal} className="mb-2" />
       <JobsFilterBar />
-      <JobsCount />
-      <JobsPagination />
+      <JobsResultsToolbar />
       <JobsGrid />
+      <div className="mt-8 flex w-full justify-center">
+        <JobsPagination />
+      </div>
     </HydrationBoundary>
   );
 }
@@ -745,6 +753,8 @@ Tests live in `lib/__tests__/` and `hooks/__tests__/`.
 | `invalidate-jobs.test.ts`  | Client cache invalidation              |
 | `cache-tags.test.ts`       | Per-user cache tags                    |
 | `chart-optimistic.test.ts` | Optimistic chart patches               |
+| `stats-optimistic.test.ts` | Optimistic stats portfolio patches     |
+| `filter-params.test.ts`    | URL filter parse/build/clear helpers   |
 | `useJobsMutation.test.ts`  | Optimistic list mutations              |
 
 Run tests:

@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
-import { Loader2, X } from 'lucide-react';
+import type { ReactNode } from "react";
+import { Loader2, X } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { GlassCard } from '@/components/ui/glass-card';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/alert-dialog";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-type GlassAlertVariant = 'default' | 'destructive' | 'sky';
+type GlassAlertVariant = "default" | "destructive" | "sky";
 
 type GlassAlertDialogProps = {
   open: boolean;
@@ -32,13 +32,10 @@ type GlassAlertDialogProps = {
   variant?: GlassAlertVariant;
 };
 
-const glassVariantMap: Record<
-  GlassAlertVariant,
-  'sky' | 'rose' | 'violet'
-> = {
-  default: 'violet',
-  destructive: 'rose',
-  sky: 'sky',
+const glassVariantMap: Record<GlassAlertVariant, "sky" | "rose" | "violet"> = {
+  default: "violet",
+  destructive: "rose",
+  sky: "sky",
 };
 
 /** Glass confirm alert — proper AlertDialog + scrollbar-gutter:stable prevents layout shift */
@@ -49,12 +46,12 @@ export function GlassAlertDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = 'Cancel',
+  cancelLabel = "Cancel",
   confirmIcon,
   cancelIcon = <X className="h-4 w-4" aria-hidden />,
   onConfirm,
   loading = false,
-  variant = 'default',
+  variant = "default",
 }: GlassAlertDialogProps) {
   const glassVariant = glassVariantMap[variant];
 
@@ -62,13 +59,13 @@ export function GlassAlertDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="border-0 bg-transparent p-0 shadow-none sm:max-w-md">
         <GlassCard variant={glassVariant} className="p-0">
-          <div className="flex gap-4 p-6">
+          <div className="flex gap-4 p-4 sm:p-6">
             <div
               className={cn(
-                'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-background/40',
-                variant === 'destructive' && 'text-rose-400',
-                variant === 'sky' && 'text-sky-400',
-                variant === 'default' && 'text-violet-400'
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-background/40",
+                variant === "destructive" && "text-rose-400",
+                variant === "sky" && "text-sky-400",
+                variant === "default" && "text-violet-400",
               )}
             >
               {icon}
@@ -91,7 +88,7 @@ export function GlassAlertDialog({
             </AlertDialogCancel>
             <Button
               type="button"
-              variant={variant === 'destructive' ? 'destructive' : 'default'}
+              variant={variant === "destructive" ? "destructive" : "default"}
               className="gap-2"
               disabled={loading}
               onClick={onConfirm}

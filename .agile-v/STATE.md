@@ -5,9 +5,9 @@
 | **Cycle** | C1 |
 | **Stage** | 1 Baseline + **UI Extension Track** (active) |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
-| **Pipeline** | UI/auth/perf/filters shipped → Gate 1 pending → ready for user reqs |
-| **Last Updated** | 2026-06-14T12:56:00Z |
-| **Git HEAD** | `fd6f20c` (clean) |
+| **Pipeline** | UI/auth/perf/filters shipped → Gate 1 pending → agile-v core sync refreshed → ready for user reqs |
+| **Last Updated** | 2026-06-16T12:46:37Z |
+| **Git HEAD** | `1615de6` |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -19,6 +19,12 @@
 4. LOG `TRACE_LOG.md` + `DECISION_LOG.md` write-through
 5. USE `build-agent-js` for code · do NOT self-verify (Red Team protocol)
 6. STOP at Human Gates (INT-0001 Gate 1, Gate 2)
+
+## Current Session Activation
+
+- Agile V Infinity Loop re-activated for this chat.
+- Resume policy unchanged: continue from INT-0003 unless user explicitly requests Gate 1 handling.
+- Governance traceability extension active under `REQ-0024` (see `REQUIREMENTS.md`).
 
 ## Architecture Constraints (always)
 
@@ -61,7 +67,7 @@ Next: user reqs → REQ mapping · BL-0003 E2E · INT-0001 Gate 1 · BL-0004 obs
 
 ## Agent Memory
 
-`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md`
+`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · **`.agile-v/PLAYBOOK.md`** (one-command startup)
 
 ## Verify Before Done
 

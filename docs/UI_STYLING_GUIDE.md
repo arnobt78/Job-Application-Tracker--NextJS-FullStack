@@ -126,12 +126,12 @@ Cards use 3-stop gradients with colored borders and shadows.
 
 ```html
 <article
-  class="group rounded-[28px] border border-sky-400/30 bg-gradient-to-br from-sky-500/25 via-sky-500/10 to-sky-500/5 p-6 shadow-[0_30px_80px_rgba(2,132,199,0.35)] backdrop-blur-sm transition hover:border-sky-300/50"
+  class="group rounded-[28px] border border-sky-400/30 bg-gradient-to-br from-sky-500/25 via-sky-500/10 to-sky-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(2,132,199,0.35)] backdrop-blur-sm transition hover:border-sky-300/50"
 >
   <div class="flex items-start justify-between gap-4">
     <div>
       <p class="text-xs uppercase tracking-[0.45em] text-white/60">Title</p>
-      <p class="mt-3 text-3xl font-semibold text-white">Value</p>
+      <p class="mt-2 text-3xl font-semibold text-white">Value</p>
     </div>
   </div>
   <p class="mt-4 text-sm text-white/70">Description text</p>
@@ -151,7 +151,7 @@ Cards use 3-stop gradients with colored borders and shadows.
 
 ```html
 <article
-  class="group rounded-[28px] border border-emerald-400/30 bg-gradient-to-br from-emerald-500/25 via-emerald-500/10 to-emerald-500/5 p-6 shadow-[0_30px_80px_rgba(16,185,129,0.3)] backdrop-blur-sm transition hover:border-emerald-300/50"
+  class="group rounded-[28px] border border-emerald-400/30 bg-gradient-to-br from-emerald-500/25 via-emerald-500/10 to-emerald-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(16,185,129,0.3)] backdrop-blur-sm transition hover:border-emerald-300/50"
 >
   <!-- Content -->
 </article>
@@ -161,7 +161,7 @@ Cards use 3-stop gradients with colored borders and shadows.
 
 ```html
 <article
-  class="group rounded-[28px] border border-amber-400/30 bg-gradient-to-br from-amber-500/30 via-amber-500/15 to-amber-500/5 p-6 shadow-[0_30px_80px_rgba(245,158,11,0.25)] backdrop-blur-sm transition hover:border-amber-300/60"
+  class="group rounded-[28px] border border-amber-400/30 bg-gradient-to-br from-amber-500/30 via-amber-500/15 to-amber-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(245,158,11,0.25)] backdrop-blur-sm transition hover:border-amber-300/60"
 >
   <!-- Content -->
 </article>
@@ -173,7 +173,7 @@ Cards use 3-stop gradients with colored borders and shadows.
 
 ```html
 <article
-  class="group rounded-[28px] border border-rose-400/30 bg-gradient-to-br from-rose-500/25 via-rose-500/10 to-rose-500/5 p-6 shadow-[0_30px_80px_rgba(225,29,72,0.35)] backdrop-blur-sm transition hover:border-rose-300/50"
+  class="group rounded-[28px] border border-rose-400/30 bg-gradient-to-br from-rose-500/25 via-rose-500/10 to-rose-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(225,29,72,0.35)] backdrop-blur-sm transition hover:border-rose-300/50"
 >
   <!-- Content -->
 </article>
@@ -183,7 +183,7 @@ Cards use 3-stop gradients with colored borders and shadows.
 
 ```html
 <article
-  class="group rounded-[28px] border border-violet-400/30 bg-gradient-to-br from-violet-500/25 via-violet-500/10 to-violet-500/5 p-6 shadow-[0_30px_80px_rgba(139,92,246,0.35)] backdrop-blur-sm transition hover:border-violet-300/50"
+  class="group rounded-[28px] border border-violet-400/30 bg-gradient-to-br from-violet-500/25 via-violet-500/10 to-violet-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(139,92,246,0.35)] backdrop-blur-sm transition hover:border-violet-300/50"
 >
   <!-- Content -->
 </article>
@@ -193,7 +193,7 @@ Cards use 3-stop gradients with colored borders and shadows.
 
 ```html
 <article
-  class="group rounded-[28px] border border-blue-400/30 bg-gradient-to-br from-blue-500/25 via-blue-500/10 to-blue-500/5 p-6 shadow-[0_30px_80px_rgba(59,130,246,0.35)] backdrop-blur-sm transition hover:border-blue-300/50"
+  class="group rounded-[28px] border border-blue-400/30 bg-gradient-to-br from-blue-500/25 via-blue-500/10 to-blue-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(59,130,246,0.35)] backdrop-blur-sm transition hover:border-blue-300/50"
 >
   <!-- Content -->
 </article>
@@ -205,7 +205,7 @@ For cards without specific color variants:
 
 ```html
 <div
-  class="rounded-[28px] border border-white/10 bg-gradient-to-br from-white/5 via-white/5 to-white/5 backdrop-blur-sm shadow-lg p-6"
+  class="rounded-[28px] border border-white/10 bg-gradient-to-br from-white/5 via-white/5 to-white/5 backdrop-blur-sm shadow-lg p-4 sm:p-6"
 >
   <!-- Content -->
 </div>
@@ -727,7 +727,7 @@ hover:border-sky-300/50
 #### Spacing
 
 ```html
-<div class="p-4 sm:p-6">
+<div class="p-4 sm:p-4 sm:p-6">
   <!-- Less padding on mobile -->
 </div>
 
@@ -745,14 +745,14 @@ hover:border-sky-300/50
 ```html
 <!-- Sky Variant (Total Employees) -->
 <article
-  class="group rounded-[28px] border border-sky-400/30 bg-gradient-to-br from-sky-500/25 via-sky-500/10 to-sky-500/5 p-6 shadow-[0_30px_80px_rgba(2,132,199,0.35)] backdrop-blur-sm transition hover:border-sky-300/50"
+  class="group rounded-[28px] border border-sky-400/30 bg-gradient-to-br from-sky-500/25 via-sky-500/10 to-sky-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(2,132,199,0.35)] backdrop-blur-sm transition hover:border-sky-300/50"
 >
   <div class="flex items-start justify-between gap-4">
     <div>
       <p class="text-xs uppercase tracking-[0.45em] text-white/60">
         Total Employees
       </p>
-      <p class="mt-3 text-3xl font-semibold text-white">150</p>
+      <p class="mt-2 text-3xl font-semibold text-white">150</p>
     </div>
   </div>
   <p class="mt-4 text-sm text-white/70">
@@ -762,14 +762,14 @@ hover:border-sky-300/50
 
 <!-- Emerald Variant (Total Projects) -->
 <article
-  class="group rounded-[28px] border border-emerald-400/30 bg-gradient-to-br from-emerald-500/25 via-emerald-500/10 to-emerald-500/5 p-6 shadow-[0_30px_80px_rgba(16,185,129,0.3)] backdrop-blur-sm transition hover:border-emerald-300/50"
+  class="group rounded-[28px] border border-emerald-400/30 bg-gradient-to-br from-emerald-500/25 via-emerald-500/10 to-emerald-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(16,185,129,0.3)] backdrop-blur-sm transition hover:border-emerald-300/50"
 >
   <div class="flex items-start justify-between gap-4">
     <div>
       <p class="text-xs uppercase tracking-[0.45em] text-white/60">
         Total Projects
       </p>
-      <p class="mt-3 text-3xl font-semibold text-white">42</p>
+      <p class="mt-2 text-3xl font-semibold text-white">42</p>
     </div>
   </div>
   <p class="mt-4 text-sm text-white/70">
@@ -779,14 +779,14 @@ hover:border-sky-300/50
 
 <!-- Amber Variant (Active Project Employees) -->
 <article
-  class="group rounded-[28px] border border-amber-400/30 bg-gradient-to-br from-amber-500/30 via-amber-500/15 to-amber-500/5 p-6 shadow-[0_30px_80px_rgba(245,158,11,0.25)] backdrop-blur-sm transition hover:border-amber-300/60"
+  class="group rounded-[28px] border border-amber-400/30 bg-gradient-to-br from-amber-500/30 via-amber-500/15 to-amber-500/5 p-4 sm:p-6 shadow-[0_30px_80px_rgba(245,158,11,0.25)] backdrop-blur-sm transition hover:border-amber-300/60"
 >
   <div class="flex items-start justify-between gap-4">
     <div>
       <p class="text-xs uppercase tracking-[0.45em] text-white/60">
         Active Project Employees
       </p>
-      <p class="mt-3 text-3xl font-semibold text-white">89</p>
+      <p class="mt-2 text-3xl font-semibold text-white">89</p>
     </div>
   </div>
   <p class="mt-4 text-sm text-white/70">
@@ -860,7 +860,7 @@ hover:border-sky-300/50
 ```html
 <!-- Glassmorphism Card -->
 <div
-  class="rounded-[28px] border border-white/10 bg-gradient-to-br from-white/5 via-white/5 to-white/5 backdrop-blur-sm shadow-lg p-6"
+  class="rounded-[28px] border border-white/10 bg-gradient-to-br from-white/5 via-white/5 to-white/5 backdrop-blur-sm shadow-lg p-4 sm:p-6"
 >
   <!-- Colored Card -->
   <article

@@ -15,9 +15,11 @@ export function JobsPagination() {
   if (totalPages <= 1) return null;
 
   return (
-    <ComplexButtonContainer
-      currentPage={data?.page ?? 1}
-      totalPages={totalPages}
-    />
+    <div className="flex w-full justify-center">
+      <ComplexButtonContainer
+        currentPage={data?.page ?? 1}
+        totalPages={totalPages}
+      />
+    </div>
   );
 }

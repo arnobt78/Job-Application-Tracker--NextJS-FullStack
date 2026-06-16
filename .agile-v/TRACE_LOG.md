@@ -37,3 +37,11 @@
 | 2026-06-14T13:34:00Z | build | build-agent-js | REQ-0014, REQ-0003 | OverlayScrollbar + modal=false DropdownMenu/Dialog | SUCCESS |
 | 2026-06-14T13:34:00Z | build | build-agent-js | REQ-0012 | GlassDialogContent 90vw/vh + job form stack layout | SUCCESS |
 | 2026-06-14T13:34:00Z | prove | red-team-verifier | REQ-0014, REQ-0003, REQ-0012 | lint/typecheck/test(29)/build scroll-lock fix | SUCCESS |
+| 2026-06-16T12:46:37Z | bootstrap | agile-v-core | REQ-0024 | Resume from INT-0003 and re-sync `.agile-v/` state docs for active session | ACTIVE |
+| 2026-06-16T12:46:37Z | specify | requirement-architect | REQ-0024 | Add process-governance requirement for always-on Agile V traceability | SUCCESS |
+| 2026-06-16T12:46:37Z | evolve | agile-v-lifecycle | REQ-0024 | Update state/skills registry and validation metadata to current HEAD | SUCCESS |
+| 2026-06-16T13:00:00Z | prove | documentation-agent | REQ-0024 | Create PLAYBOOK.md with one-command startup + task routing + file map | SUCCESS |
+| 2026-06-16T14:31:00Z | orchestrate | build-agent-js | REQ-0003, REQ-0012, REQ-0014 | Dashboard UI redesign per approved plan | SUCCESS |
+| 2026-06-16T14:31:00Z | prove | red-team-verifier | REQ-0003, REQ-0012, REQ-0014 | lint/typecheck/test(29)/build post-dashboard redesign | SUCCESS |
+| 2026-06-16T15:41:00Z | orchestrate | build-agent-js | REQ-0014, REQ-0015 | stats-optimistic.ts + mutation wiring + tests | SUCCESS |
+| 2026-06-16T15:41:00Z | prove | red-team-verifier | REQ-0014, REQ-0015 | lint/typecheck/test(41)/build post-stats-optimistic | SUCCESS |

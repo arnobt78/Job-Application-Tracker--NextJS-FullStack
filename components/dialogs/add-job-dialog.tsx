@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { FilePlus } from 'lucide-react';
 import {
   Dialog,
   DialogHeader,
@@ -11,6 +11,7 @@ import { GlassDialogContent } from '@/components/ui/glass-dialog-content';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import CreateJobForm from '@/components/CreateJobForm';
+import { DASHBOARD_COPY } from '@/lib/ui/dashboard-copy';
 
 /**
  * Glassmorphic Add Job dialog with trigger button.
@@ -26,8 +27,8 @@ export function AddJobDialog() {
         onClick={() => setOpen(true)}
         className="gap-2 rounded-full border border-primary/30 shadow-sm shadow-primary/20"
       >
-        <PlusCircle className="h-4 w-4" />
-        Add Job
+        <FilePlus className="h-4 w-4" />
+        {DASHBOARD_COPY.addJob.cta}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

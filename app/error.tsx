@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import * as Sentry from '@sentry/nextjs';
-import { Button } from '@/components/ui/button';
-import { PageContainer } from '@/components/layout/page-container';
+import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
+import { Button } from "@/components/ui/button";
+import { PageContainer } from "@/components/layout/page-container";
 
 /** Segment error boundary — captures route errors; complements app/global-error.tsx */
 export default function Error({
@@ -20,8 +20,8 @@ export default function Error({
   return (
     <div className="app-shell min-h-screen">
       <div className="app-shell-overlay" aria-hidden />
-      <PageContainer className="flex min-h-screen flex-col items-center justify-center gap-6 py-20 text-center">
-        <h2 className="text-2xl font-semibold text-foreground/90">
+      <PageContainer className="flex min-h-screen flex-col items-center justify-center gap-4 sm:p-6 py-20 text-center">
+        <h2 className="text-xl font-semibold text-foreground/90">
           Something went wrong
         </h2>
         <p className="max-w-md text-muted-foreground">
@@ -32,7 +32,11 @@ export default function Error({
           <Button type="button" onClick={() => reset()}>
             Try again
           </Button>
-          <Button type="button" variant="outline" onClick={() => (window.location.href = '/dashboard')}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => (window.location.href = "/dashboard")}
+          >
             Go to dashboard
           </Button>
         </div>

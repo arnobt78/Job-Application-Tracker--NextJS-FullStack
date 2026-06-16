@@ -28,10 +28,11 @@
 | TC-0022 | C1 | REQ-0016 | prisma generate + migrate succeed | CI | CRITICAL | Pending |
 | TC-0023 | C1 | REQ-0017 | npm run build exits 0 | CI | CRITICAL | Pending |
 | TC-0024 | C1 | REQ-0018 | db:inspect script runs without error | Manual | LOW | Pending |
+| TC-0025 | C1 | REQ-0024 | Agile V governance docs remain synchronized and append-only | Process Audit | HIGH | In Progress |
 
 ## Regression Baseline
 
-On C2+, unchanged REQs inherit TC-0001…TC-0024 as regression suite per agile-v-lifecycle.
+On C2+, unchanged REQs inherit TC-0001…TC-0025 as regression suite per agile-v-lifecycle.
 
 ## Quality Gates (Test Designer)
 

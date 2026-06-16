@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import JobCard from '@/components/JobCard';
-import { Skeleton } from '@/components/ui/skeleton';
-import { UI_DIMENSIONS } from '@/lib/ui/dimensions';
-import { useJobsListQuery } from '@/hooks/useJobsListQuery';
-import { Briefcase } from 'lucide-react';
+import JobCard from "@/components/JobCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UI_DIMENSIONS } from "@/lib/ui/dimensions";
+import { useJobsListQuery } from "@/hooks/useJobsListQuery";
+import { Briefcase } from "lucide-react";
 
 /** Job cards grid — skeleton cards while loading; empty state when no results */
 export function JobsGrid() {
@@ -16,7 +16,7 @@ export function JobsGrid() {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
         <Briefcase className="h-10 w-10" />
-        <h2 className="text-xl font-semibold">No jobs found</h2>
+        <h2 className="text-lg font-semibold">No jobs found</h2>
       </div>
     );
   }
@@ -25,7 +25,10 @@ export function JobsGrid() {
     return (
       <div className="grid w-full gap-8 sm:grid-cols-2">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className={`${heightClass} w-full ${roundedClass}`} />
+          <Skeleton
+            key={i}
+            className={`${heightClass} w-full ${roundedClass}`}
+          />
         ))}
       </div>
     );

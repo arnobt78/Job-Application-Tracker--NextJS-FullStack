@@ -28,6 +28,10 @@ export type StatsResult = {
   pending: number;
   interview: number;
   declined: number;
+  fullTime: number;
+  partTime: number;
+  internship: number;
+  total: number;
 };
 
 export type ChartPoint = { date: string; count: number };
@@ -168,7 +172,7 @@ export async function getCachedJob(
   )();
 }
 
-/** Stats cards — separate tag for targeted invalidation */
+/** Stats cards + portfolio breakdown — separate tag for targeted invalidation */
 export async function getCachedStats(userId: string): Promise<StatsResult> {
   return unstable_cache(
     async () => {
@@ -176,13 +180,21 @@ export async function getCachedStats(userId: string): Promise<StatsResult> {
       const cached = await getCache<StatsResult>(redisKey);
       if (cached) return cached;
 
-      const stats = await prisma.job.groupBy({
-        by: ['status'],
-        _count: { status: true },
-        where: { clerkId: userId },
-      });
+      const [statusGroups, modeGroups, total] = await Promise.all([
+        prisma.job.groupBy({
+          by: ['status'],
+          _count: { status: true },
+          where: { clerkId: userId },
+        }),
+        prisma.job.groupBy({
+          by: ['mode'],
+          _count: { mode: true },
+          where: { clerkId: userId },
+        }),
+        prisma.job.count({ where: { clerkId: userId } }),
+      ]);
 
-      const statsObject = stats.reduce(
+      const statsObject = statusGroups.reduce(
         (acc, curr) => {
           const normalized = curr.status.toLowerCase();
           if (['pending', 'interview', 'declined'].includes(normalized)) {
@@ -193,11 +205,31 @@ export async function getCachedStats(userId: string): Promise<StatsResult> {
         {} as Record<string, number>
       );
 
+      const modeObject = modeGroups.reduce(
+        (acc, curr) => {
+          const normalized = curr.mode.toLowerCase();
+          if (normalized === 'full-time') {
+            acc.fullTime = (acc.fullTime || 0) + curr._count.mode;
+          } else if (normalized === 'part-time') {
+            acc.partTime = (acc.partTime || 0) + curr._count.mode;
+          } else if (normalized === 'internship') {
+            acc.internship = (acc.internship || 0) + curr._count.mode;
+          }
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
       const result: StatsResult = {
         pending: 0,
         declined: 0,
         interview: 0,
+        fullTime: 0,
+        partTime: 0,
+        internship: 0,
+        total,
         ...statsObject,
+        ...modeObject,
       };
 
       await setCache(redisKey, result);

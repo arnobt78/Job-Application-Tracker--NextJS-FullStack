@@ -11,6 +11,7 @@ import {
   getCachedStats,
   getCachedCharts,
   getCachedJobFilterOptions,
+  type StatsResult,
 } from "@/lib/jobs/queries";
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
 
@@ -143,11 +144,7 @@ export async function updateJobAction(
   }
 }
 
-export async function getStatsAction(): Promise<{
-  pending: number;
-  interview: number;
-  declined: number;
-}> {
+export async function getStatsAction(): Promise<StatsResult> {
   const userId = await authenticateAndRedirect();
 
   try {

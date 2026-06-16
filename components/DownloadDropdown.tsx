@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Download, FileText, Table } from "lucide-react";
+import { Download, FileText, Table, ChevronDown } from "lucide-react";
 import { getAllJobsForDownloadAction } from "@/utils/actions";
 import { JobType } from "@/utils/types";
 import dayjs from "dayjs";
@@ -274,6 +274,7 @@ function DownloadDropdown() {
         <Button variant="outline" size="sm" className="flex items-center gap-2">
           <Download className="h-4 w-4" />
           Download
+          <ChevronDown className="h-4 w-4 opacity-70" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       {/* Dropdown content - appears below/above the trigger */}

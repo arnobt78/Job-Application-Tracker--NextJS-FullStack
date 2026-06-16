@@ -1,31 +1,33 @@
-import { JobsFilterBar } from '@/components/jobs/jobs-filter-bar';
-import DownloadDropdown from '@/components/DownloadDropdown';
-import { JobsCount } from '@/components/jobs/jobs-count';
-import { JobsGrid } from '@/components/jobs/jobs-grid';
-import { JobsPagination } from '@/components/jobs/jobs-pagination';
-import { AddJobDialog } from '@/components/dialogs/add-job-dialog';
-import type { Metadata } from 'next';
-import { createPageMetadata } from '@/lib/site-metadata';
-import { queryKeys } from '@/lib/query-keys';
+import { JobsFilterBar } from "@/components/jobs/jobs-filter-bar";
+import { DashboardPageHeader } from "@/components/jobs/dashboard-page-header";
+import { JobsResultsToolbar } from "@/components/jobs/jobs-results-toolbar";
+import { JobsGrid } from "@/components/jobs/jobs-grid";
+import { JobsPagination } from "@/components/jobs/jobs-pagination";
+import { PageSectionHeader } from "@/components/ui/page-section-header";
+import type { Metadata } from "next";
+import { createPageMetadata } from "@/lib/site-metadata";
+import { queryKeys } from "@/lib/query-keys";
+import { DASHBOARD_COPY } from "@/lib/ui/dashboard-copy";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from '@tanstack/react-query';
+} from "@tanstack/react-query";
 import {
   getAllJobsAction,
   getJobFilterOptionsAction,
-} from '@/utils/actions';
-import { parseJobsListFiltersFromSearchParamsRecord } from '@/lib/jobs/filter-params';
-import { Briefcase, Filter } from 'lucide-react';
+  getStatsAction,
+} from "@/utils/actions";
+import { parseJobsListFiltersFromSearchParamsRecord } from "@/lib/jobs/filter-params";
+import { SlidersHorizontal } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Dashboard',
+  title: "Dashboard",
   description:
-    'View, search, and filter all your job applications. Add new applications and track your progress.',
-  path: '/dashboard',
+    "View, search, and filter all your job applications. Add new applications and track your progress.",
+  path: "/dashboard",
   noIndex: true,
 });
 
@@ -50,7 +52,7 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
       filters.jobStatus,
       filters.jobMode,
       filters.monthYear,
-      filters.page
+      filters.page,
     ),
     queryFn: () =>
       getAllJobsAction({
@@ -65,41 +67,32 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
     queryKey: queryKeys.jobs.filterOptions,
     queryFn: () => getJobFilterOptionsAction(),
   });
+  void queryClient.prefetchQuery({
+    queryKey: queryKeys.stats.all,
+    queryFn: () => getStatsAction(),
+  });
+
+  const filterCopy = DASHBOARD_COPY.filters;
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="mb-8 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-3xl font-bold">
-            <Briefcase className="h-7 w-7 text-primary" />
-            My Jobs
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Track and manage your job applications
-          </p>
-        </div>
-        <AddJobDialog />
-      </div>
+      <DashboardPageHeader />
 
-      <div className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <Filter className="h-4 w-4" />
-        Search &amp; filter
-      </div>
+      <PageSectionHeader
+        icon={SlidersHorizontal}
+        title={filterCopy.title}
+        subtitle={filterCopy.subtitle}
+        className="mb-2"
+      />
       <JobsFilterBar />
 
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h2 className="flex items-center gap-2 text-xl font-semibold capitalize">
-            <Briefcase className="h-5 w-5 text-primary" />
-            <JobsCount />
-            <span>jobs found</span>
-          </h2>
-          <DownloadDropdown />
-        </div>
-        <JobsPagination />
-      </div>
+      <JobsResultsToolbar />
 
       <JobsGrid />
+
+      <div className="mt-8 flex w-full justify-center">
+        <JobsPagination />
+      </div>
     </HydrationBoundary>
   );
 }

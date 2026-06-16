@@ -1,6 +1,10 @@
-'use client';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+"use client";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  buildJobsListSearchParams,
+  parseJobsListFilters,
+} from "@/lib/jobs/filter-params";
 
 type ButtonContainerProps = {
   currentPage: number;
@@ -12,30 +16,25 @@ type ButtonProps = {
   activeClass: boolean;
 };
 
-import { Button } from './ui/button';
+import { Button } from "./ui/button";
 function ButtonContainer({ currentPage, totalPages }: ButtonContainerProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const handlePageChange = (page: number) => {
-    const defaultParams = {
-      search: searchParams.get('search') || '',
-      jobStatus: searchParams.get('jobStatus') || '',
-      page: String(page),
-    };
-
-    let params = new URLSearchParams(defaultParams);
-
-    router.push(`${pathname}?${params.toString()}`);
+    const filters = parseJobsListFilters(searchParams);
+    const params = buildJobsListSearchParams({ ...filters, page });
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   };
 
   const addPageButton = ({ page, activeClass }: ButtonProps) => {
     return (
       <Button
         key={page}
-        size='icon'
-        variant={activeClass ? 'default' : 'outline'}
+        size="icon"
+        variant={activeClass ? "default" : "outline"}
         onClick={() => handlePageChange(page)}
       >
         {page}
@@ -47,15 +46,15 @@ function ButtonContainer({ currentPage, totalPages }: ButtonContainerProps) {
     const pageButtons = [];
     // first page
     pageButtons.push(
-      addPageButton({ page: 1, activeClass: currentPage === 1 })
+      addPageButton({ page: 1, activeClass: currentPage === 1 }),
     );
     // dots
 
     if (currentPage > 3) {
       pageButtons.push(
-        <Button size='icon' variant='outline' key='dots-1'>
+        <Button size="icon" variant="outline" key="dots-1">
           ...
-        </Button>
+        </Button>,
       );
     }
     // one before current page
@@ -64,7 +63,7 @@ function ButtonContainer({ currentPage, totalPages }: ButtonContainerProps) {
         addPageButton({
           page: currentPage - 1,
           activeClass: false,
-        })
+        }),
       );
     }
     // current page
@@ -73,7 +72,7 @@ function ButtonContainer({ currentPage, totalPages }: ButtonContainerProps) {
         addPageButton({
           page: currentPage,
           activeClass: true,
-        })
+        }),
       );
     }
     // one after current page
@@ -83,53 +82,53 @@ function ButtonContainer({ currentPage, totalPages }: ButtonContainerProps) {
         addPageButton({
           page: currentPage + 1,
           activeClass: false,
-        })
+        }),
       );
     }
     if (currentPage < totalPages - 2) {
       pageButtons.push(
-        <Button size='icon' variant='outline' key='dots-2'>
+        <Button size="icon" variant="outline" key="dots-2">
           ...
-        </Button>
+        </Button>,
       );
     }
     pageButtons.push(
       addPageButton({
         page: totalPages,
         activeClass: currentPage === totalPages,
-      })
+      }),
     );
     return pageButtons;
   };
 
   return (
-    <div className='flex  gap-x-2'>
+    <div className="flex items-center gap-x-2">
       {/* prev */}
       <Button
-        className='flex items-center gap-x-2 '
-        variant='outline'
+        className="inline-flex items-center gap-1.5"
+        variant="outline"
         onClick={() => {
           let prevPage = currentPage - 1;
           if (prevPage < 1) prevPage = totalPages;
           handlePageChange(prevPage);
         }}
       >
-        <ChevronLeft />
-        prev
+        <ChevronLeft className="h-4 w-4" />
+        Prev
       </Button>
       {renderPageButtons()}
       {/* next */}
       <Button
-        className='flex items-center gap-x-2 '
+        className="inline-flex items-center gap-1.5"
         onClick={() => {
           let nextPage = currentPage + 1;
           if (nextPage > totalPages) nextPage = 1;
           handlePageChange(nextPage);
         }}
-        variant='outline'
+        variant="outline"
       >
-        next
-        <ChevronRight />
+        Next
+        <ChevronRight className="h-4 w-4" />
       </Button>
     </div>
   );

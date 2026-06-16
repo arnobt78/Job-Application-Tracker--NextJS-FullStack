@@ -17,14 +17,19 @@ import {
   notifyJobUpdated,
   notifyJobUpdateError,
 } from '@/lib/notifications/app-toast';
-import type { JobsListResult, StatsResult } from '@/lib/jobs/queries';
+import type { JobsListResult } from '@/lib/jobs/queries';
 import {
   bumpChartMonth,
   type ChartsCache,
 } from '@/lib/jobs/chart-optimistic';
+import {
+  applyStatsCreate,
+  applyStatsDelete,
+  applyStatsUpdate,
+  type StatsCache,
+} from '@/lib/jobs/stats-optimistic';
 
 type JobsListCache = JobsListResult | undefined;
-type StatsCache = StatsResult | undefined;
 
 /** Shared post-mutation invalidation — busts all job queries + cross-tab broadcast */
 export function useJobsInvalidation() {
@@ -35,13 +40,6 @@ export function useJobsInvalidation() {
   };
 
   return { invalidateAfterMutation, queryClient };
-}
-
-function bumpStat(stats: StatsCache, status: string, delta: number): StatsCache {
-  if (!stats) return stats;
-  const key = status.toLowerCase() as keyof StatsResult;
-  if (!(key in stats)) return stats;
-  return { ...stats, [key]: Math.max(0, (stats[key] ?? 0) + delta) };
 }
 
 /** Create job — optimistic prepend to lists + stats + charts bump */
@@ -88,7 +86,7 @@ export function useCreateJobMutation() {
       );
 
       queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
-        bumpStat(old, values.status, 1)
+        applyStatsCreate(old, values)
       );
 
       queryClient.setQueryData<ChartsCache>(queryKeys.charts.all, (old) =>
@@ -148,7 +146,12 @@ export function useUpdateJobMutation(jobId: string) {
         queryKeys.stats.all
       );
 
-      const oldStatus = previousDetail?.status;
+      const jobInList = previousJobs
+        .map(([, data]) => data?.jobs.find((j) => j.id === jobId))
+        .find((j): j is JobType => j !== undefined);
+
+      const oldStatus = previousDetail?.status ?? jobInList?.status;
+      const oldMode = previousDetail?.mode ?? jobInList?.mode;
 
       queryClient.setQueryData<JobType>(queryKeys.job.detail(jobId), (old) =>
         old ? { ...old, ...values, updatedAt: new Date() } : old
@@ -167,12 +170,17 @@ export function useUpdateJobMutation(jobId: string) {
         }
       );
 
-      if (oldStatus && oldStatus !== values.status) {
-        queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) => {
-          let next = bumpStat(old, oldStatus, -1);
-          next = bumpStat(next, values.status, 1);
-          return next;
-        });
+      if (
+        (oldStatus && oldStatus !== values.status) ||
+        (oldMode && oldMode !== values.mode)
+      ) {
+        queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
+          applyStatsUpdate(
+            old,
+            { status: oldStatus, mode: oldMode },
+            values
+          )
+        );
       }
 
       return { previousJobs, previousDetail, previousStats };
@@ -230,9 +238,8 @@ export function useDeleteJobMutation(jobId: string) {
         queryKeys.charts.all
       );
 
-      let removedStatus: string | undefined;
-      let removedCreatedAt: Date | undefined;
       let removedJob: JobType | undefined;
+      let removedCreatedAt: Date | undefined;
 
       queryClient.setQueriesData<JobsListCache>(
         { queryKey: queryKeys.jobs.all },
@@ -240,7 +247,6 @@ export function useDeleteJobMutation(jobId: string) {
           if (!old) return old;
           const removed = old.jobs.find((j) => j.id === jobId);
           removedJob = removed;
-          removedStatus = removed?.status;
           removedCreatedAt = removed?.createdAt
             ? new Date(removed.createdAt)
             : undefined;
@@ -252,9 +258,9 @@ export function useDeleteJobMutation(jobId: string) {
         }
       );
 
-      if (removedStatus) {
+      if (removedJob) {
         queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
-          bumpStat(old, removedStatus!, -1)
+          applyStatsDelete(old, removedJob!)
         );
       }
 

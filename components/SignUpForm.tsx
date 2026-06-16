@@ -67,7 +67,7 @@ export default function SignUpForm() {
     <div className="w-full max-w-md">
       <GlassCard variant="sky">
         <div className="mb-6 space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-xl font-bold text-foreground">
             {pendingVerification ? "Verify your email" : "Create your account"}
           </h1>
           <p className="text-muted-foreground">
@@ -157,14 +157,14 @@ export default function SignUpForm() {
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
                   Please wait...
                 </>
-              ) : pendingVerification
-                  ? "Verify & Continue"
-                  : (
-                    <>
-                      <Sparkles className="h-4 w-4" aria-hidden />
-                      Create Account
-                    </>
-                  )}
+              ) : pendingVerification ? (
+                "Verify & Continue"
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" aria-hidden />
+                  Create Account
+                </>
+              )}
             </Button>
           </div>
         </form>

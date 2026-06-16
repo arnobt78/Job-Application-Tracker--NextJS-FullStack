@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { AuthMarketingPanel } from '@/components/layout/auth-marketing-panel';
-import { TestAccountAvatar } from '@/components/auth/test-account-avatar';
-import { GlassCard } from '@/components/ui/glass-card';
-import type { TestAccount } from '@/lib/auth/test-credentials';
-import { cn } from '@/lib/utils';
+import { AuthMarketingPanel } from "@/components/layout/auth-marketing-panel";
+import { TestAccountAvatar } from "@/components/auth/test-account-avatar";
+import { GlassCard } from "@/components/ui/glass-card";
+import type { TestAccount } from "@/lib/auth/test-credentials";
+import { cn } from "@/lib/utils";
 
 type AuthSignInLeadingPanelProps = {
   selectedAccount: TestAccount | null;
@@ -18,7 +18,7 @@ export function AuthSignInLeadingPanel({
 }: AuthSignInLeadingPanelProps) {
   if (selectedAccount) {
     return (
-      <div className={cn('flex flex-col gap-6', className)}>
+      <div className={cn("flex flex-col gap-4 sm:p-6", className)}>
         <GlassCard variant="neutral" className="p-5">
           <div className="flex items-center gap-4">
             <TestAccountAvatar

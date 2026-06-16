@@ -1,13 +1,13 @@
 # Jobify — Agent Memory
 
 ## Stack
-Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Sentry · Vitest
+Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Sentry · Vitest (41 tests)
 
 ## Auth
 - `proxy.ts` — Clerk gate; `/jobs/*` → `/dashboard`
 - Test creds: `lib/auth/test-credentials.ts`
-- Sign-in: `GlassDropdownTrigger` + `TestAccountSelectRow` · Send icon · Loader2 loading
-- Sign-up: Sparkles + Loader2 on wait · demo CTA: Loader2 on landing
+- Sign-in: `GlassDropdownTrigger` + `TestAccountSelectRow` · Send · Loader2
+- Sign-up: Sparkles + Loader2 · demo CTA: Loader2 on landing
 
 ## Data flow
 1. `force-dynamic` · `void prefetchQuery` (never `await` before shell)
@@ -16,28 +16,32 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 4. CRUD: `utils/actions.ts` → `invalidateUserJobCaches`
 5. Client: `useJobsMutation` + `invalidateAllJobQueries`
 6. Cross-tab: `useJobsCacheSync` + `/api/jobs/events`
+7. Optimistic: `lib/jobs/stats-optimistic.ts` + `chart-optimistic.ts` (status/mode/total + charts)
 
 ## Query keys
 `jobs.list(search, jobStatus, jobMode, monthYear, page)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)`
 
 ## Filters (`lib/jobs/`)
-`filter-types` · `filter-config` · `filter-params` (single parser) · `month-utc`
+`filter-types` · `filter-config` · `filter-params` (+ `hasActiveJobsFilters` / `clearedJobsListFilters`) · `month-utc`
 
 ## Routes
-- `/dashboard` — `JobsFilterBar` + count/grid/pagination
+- `/dashboard` — `DashboardPageHeader` · `JobsFilterBar` (clear filters) · `JobsResultsToolbar` (badge + portfolio breakdown) · `JobsGrid` · pagination below
 - `/dashboard/[id]` — edit dialog URL
-- `/stats` — instant shell
+- `/stats` — instant shell · `StatsResult` includes mode + total counts
+
+## Dashboard UI
+- `PageSectionHeader` + `lib/ui/dashboard-copy.ts` — shared title/subtitle/icon
+- `useJobsPortfolioStats` — global portfolio counts (prefetch `stats.all` on dashboard)
+- Add job CTA: "New Application" · Download chevron dropdown
 
 ## Glass UI
-- `glass-dropdown-menu` — `GlassDropdownTrigger` (left label + chevron) · custom-children radio rows
-- `glass-search-input` · `glass-alert-dialog` (AlertDialog + stable gutter)
-- `glass-dialog-content` — 90vw×90vh job dialogs
+- `glass-dropdown-menu` · `glass-search-input` · `glass-alert-dialog` · `glass-dialog-content` (90vw×90vh)
 - Edit/delete: confirm → dialog/mutate on `JobCard`
 
 ## Scroll / overlays (no layout shift)
-- `scrollbar-gutter: stable` on html/body — reserved transparent gutter; no shift when scroll toggles
-- `OverlayScrollbar` + overlay thumb CSS (transparent track, thumb on hover/scroll)
-- `DropdownMenu` + `Dialog` default `modal={false}` · Select uses RemoveScroll in Content (gutter absorbs shift)
+- `scrollbar-gutter: stable` on html/body
+- `OverlayScrollbar` + overlay thumb CSS
+- `DropdownMenu` + `Dialog` default `modal={false}`
 - Job dialog inner scroll: `.overlay-scroll`
 
 ## Job forms (dialog)
@@ -46,8 +50,11 @@ Stack: position, company, location · row: status+mode (`sm:grid-cols-2`) · ful
 ## Hydration
 `formatJobDate` UTC · `SafeImage` no `loading` when `priority`
 
+## Agile V
+`.agile-v/PLAYBOOK.md` · INT-0003 active · REQ-0024 governance
+
 ## Verify
-`npm run lint && npm run typecheck && npm run test && npm run build` (29 tests)
+`npm run lint && npm run typecheck && npm run test && npm run build`
 
 ## Do not
 `cacheComponents: true` · `await prefetchQuery` before shell · break SSE/invalidation for UI-only work
