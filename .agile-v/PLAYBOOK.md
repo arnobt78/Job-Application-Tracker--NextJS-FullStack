@@ -121,10 +121,14 @@ Archives: `cycles/C1/` (frozen after Gate 2)
 | Rule | Pattern |
 |---|---|
 | SSR pages | `export const dynamic = 'force-dynamic'` |
-| Instant shell | `void prefetchQuery` — never `await` before render |
+| Prefetch | `await prefetchQuery` before `dehydrate` (dashboard/stats/[id]) |
+| Cold skeletons | `useQueryBodyLoading` — skip when SSR/persist warm |
+| Persist | `PersistQueryClient` localStorage `jobify-query-cache` |
 | No route `loading.tsx` | Inline skeletons on data slots only |
-| CRUD cache | `useJobsMutation` → `invalidateAllJobQueries` + `invalidateUserJobCaches` |
+| CRUD cache | onSuccess `invalidateAll`+broadcast · onSettled same `broadcast:false` |
+| Server bust | `invalidateUserJobCaches` + tags + Redis + SSE |
 | Cross-tab sync | `useJobsCacheSync` + `/api/jobs/events` |
+| Nav avatar | `dashboard/layout` `currentUser()` → `NavUserProvider` |
 | No `cacheComponents: true` | Conflicts with `force-dynamic` |
 
 Full rules: `CLAUDE.md` at repo root.
@@ -137,7 +141,7 @@ Full rules: `CLAUDE.md` at repo root.
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-Current baseline: **29 tests** passing.
+Current baseline: **49 tests** passing · HEAD `280e284`
 
 ---
 

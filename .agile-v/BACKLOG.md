@@ -4,26 +4,32 @@
 
 ## BL-0007: User-Driven Extension (active)
 
-**REQ:** REQ-0001, REQ-0013, REQ-0014, REQ-0003, REQ-0023 · **token:** `c1-dev-20260612`  
-**Status:** **ACTIVE** — glass filters + confirms shipped @ `fd6f20c`
+**REQ:** REQ-0001, REQ-0013, REQ-0014, REQ-0003, REQ-0015, REQ-0019, REQ-0023 · **token:** `c1-dev-20260612`  
+**Status:** **ACTIVE** — cache/SSR track shipped @ `280e284`
 
-### Done this track
-- Sign-in test-account preview + inline select row (`TestAccountSelectRow`)
-- Sonner notifications (CRUD + welcome/goodbye); Radix toast removed
-- Auth toast route-gated; localStorage; no double logout redirect
-- Instant shell: `void prefetchQuery`, no `loading.tsx`, data-slot skeletons
-- Stats: headings in `page.tsx`; dashboard: `JobsCount`/`JobsGrid`/`JobsPagination`
-- Prisma cleanup shipped (`998d3a5`)
-- Glass dropdown primitives + `ThemeToggle` + sign-in test account dropdown
-- Instant `JobsFilterBar` (debounced search, status/mode/month URL filters)
-- Glass confirm alerts before edit dialog + delete
-- Extended `getCachedJobs` + `getJobFilterOptionsAction` + query keys
-- Filter-params lib, UTC months, alert icons, README sync (`fd6f20c`)
+### Done this track (2026-06-16 session)
+- Dashboard redesign: headers, toolbar, portfolio breakdown, pagination fix (`4914d29`)
+- Optimistic portfolio stats + chart bumps (`4914d29`)
+- Shell skeletons, keepPreviousData, clear-filter layout (`93cddf6`)
+- Filter layout shift fix (reserved clear button width)
+- `await prefetchQuery` + `useQueryBodyLoading` + `useJobsListBodyLoading`
+- `PersistQueryClient` localStorage persist (`jobify-query-cache`)
+- Nav SSR avatar: `currentUser()` + `NavUserProvider` + `useNavUserSession` (`37f8525`)
+- Edit job `[id]` await prefetch + dialog shell on cold load
+- `invalidateAllJobQueries` incl. `filterOptions`; onSettled choke-point (`66bc670`)
+- Docs: `CLAUDE.md`, `PROJECT_WALKTHROUGH.md`
 
 ### Next when resuming
-- Map any new user request → REQ-XXXX before build
-- Manual QA (filters, confirms, auth flows)
+- Map new user request → REQ-XXXX before build
+- Manual QA: refresh dashboard/stats/[id], CRUD cross-page, filter dropdown, avatar
 - Gate 1 baseline approval (INT-0001)
+- BL-0003 E2E Playwright (optional)
+
+---
+
+## BL-0001: Clerk Auth Flicker-Free (dashboard) ✅
+
+**REQ:** REQ-0019 · **Shipped:** `37f8525` (nav SSR avatar) · **Status:** DONE
 
 ---
 
@@ -45,15 +51,9 @@
 
 ---
 
-## BL-0001: Clerk Auth Flicker-Free (dashboard)
-
-**REQ:** REQ-0019 · **Status:** Backlog (navbar avatar brief robohash flash = expected Clerk hydration)
-
----
-
 ## BL-0003: Automated Test Suite
 
-**REQ:** REQ-0021 · **Status:** Backlog (29 vitest tests; E2E Playwright pending)
+**REQ:** REQ-0021 · **Status:** Backlog (49 vitest tests; E2E Playwright pending)
 
 ---
 
@@ -67,7 +67,7 @@
 
 | Priority | BL | Status |
 |---|---|---|
-| 1 | BL-0007 | ACTIVE — user reqs @ `fd6f20c` |
+| 1 | BL-0007 | ACTIVE — resume @ `280e284` |
 | 2 | BL-0003 | Backlog (E2E) |
 | 3 | Gate 1 approval | PENDING |
 | 4 | BL-0004 | Backlog |

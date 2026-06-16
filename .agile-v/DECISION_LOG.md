@@ -33,3 +33,6 @@
 | 2026-06-16T14:31:00Z | Build Agent (JS) | C1 | Dashboard UI redesign — section headers, clear filters, results toolbar, pagination fix | User plan: REQ-0003/0012/0014 dashboard polish | REQ-0003, REQ-0012, REQ-0014 |
 | 2026-06-16T15:41:00Z | Build Agent (JS) | C1 | Extract stats-optimistic lib; full portfolio bumps on CRUD | Status+mode+total instant updates; README sync | REQ-0014, REQ-0015 |
 | 2026-06-16T16:57:00Z | Build Agent (JS) | C1 | Dashboard skeleton UX — shell cards, breakdown icons, clear filter layout | keepPreviousData; no block skeleton flash | REQ-0014, REQ-0012 |
+| 2026-06-16T18:00:00Z | Build Agent (JS) | C1 | SSR cache track: await prefetch, useQueryBodyLoading, PersistQueryClient, nav SSR avatar | Calendar-appointment pattern; no refresh skeleton flash | REQ-0014, REQ-0015, REQ-0019 |
+| 2026-06-16T18:15:00Z | Build Agent (JS) | C1 | onSettled uses invalidateAllJobQueries (filterOptions + job detail) broadcast:false | Single invalidation choke-point on all CRUD paths | REQ-0015 |
+| 2026-06-16T18:30:00Z | AQMS Orchestrator | C1 | Session pause @ `280e284`; sync `.agile-v/` for tomorrow | INT-0003 active; EVAL-0005 PASS 49/49 | BL-0007 |

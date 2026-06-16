@@ -47,3 +47,8 @@
 | 2026-06-16T15:41:00Z | prove | red-team-verifier | REQ-0014, REQ-0015 | lint/typecheck/test(41)/build post-stats-optimistic | SUCCESS |
 | 2026-06-16T16:57:00Z | orchestrate | build-agent-js | REQ-0014, REQ-0012 | Dashboard skeleton UX fix | SUCCESS |
 | 2026-06-16T16:57:00Z | prove | red-team-verifier | REQ-0014, REQ-0012 | lint/typecheck/test(41)/build post-skeleton UX | SUCCESS |
+| 2026-06-16T17:00:00Z | orchestrate | build-agent-js | REQ-0003, REQ-0012, REQ-0014 | Filter layout shift fix (clear button reserved width) | SUCCESS |
+| 2026-06-16T18:00:00Z | orchestrate | build-agent-js | REQ-0014, REQ-0015, REQ-0019 | SSR hydrate + persist + body loading + nav avatar SSR | SUCCESS — `37f8525` |
+| 2026-06-16T18:10:00Z | orchestrate | build-agent-js | REQ-0015 | onSettled → invalidateAllJobQueries broadcast:false | SUCCESS — `66bc670` |
+| 2026-06-16T18:30:00Z | prove | red-team-verifier | REQ-0014, REQ-0015 | EVAL-0005 lint/typecheck/test(49)/build @ `280e284` | SUCCESS |
+| 2026-06-16T18:30:00Z | checkpoint | agile-v-core | REQ-0024 | Sync `.agile-v/` for tomorrow resume @ `280e284` | PAUSED |
