@@ -9,13 +9,10 @@ import {
 import { DASHBOARD_COPY } from '@/lib/ui/dashboard-copy';
 import { cn } from '@/lib/utils';
 
-/** Text-only clear control — lives above filter card, right-aligned with filter subtitle */
+/** Text-only clear control — always reserves width so subtitle row height stays stable */
 export function JobsFilterClearButton() {
   const { filters, setFilters } = useJobsListParams();
-
-  if (!hasActiveJobsFilters(filters)) {
-    return null;
-  }
+  const isActive = hasActiveJobsFilters(filters);
 
   const handleClear = () => {
     setFilters(clearedJobsListFilters());
@@ -25,9 +22,12 @@ export function JobsFilterClearButton() {
     <button
       type="button"
       onClick={handleClear}
+      tabIndex={isActive ? 0 : -1}
+      aria-hidden={!isActive}
       className={cn(
         'inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-muted-foreground',
-        'transition-colors hover:text-primary'
+        'transition-colors hover:text-primary',
+        !isActive && 'invisible pointer-events-none'
       )}
     >
       <RotateCcw className="h-4 w-4" aria-hidden />

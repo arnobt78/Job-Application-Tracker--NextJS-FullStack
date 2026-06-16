@@ -31,7 +31,8 @@ export default async function JobEditPage({
   const { id } = await params;
 
   const queryClient = new QueryClient();
-  void queryClient.prefetchQuery({
+
+  await queryClient.prefetchQuery({
     queryKey: queryKeys.job.detail(id),
     queryFn: () => getSingleJobAction(id),
   });

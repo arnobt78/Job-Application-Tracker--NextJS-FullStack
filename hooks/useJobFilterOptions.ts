@@ -9,5 +9,6 @@ export function useJobFilterOptions() {
   return useQuery({
     queryKey: queryKeys.jobs.filterOptions,
     queryFn: () => getJobFilterOptionsAction(),
+    staleTime: 60_000,
   });
 }

@@ -2,15 +2,17 @@
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useJobsPortfolioStats } from '@/hooks/useJobsPortfolioStats';
+import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import { PORTFOLIO_BREAKDOWN_ITEMS } from '@/lib/ui/portfolio-breakdown-config';
+import { queryKeys } from '@/lib/query-keys';
 
 /**
  * Portfolio stats row — icon + label always stable; skeleton only on numeric value.
  * Shown as PageSectionHeader subtitle under Matching Applications.
  */
 export function PortfolioBreakdownRow() {
-  const { data: portfolio, isPending } = useJobsPortfolioStats();
-  const showValueSkeleton = isPending && portfolio == null;
+  const { data: portfolio, isLoading } = useJobsPortfolioStats();
+  const showValueSkeleton = useQueryBodyLoading(queryKeys.stats.all, isLoading);
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

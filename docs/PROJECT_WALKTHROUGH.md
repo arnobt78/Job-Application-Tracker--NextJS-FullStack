@@ -1,52 +1,53 @@
 # Jobify Project Walkthrough
 
-Demo: <https://jobify-tracker.vercel.app> — full-stack job application tracker.
+Demo: <https://jobify-tracker.vercel.app>
 
 ## Architecture
 
 ```text
-page.tsx (force-dynamic, void prefetchQuery)
-  → HydrationBoundary → useQuery + targeted skeletons
-  → lib/jobs/queries.ts (unstable_cache + tags + Redis)
-  → utils/actions.ts (Clerk auth)
+force-dynamic
+  dashboard/layout → currentUser() → NavUserProvider (avatar SSR)
+  page.tsx → await prefetchQuery → HydrationBoundary
+  PersistQueryClient (localStorage jobify-query-cache, buster v1)
+  lib/jobs/queries.ts (unstable_cache + tags + Redis)
+  utils/actions.ts (Clerk)
 
-CRUD: useJobsMutation → stats-optimistic + chart-optimistic
-  → invalidateUserJobCaches → invalidateAllJobQueries + SSE + BroadcastChannel
+Client: useQueryBodyLoading → skeleton only on cold cache
+CRUD: useJobsMutation (optimistic) → invalidateAllJobQueries + SSE + BroadcastChannel
 ```
 
 ## Key paths
 
 | Path | Role |
 | --- | --- |
-| `app/(dashboard)/dashboard/page.tsx` | Prefetch list, filterOptions, stats |
-| `components/jobs/job-card-shell.tsx` | Stable card chrome; text-only skeletons |
-| `components/jobs/portfolio-breakdown-row.tsx` | Icon+label stable; number skeleton cold only |
-| `components/jobs/jobs-filter-section.tsx` | Subtitle row + clear above filter card |
-| `hooks/useJobsListQuery.ts` | `keepPreviousData` — no flash on filter/page |
-| `lib/jobs/stats-optimistic.ts` | Optimistic status/mode/total |
-| `lib/ui/portfolio-breakdown-config.ts` | Breakdown icons + field keys |
+| `app/(dashboard)/layout.tsx` | SSR Clerk user → navbar avatar |
+| `app/(dashboard)/dashboard/page.tsx` | await prefetch list + filterOptions + stats |
+| `app/(dashboard)/stats/page.tsx` | await prefetch stats + charts |
+| `app/(dashboard)/dashboard/[id]/page.tsx` | await prefetch job detail |
+| `lib/query-body-loading.ts` | Warm cache check (SSR/persist/hydrate) |
+| `hooks/useJobsListBodyLoading.ts` | List query + bodyLoading |
+| `hooks/useNavUserSession.ts` | SSR snapshot + Clerk useUser |
+| `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist |
+| `lib/invalidate-jobs.ts` | jobs · stats · charts · filterOptions · job(id) |
+| `components/jobs/job-card-shell.tsx` | Stable chrome; text skeletons cold only |
 
 ## Dashboard layout
 
 1. `DashboardPageHeader`
-2. Filter title + subtitle row (Clear Filters right) + `JobsFilterBar` card
-3. `JobsResultsToolbar` — badge + `PortfolioBreakdownRow` as subtitle + download
-4. `JobCardShell` grid → centered pagination
+2. Filter subtitle + Clear (reserved width) + `JobsFilterBar`
+3. `JobsResultsToolbar` — badge + `PortfolioBreakdownRow` + download
+4. `JobCardShell` grid → pagination
 
 ## Loading UX
 
-- Skeleton only when `isPending && data === undefined` (true cold start)
-- SSR hydrate + `keepPreviousData` → filters/pages keep prior cards visible
-- Portfolio breakdown: icons/labels never skeleton; numbers only if no cached stats
+- `useQueryBodyLoading` — no skeleton when SSR/hydrate/persist has data
+- `keepPreviousData` on list — no flash on filter/page change
+- Navbar avatar — pulse only when no SSR seed and Clerk not loaded
 
 ## Invalidation
 
-`invalidateAllJobQueries` busts jobs/stats/charts/filterOptions. Optimistic list + stats + charts.
+`invalidateAllJobQueries`: jobs.all, stats, charts, filterOptions, job.detail(id). Server: `invalidateUserJobCaches` + tags + Redis + SSE.
 
 ## Verify
 
-`npm run lint && npm run typecheck && npm run test && npm run build` — 41 tests.
-
-## Deferred
-
-E2E Playwright, PostHog.
+`npm run lint && npm run typecheck && npm run test && npm run build` — 49 tests.

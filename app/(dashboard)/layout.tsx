@@ -1,26 +1,31 @@
 import { DashboardNav } from '@/components/layout/dashboard-nav';
 import { PageContainer } from '@/components/layout/page-container';
-import { PropsWithChildren } from 'react';
+import { NavUserProvider } from '@/context/nav-user-context';
+import { navUserSnapshotFromClerk } from '@/lib/auth/nav-user';
+import { currentUser } from '@clerk/nextjs/server';
+import type { PropsWithChildren } from 'react';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Dashboard layout — full-width top-nav only.
- * Sidebar removed; all nav links are in DashboardNav.
- * Content area starts below fixed h-14 navbar (pt-14 offset).
+ * SSR-seeds Clerk user for navbar avatar (no skeleton flash on refresh).
  */
-function DashboardLayout({ children }: PropsWithChildren) {
+async function DashboardLayout({ children }: PropsWithChildren) {
+  const initialNavUser = navUserSnapshotFromClerk(await currentUser());
+
   return (
-    <div className="app-shell">
-      <div className="app-shell-overlay" aria-hidden />
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <DashboardNav />
-        {/* pt clears the fixed h-14 navbar + extra breathing room */}
-        <PageContainer className="flex-1 py-16 pt-[calc(3.5rem+2rem)]">
-          {children}
-        </PageContainer>
+    <NavUserProvider user={initialNavUser}>
+      <div className="app-shell">
+        <div className="app-shell-overlay" aria-hidden />
+        <div className="relative z-10 flex min-h-screen flex-col">
+          <DashboardNav />
+          <PageContainer className="flex-1 py-16 pt-[calc(3.5rem+2rem)]">
+            {children}
+          </PageContainer>
+        </div>
       </div>
-    </div>
+    </NavUserProvider>
   );
 }
 

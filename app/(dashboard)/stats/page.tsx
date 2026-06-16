@@ -25,15 +25,16 @@ export const metadata: Metadata = createPageMetadata({
 async function StatsPage() {
   const queryClient = new QueryClient();
 
-  // Non-blocking prefetch — shell renders immediately; client hydrates or refetches
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-  });
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.charts.all,
-    queryFn: () => getChartsDataAction(),
-  });
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.stats.all,
+      queryFn: () => getStatsAction(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.charts.all,
+      queryFn: () => getChartsDataAction(),
+    }),
+  ]);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

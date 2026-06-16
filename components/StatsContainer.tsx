@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getStatsAction } from '@/utils/actions';
 import StatsCard from './StatsCard';
 import { queryKeys } from '@/lib/query-keys';
+import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import type { GlassVariant } from '@/components/ui/glass-card';
 
 const STAT_ITEMS: Array<{
@@ -17,10 +18,12 @@ const STAT_ITEMS: Array<{
 ];
 
 function StatsContainer() {
-  const { data, isPending } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: queryKeys.stats.all,
     queryFn: () => getStatsAction(),
+    staleTime: 60_000,
   });
+  const bodyLoading = useQueryBodyLoading(queryKeys.stats.all, isLoading);
 
   return (
     <div className="grid md:grid-cols-2 gap-4 lg:grid-cols-3">
@@ -30,7 +33,7 @@ function StatsContainer() {
           title={title}
           variant={variant}
           value={data?.[key] ?? 0}
-          isLoading={isPending}
+          isLoading={bodyLoading}
         />
       ))}
     </div>

@@ -12,16 +12,19 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { getChartsDataAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
+import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import { Skeleton } from './ui/skeleton';
 
 /** Chart body only — heading lives in stats page.tsx */
 function ChartsContainer() {
-  const { data, isPending } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: queryKeys.charts.all,
     queryFn: () => getChartsDataAction(),
+    staleTime: 60_000,
   });
+  const bodyLoading = useQueryBodyLoading(queryKeys.charts.all, isLoading);
 
-  if (isPending) {
+  if (bodyLoading) {
     return <Skeleton className="h-[300px] w-full rounded-2xl" />;
   }
 

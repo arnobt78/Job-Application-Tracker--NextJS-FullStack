@@ -2,13 +2,12 @@
 
 import ComplexButtonContainer from '@/components/ComplexButtonContainer';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useJobsListQuery } from '@/hooks/useJobsListQuery';
+import { useJobsListBodyLoading } from '@/hooks/useJobsListBodyLoading';
 
 export function JobsPagination() {
-  const { data, isPending } = useJobsListQuery();
-  const isInitialLoad = isPending && data === undefined;
+  const { data, bodyLoading } = useJobsListBodyLoading();
 
-  if (isInitialLoad) {
+  if (bodyLoading) {
     return <Skeleton className="h-9 w-40 rounded-2xl" />;
   }
 

@@ -32,5 +32,6 @@ export function useJobsListQuery() {
         page: filters.page,
       }),
     placeholderData: keepPreviousData,
+    staleTime: 60_000,
   });
 }

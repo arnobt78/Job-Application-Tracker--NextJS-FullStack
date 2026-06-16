@@ -1,62 +1,36 @@
 # Jobify — Agent Memory
 
 ## Stack
-Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Sentry · Vitest (41 tests)
+Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Sentry · Vitest (49 tests)
 
 ## Auth
 - `proxy.ts` — Clerk gate; `/jobs/*` → `/dashboard`
-- Test creds: `lib/auth/test-credentials.ts`
-- Sign-in: `GlassDropdownTrigger` + `TestAccountSelectRow` · Send · Loader2
-- Sign-up: Sparkles + Loader2 · demo CTA: Loader2 on landing
+- Navbar: `dashboard/layout` `currentUser()` → `NavUserProvider` · `useNavUserSession`
 
 ## Data flow
-1. `force-dynamic` · `void prefetchQuery` (never `await` before shell)
-2. No `loading.tsx` — data-slot skeletons only
-3. Reads: `lib/jobs/queries.ts` (`unstable_cache` + tags + Redis)
-4. CRUD: `utils/actions.ts` → `invalidateUserJobCaches`
-5. Client: `useJobsMutation` + `invalidateAllJobQueries`
+1. `force-dynamic` · per-page `await prefetchQuery` before `dehydrate`
+2. `PersistQueryClient` localStorage `jobify-query-cache` buster `v1` — jobs/stats/charts/job keys
+3. `useQueryBodyLoading` — skeleton only on cold cache (no SSR/persist data)
+4. Reads: `lib/jobs/queries.ts` (unstable_cache + tags + Redis)
+5. CRUD: `utils/actions.ts` → `invalidateUserJobCaches` · client `invalidateAllJobQueries` (jobs·stats·charts·filterOptions·job id)
 6. Cross-tab: `useJobsCacheSync` + `/api/jobs/events`
-7. Optimistic: `lib/jobs/stats-optimistic.ts` + `chart-optimistic.ts` (status/mode/total + charts)
+7. Optimistic: `stats-optimistic.ts` · `chart-optimistic.ts`
 
 ## Query keys
-`jobs.list(search, jobStatus, jobMode, monthYear, page)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)`
-
-## Filters (`lib/jobs/`)
-`filter-types` · `filter-config` · `filter-params` (+ `hasActiveJobsFilters` / `clearedJobsListFilters`) · `month-utc`
+`jobs.list(…)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)`
 
 ## Routes
-- `/dashboard` — `DashboardPageHeader` · `JobsFilterSection` (clear above card) · `JobsResultsToolbar` · `JobCardShell` grid · pagination below
-- `/dashboard/[id]` — edit dialog URL
-- `/stats` — instant shell · `StatsResult` includes mode + total counts
+- `/dashboard` — filter bar · results toolbar · `JobCardShell` grid · pagination
+- `/dashboard/[id]` — edit dialog · await prefetch job
+- `/stats` — StatsContainer + ChartsContainer body loading
 
-## Dashboard UI
-- `PageSectionHeader` (subtitle `ReactNode`) + `dashboard-copy.ts`
-- `PortfolioBreakdownRow` — icons+labels stable; number skeleton only on cold load
-- `useJobsListQuery` — `keepPreviousData`; skeleton when `isPending && !data`
-- `JobCardShell` — stable icons/buttons; text slots skeleton on cold load only
-- `useJobsPortfolioStats` · prefetch `stats.all`
-
-## Glass UI
-- `glass-dropdown-menu` · `glass-search-input` · `glass-alert-dialog` · `glass-dialog-content` (90vw×90vh)
-- Edit/delete: confirm → dialog/mutate on `JobCard`
-
-## Scroll / overlays (no layout shift)
-- `scrollbar-gutter: stable` on html/body
-- `OverlayScrollbar` + overlay thumb CSS
-- `DropdownMenu` + `Dialog` default `modal={false}`
-- Job dialog inner scroll: `.overlay-scroll`
-
-## Job forms (dialog)
-Stack: position, company, location · row: status+mode (`sm:grid-cols-2`) · full-width submit
-
-## Hydration
-`formatJobDate` UTC · `SafeImage` no `loading` when `priority`
-
-## Agile V
-`.agile-v/PLAYBOOK.md` · INT-0003 active · REQ-0024 governance
+## UI notes
+- Clear Filters: always reserves width (`invisible` when inactive)
+- `keepPreviousData` on jobs list
+- Glass dropdowns/dialogs `modal={false}` · `scrollbar-gutter: stable`
 
 ## Verify
 `npm run lint && npm run typecheck && npm run test && npm run build`
 
 ## Do not
-`cacheComponents: true` · `await prefetchQuery` before shell · break SSE/invalidation for UI-only work
+`cacheComponents: true` · break SSE/invalidation · skeleton when cache warm

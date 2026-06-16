@@ -26,6 +26,9 @@ describe('invalidateAllJobQueries', () => {
     expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
       queryKey: queryKeys.charts.all,
     });
+    expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+      queryKey: queryKeys.jobs.filterOptions,
+    });
   });
 
   it('invalidates job detail when jobId is provided', () => {

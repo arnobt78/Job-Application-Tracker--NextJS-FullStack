@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser, useClerk } from '@clerk/nextjs';
+import { useClerk } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
 import {
@@ -12,35 +12,35 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Settings, LogOut } from 'lucide-react';
 import { SafeImage } from '@/components/ui/safe-image';
 import { resolveAvatarUrl } from '@/lib/auth/avatar-url';
-import {
-  scheduleGoodbyeAfterRedirect,
-} from '@/lib/notifications/app-toast';
+import { useNavUserSession } from '@/hooks/useNavUserSession';
+import { scheduleGoodbyeAfterRedirect } from '@/lib/notifications/app-toast';
+import { cn } from '@/lib/utils';
 
+/**
+ * Navbar profile menu — SSR snapshot + Clerk useUser merge via useNavUserSession.
+ * Avatar button always mounted (stable DOM); pulse overlay only on true cold load.
+ */
 export default function UserProfileDropdown() {
-  const { user } = useUser();
   const { signOut } = useClerk();
+  const { effectiveUser, displayName, email, avatarLoading } =
+    useNavUserSession();
   const [avatarError, setAvatarError] = useState(false);
 
-  const name =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-    user?.username ||
-    'User';
-  const email = user?.primaryEmailAddress?.emailAddress || '';
-  const hasImage = user?.hasImage ?? false;
-  const avatarUrl = resolveAvatarUrl({
-    imageUrl: user?.imageUrl,
-    name,
-    email,
-    hasImage,
-    avatarError,
-  });
+  const avatarUrl = effectiveUser
+    ? resolveAvatarUrl({
+        imageUrl: effectiveUser.imageUrl,
+        name: displayName,
+        email,
+        hasImage: effectiveUser.hasImage,
+        avatarError,
+      })
+    : '';
 
   const handleSignOut = async () => {
-    scheduleGoodbyeAfterRedirect(name);
+    scheduleGoodbyeAfterRedirect(displayName);
     try {
       await signOut({ redirectUrl: '/' });
     } catch {
@@ -51,26 +51,43 @@ export default function UserProfileDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
-          <div className="h-9 w-9 overflow-hidden rounded-full border-2">
+        <Button
+          variant="ghost"
+          className="relative h-9 w-9 rounded-full p-0"
+          disabled={avatarLoading}
+          aria-label="Account menu"
+        >
+          <div className="relative h-9 w-9 overflow-hidden rounded-full border-2">
             {avatarUrl ? (
               <SafeImage
                 src={avatarUrl}
-                alt={name}
+                alt={displayName}
                 width={36}
                 height={36}
                 className="h-full w-full object-cover"
                 onError={() => setAvatarError(true)}
               />
             ) : (
-              <Skeleton className="h-full w-full rounded-none" />
+              <div
+                className={cn(
+                  'h-full w-full bg-muted/60',
+                  avatarLoading && 'animate-pulse'
+                )}
+                aria-hidden
+              />
             )}
+            {avatarLoading ? (
+              <span
+                className="absolute inset-0 rounded-full bg-muted/80 animate-pulse"
+                aria-hidden
+              />
+            ) : null}
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 backdrop-blur-sm">
         <DropdownMenuLabel>
-          <p className="font-medium">{name}</p>
+          <p className="font-medium">{displayName}</p>
           <p className="text-xs text-muted-foreground">{email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

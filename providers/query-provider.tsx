@@ -1,11 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import type { Persister } from '@tanstack/react-query-persist-client';
 import { AuthToastListener } from '@/components/auth/auth-toast-listener';
 import { useJobsCacheSync } from '@/hooks/useJobsCacheSync';
 import { useSentryUser } from '@/hooks/useSentryUser';
+import {
+  createQueryClient,
+  PERSIST_BUSTER,
+} from '@/lib/query-client';
+import {
+  buildLocalStoragePersister,
+  noopPersister,
+  shouldPersistQuery,
+} from '@/lib/query-persist';
 
 function AuthToastSyncListener() {
   return <AuthToastListener />;
@@ -21,29 +31,41 @@ function SentryUserListener() {
   return null;
 }
 
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        // Dashboard data refetches immediately after mutations via invalidation
-        staleTime: 0,
-        gcTime: 1000 * 60 * 10,
-        refetchOnWindowFocus: true,
-      },
-    },
-  });
-}
-
+/**
+ * TanStack Query + localStorage persistence.
+ * noop persister on SSR/first frame → real persister after mount (hydration-safe).
+ */
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(makeQueryClient);
+  const [queryClient] = useState(() => createQueryClient());
+  const [persister, setPersister] = useState<Persister>(noopPersister);
+
+  // Attach localStorage persister after hydration (noop on SSR/first frame)
+  useEffect(() => {
+    const real = buildLocalStoragePersister();
+    if (real) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- calendar-proven persist attach
+      setPersister(real);
+    }
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: 24 * 60 * 60 * 1_000,
+        buster: PERSIST_BUSTER,
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) =>
+            shouldPersistQuery(query) && query.state.status === 'success',
+        },
+      }}
+    >
       <JobsCacheSyncListener />
       <AuthToastSyncListener />
       <SentryUserListener />
       {children}
       <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

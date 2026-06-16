@@ -17,10 +17,13 @@ import { getSingleJobAction } from '@/utils/actions';
 import { useUpdateJobMutation } from '@/hooks/useJobsMutation';
 import { queryKeys } from '@/lib/query-keys';
 import { GlassCard } from '@/components/ui/glass-card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil } from 'lucide-react';
 
 type EditJobFormProps = {
   jobId: string;
+  /** Parent SSR cold load — stable dialog chrome, skeleton on fields only */
+  formLoading?: boolean;
   /**
    * Called after successful update.
    * Used by EditJobDialog to close the dialog after save.
@@ -33,10 +36,16 @@ type EditJobFormProps = {
   standalone?: boolean;
 };
 
-function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) {
+function EditJobForm({
+  jobId,
+  onSuccess,
+  standalone = true,
+  formLoading = false,
+}: EditJobFormProps) {
   const { data } = useQuery({
     queryKey: queryKeys.job.detail(jobId),
     queryFn: () => getSingleJobAction(jobId),
+    staleTime: 60_000,
   });
 
   const form = useForm<CreateAndEditJobType>({
@@ -69,7 +78,26 @@ function EditJobForm({ jobId, onSuccess, standalone = true }: EditJobFormProps) 
     mutate(values, { onSuccess: () => onSuccess?.() });
   }
 
-  const formContent = (
+  const showFieldSkeleton = formLoading && !data;
+
+  const formContent = showFieldSkeleton ? (
+    <div>
+      <h2 className="mb-6 flex items-center gap-2 text-4xl font-semibold capitalize">
+        <Pencil className="h-8 w-8 text-violet-400" />
+        Edit Job
+      </h2>
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-10 w-full rounded-2xl" />
+        <Skeleton className="h-10 w-full rounded-2xl" />
+        <Skeleton className="h-10 w-full rounded-2xl" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Skeleton className="h-10 w-full rounded-2xl" />
+          <Skeleton className="h-10 w-full rounded-2xl" />
+        </div>
+        <Skeleton className="h-10 w-full rounded-2xl" />
+      </div>
+    </div>
+  ) : (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <h2 className="mb-6 flex items-center gap-2 text-4xl font-semibold capitalize">

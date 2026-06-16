@@ -37,8 +37,8 @@ function DownloadDropdown() {
     try {
       const jobs = await getAllJobsForDownloadAction();
       downloadAsCSV(jobs);
-    } catch (error) {
-      console.error("Error downloading CSV:", error);
+    } catch {
+      // Download failed — user can retry from the menu
     }
   };
 
@@ -51,8 +51,8 @@ function DownloadDropdown() {
     try {
       const jobs = await getAllJobsForDownloadAction();
       await downloadAsExcel(jobs);
-    } catch (error) {
-      console.error("Error downloading Excel:", error);
+    } catch {
+      // Download failed — user can retry from the menu
     }
   };
 

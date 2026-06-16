@@ -9,5 +9,6 @@ export function useJobsPortfolioStats() {
   return useQuery({
     queryKey: queryKeys.stats.all,
     queryFn: () => getStatsAction(),
+    staleTime: 60_000,
   });
 }

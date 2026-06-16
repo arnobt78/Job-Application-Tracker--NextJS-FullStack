@@ -16,6 +16,8 @@ import type { JobType } from '@/utils/types';
 
 type EditJobDialogProps = {
   job: Pick<JobType, 'id' | 'position' | 'company'>;
+  /** When true, form body shows loading shell (SSR/hydration cold load) */
+  formLoading?: boolean;
   /**
    * When true, renders an Edit trigger button.
    * When false, use defaultOpen={true} for URL-based access (e.g. /dashboard/[id]).
@@ -41,6 +43,7 @@ type EditJobDialogProps = {
  */
 export function EditJobDialog({
   job,
+  formLoading = false,
   showTrigger = false,
   defaultOpen = false,
   onExternalClose,
@@ -99,6 +102,7 @@ export function EditJobDialog({
               <EditJobForm
                 jobId={job.id}
                 standalone={false}
+                formLoading={formLoading}
                 onSuccess={() => handleOpenChange(false)}
               />
             </div>

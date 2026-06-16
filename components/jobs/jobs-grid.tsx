@@ -1,17 +1,15 @@
 "use client";
 
 import { JobCardShell } from "@/components/jobs/job-card-shell";
-import { useJobsListQuery } from "@/hooks/useJobsListQuery";
+import { useJobsListBodyLoading } from "@/hooks/useJobsListBodyLoading";
 import { Briefcase } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-/** Job cards grid — shell cards on cold load; keepPreviousData avoids flash on filter change */
+/** Job cards grid — shell cards only on true cold load; SSR-hydrated cache skips skeleton on refresh */
 export function JobsGrid() {
-  const { data, isPending, isFetching } = useJobsListQuery();
-  const isInitialLoad = isPending && data === undefined;
+  const { data, bodyLoading } = useJobsListBodyLoading();
   const jobs = data?.jobs ?? [];
 
-  if (!isInitialLoad && jobs.length < 1) {
+  if (!bodyLoading && jobs.length < 1) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
         <Briefcase className="h-10 w-10" />
@@ -20,7 +18,7 @@ export function JobsGrid() {
     );
   }
 
-  if (isInitialLoad) {
+  if (bodyLoading) {
     return (
       <div className="grid w-full gap-8 md:grid-cols-2">
         {[1, 2, 3, 4].map((i) => (
@@ -31,12 +29,7 @@ export function JobsGrid() {
   }
 
   return (
-    <div
-      className={cn(
-        "grid gap-8 md:grid-cols-2",
-        isFetching && "opacity-80 transition-opacity"
-      )}
-    >
+    <div className="grid w-full gap-8 md:grid-cols-2">
       {jobs.map((job) => (
         <JobCardShell key={job.id} job={job} />
       ))}

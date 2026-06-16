@@ -46,31 +46,34 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
   const filters = parseJobsListFiltersFromSearchParamsRecord(params);
 
   const queryClient = new QueryClient();
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.jobs.list(
-      filters.search,
-      filters.jobStatus,
-      filters.jobMode,
-      filters.monthYear,
-      filters.page,
-    ),
-    queryFn: () =>
-      getAllJobsAction({
-        search: filters.search,
-        jobStatus: filters.jobStatus,
-        jobMode: filters.jobMode,
-        monthYear: filters.monthYear,
-        page: filters.page,
-      }),
-  });
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.jobs.filterOptions,
-    queryFn: () => getJobFilterOptionsAction(),
-  });
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-  });
+
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.jobs.list(
+        filters.search,
+        filters.jobStatus,
+        filters.jobMode,
+        filters.monthYear,
+        filters.page
+      ),
+      queryFn: () =>
+        getAllJobsAction({
+          search: filters.search,
+          jobStatus: filters.jobStatus,
+          jobMode: filters.jobMode,
+          monthYear: filters.monthYear,
+          page: filters.page,
+        }),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.jobs.filterOptions,
+      queryFn: () => getJobFilterOptionsAction(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.stats.all,
+      queryFn: () => getStatsAction(),
+    }),
+  ]);
 
   const filterCopy = DASHBOARD_COPY.filters;
 

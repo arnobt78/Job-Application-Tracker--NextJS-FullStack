@@ -8,8 +8,8 @@ export function JobsFilterSection() {
 
   return (
     <>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm leading-snug text-muted-foreground">
+      <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-x-4">
+        <p className="min-w-0 text-sm leading-snug text-muted-foreground">
           {filterCopy.subtitle}
         </p>
         <JobsFilterClearButton />
