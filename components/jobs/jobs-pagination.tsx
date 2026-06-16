@@ -6,8 +6,9 @@ import { useJobsListQuery } from '@/hooks/useJobsListQuery';
 
 export function JobsPagination() {
   const { data, isPending } = useJobsListQuery();
+  const isInitialLoad = isPending && data === undefined;
 
-  if (isPending) {
+  if (isInitialLoad) {
     return <Skeleton className="h-9 w-40 rounded-2xl" />;
   }
 

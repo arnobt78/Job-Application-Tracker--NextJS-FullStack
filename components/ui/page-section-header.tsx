@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 type PageSectionHeaderProps = {
   icon: LucideIcon;
   title: string;
-  subtitle: string;
+  subtitle?: ReactNode;
   /** Optional count pill rendered beside the title */
   badge?: ReactNode;
   /** Optional slot on the right (e.g. action button) */
@@ -53,9 +53,11 @@ export function PageSectionHeader({
             </Heading>
             {badge}
           </div>
-          <p className="text-sm leading-snug text-muted-foreground">
-            {subtitle}
-          </p>
+          {subtitle ? (
+            <div className="text-sm leading-snug text-muted-foreground">
+              {subtitle}
+            </div>
+          ) : null}
         </div>
       </div>
       {trailing ? <div className="shrink-0">{trailing}</div> : null}

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getAllJobsAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
 import { parseJobsListFilters } from '@/lib/jobs/filter-params';
@@ -31,5 +31,6 @@ export function useJobsListQuery() {
         monthYear: filters.monthYear,
         page: filters.page,
       }),
+    placeholderData: keepPreviousData,
   });
 }

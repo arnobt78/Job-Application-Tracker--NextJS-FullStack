@@ -1,18 +1,17 @@
 "use client";
 
-import JobCard from "@/components/JobCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { UI_DIMENSIONS } from "@/lib/ui/dimensions";
+import { JobCardShell } from "@/components/jobs/job-card-shell";
 import { useJobsListQuery } from "@/hooks/useJobsListQuery";
 import { Briefcase } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-/** Job cards grid — skeleton cards while loading; empty state when no results */
+/** Job cards grid — shell cards on cold load; keepPreviousData avoids flash on filter change */
 export function JobsGrid() {
-  const { data, isPending } = useJobsListQuery();
+  const { data, isPending, isFetching } = useJobsListQuery();
+  const isInitialLoad = isPending && data === undefined;
   const jobs = data?.jobs ?? [];
-  const { heightClass, roundedClass } = UI_DIMENSIONS.jobCard;
 
-  if (!isPending && jobs.length < 1) {
+  if (!isInitialLoad && jobs.length < 1) {
     return (
       <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
         <Briefcase className="h-10 w-10" />
@@ -21,23 +20,25 @@ export function JobsGrid() {
     );
   }
 
-  if (isPending) {
+  if (isInitialLoad) {
     return (
-      <div className="grid w-full gap-8 sm:grid-cols-2">
+      <div className="grid w-full gap-8 md:grid-cols-2">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton
-            key={i}
-            className={`${heightClass} w-full ${roundedClass}`}
-          />
+          <JobCardShell key={i} />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div
+      className={cn(
+        "grid gap-8 md:grid-cols-2",
+        isFetching && "opacity-80 transition-opacity"
+      )}
+    >
       {jobs.map((job) => (
-        <JobCard key={job.id} job={job} />
+        <JobCardShell key={job.id} job={job} />
       ))}
     </div>
   );

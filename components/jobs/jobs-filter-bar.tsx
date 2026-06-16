@@ -31,14 +31,7 @@ import {
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { useJobFilterOptions } from "@/hooks/useJobFilterOptions";
 import { useJobsListParams } from "@/hooks/useJobsListParams";
-import {
-  clearedJobsListFilters,
-  hasActiveJobsFilters,
-} from "@/lib/jobs/filter-params";
-import { DASHBOARD_COPY } from "@/lib/ui/dashboard-copy";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { RotateCcw } from "lucide-react";
 
 const statusIcons: Record<string, ReactNode> = {
   all: <Filter className="h-4 w-4" />,
@@ -50,7 +43,7 @@ const statusIcons: Record<string, ReactNode> = {
 const modeIcons: Record<string, ReactNode> = {
   all: <Briefcase className="h-4 w-4" />,
   [JobMode.FullTime]: <Briefcase className="h-4 w-4" />,
-  [JobMode.PartTime]: <Briefcase className="h-4 w-4" />,
+  [JobMode.PartTime]: <Clock className="h-4 w-4" />,
   [JobMode.Internship]: <Briefcase className="h-4 w-4" />,
 };
 
@@ -106,7 +99,7 @@ function FilterDropdown({
   );
 }
 
-/** Instant URL-driven search + glass filter dropdowns (no submit button) */
+/** Instant URL-driven search + glass filter dropdowns (clear button in JobsFilterSection) */
 export function JobsFilterBar() {
   const { filters, setFilters } = useJobsListParams();
   const { data: filterOptions } = useJobFilterOptions();
@@ -138,70 +131,45 @@ export function JobsFilterBar() {
     monthOptions.find((o) => o.value === filters.monthYear)?.label ??
     MONTH_ALL_OPTION.label;
 
-  const showClear = hasActiveJobsFilters(filters);
-
-  const handleClearFilters = () => {
-    const cleared = clearedJobsListFilters();
-    setSearchInput(cleared.search);
-    setCommittedSearch(cleared.search);
-    setFilters(cleared);
-  };
-
   return (
     <GlassCard variant="sky" className="mb-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="grid min-w-0 flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <GlassSearchInput
-            value={searchInput}
-            onChange={(value) => {
-              setSearchInput(value);
-              debouncedSetSearch(value);
-            }}
-            placeholder="Search position or company…"
-            className="sm:col-span-2 lg:col-span-1"
-          />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <GlassSearchInput
+          value={searchInput}
+          onChange={(value) => {
+            setSearchInput(value);
+            debouncedSetSearch(value);
+          }}
+          placeholder="Search position or company…"
+          className="sm:col-span-2 lg:col-span-1"
+        />
 
-          <FilterDropdown
-            value={filters.jobStatus}
-            options={STATUS_FILTER_OPTIONS}
-            onChange={(jobStatus) => setFilters({ jobStatus })}
-            triggerIcon={statusIcons[filters.jobStatus] ?? statusIcons.all}
-            triggerLabel={statusLabel}
-            getOptionIcon={(v) => statusIcons[v]}
-          />
+        <FilterDropdown
+          value={filters.jobStatus}
+          options={STATUS_FILTER_OPTIONS}
+          onChange={(jobStatus) => setFilters({ jobStatus })}
+          triggerIcon={statusIcons[filters.jobStatus] ?? statusIcons.all}
+          triggerLabel={statusLabel}
+          getOptionIcon={(v) => statusIcons[v]}
+        />
 
-          <FilterDropdown
-            value={filters.jobMode}
-            options={MODE_FILTER_OPTIONS}
-            onChange={(jobMode) => setFilters({ jobMode })}
-            triggerIcon={modeIcons[filters.jobMode] ?? modeIcons.all}
-            triggerLabel={modeLabel}
-            getOptionIcon={(v) => modeIcons[v]}
-          />
+        <FilterDropdown
+          value={filters.jobMode}
+          options={MODE_FILTER_OPTIONS}
+          onChange={(jobMode) => setFilters({ jobMode })}
+          triggerIcon={modeIcons[filters.jobMode] ?? modeIcons.all}
+          triggerLabel={modeLabel}
+          getOptionIcon={(v) => modeIcons[v]}
+        />
 
-          <FilterDropdown
-            value={filters.monthYear}
-            options={monthOptions}
-            onChange={(monthYear) => setFilters({ monthYear })}
-            triggerIcon={<Calendar className="h-4 w-4" />}
-            triggerLabel={monthLabel}
-            getOptionIcon={() => <Calendar className="h-4 w-4" />}
-          />
-        </div>
-
-        {showClear ? (
-          <button
-            type="button"
-            onClick={handleClearFilters}
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-muted-foreground',
-              'transition-colors hover:text-primary'
-            )}
-          >
-            <RotateCcw className="h-4 w-4" aria-hidden />
-            {DASHBOARD_COPY.filters.clearLabel}
-          </button>
-        ) : null}
+        <FilterDropdown
+          value={filters.monthYear}
+          options={monthOptions}
+          onChange={(monthYear) => setFilters({ monthYear })}
+          triggerIcon={<Calendar className="h-4 w-4" />}
+          triggerLabel={monthLabel}
+          getOptionIcon={() => <Calendar className="h-4 w-4" />}
+        />
       </div>
     </GlassCard>
   );

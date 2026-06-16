@@ -6,61 +6,42 @@ Demo: <https://jobify-tracker.vercel.app> — full-stack job application tracker
 
 ```text
 page.tsx (force-dynamic, void prefetchQuery)
-  → static shell in page.tsx
-  → HydrationBoundary → client useQuery + data-slot skeletons
-  → lib/jobs/queries.ts (unstable_cache + tags + Redis optional)
-  → utils/actions.ts (server actions, Clerk auth)
+  → HydrationBoundary → useQuery + targeted skeletons
+  → lib/jobs/queries.ts (unstable_cache + tags + Redis)
+  → utils/actions.ts (Clerk auth)
 
-CRUD: useJobsMutation (optimistic list + stats + charts)
-  → lib/jobs/stats-optimistic.ts (status/mode/total)
-  → lib/jobs/chart-optimistic.ts (monthly buckets)
-  → invalidateUserJobCaches → invalidateAllJobQueries + BroadcastChannel + SSE
+CRUD: useJobsMutation → stats-optimistic + chart-optimistic
+  → invalidateUserJobCaches → invalidateAllJobQueries + SSE + BroadcastChannel
 ```
 
 ## Key paths
 
 | Path | Role |
 | --- | --- |
-| `app/(dashboard)/dashboard/page.tsx` | Shell + prefetch list, filterOptions, stats |
-| `components/jobs/dashboard-page-header.tsx` | Page title + New Application CTA |
-| `components/jobs/jobs-results-toolbar.tsx` | Filtered badge + global portfolio breakdown + download |
-| `components/ui/page-section-header.tsx` | Reusable icon + title + subtitle |
-| `lib/ui/dashboard-copy.ts` | Dashboard section copy |
-| `lib/jobs/filter-params.ts` | URL filter parse/build + clear helpers |
-| `lib/jobs/stats-optimistic.ts` | Optimistic portfolio count patches |
-| `lib/jobs/month-utc.ts` | UTC month buckets |
-| `hooks/useJobsListQuery.ts` | List query |
-| `hooks/useJobsPortfolioStats.ts` | Stats query (shared with /stats) |
-| `hooks/useJobsListParams.ts` | URL filter write |
-| `components/jobs/` | filter-bar, grid, pagination |
-| `hooks/useJobsMutation.ts` | Optimistic CRUD + Sonner |
-| `hooks/useJobsCacheSync.ts` | BroadcastChannel + SSE |
-| `lib/invalidate-jobs*.ts` | Client + server cache bust |
+| `app/(dashboard)/dashboard/page.tsx` | Prefetch list, filterOptions, stats |
+| `components/jobs/job-card-shell.tsx` | Stable card chrome; text-only skeletons |
+| `components/jobs/portfolio-breakdown-row.tsx` | Icon+label stable; number skeleton cold only |
+| `components/jobs/jobs-filter-section.tsx` | Subtitle row + clear above filter card |
+| `hooks/useJobsListQuery.ts` | `keepPreviousData` — no flash on filter/page |
+| `lib/jobs/stats-optimistic.ts` | Optimistic status/mode/total |
+| `lib/ui/portfolio-breakdown-config.ts` | Breakdown icons + field keys |
 
 ## Dashboard layout
 
-1. `DashboardPageHeader` — Application Pipeline + New Application
-2. Filter `PageSectionHeader` + `JobsFilterBar` (inline Clear Filters when active)
-3. `JobsResultsToolbar` — matching count badge + Pending·Interview·…·Internship (global)
-4. `JobsGrid` → centered `JobsPagination` below cards
+1. `DashboardPageHeader`
+2. Filter title + subtitle row (Clear Filters right) + `JobsFilterBar` card
+3. `JobsResultsToolbar` — badge + `PortfolioBreakdownRow` as subtitle + download
+4. `JobCardShell` grid → centered pagination
 
-## Dashboard filters
+## Loading UX
 
-URL: `search`, `jobStatus`, `jobMode`, `monthYear`, `page` — debounced search, instant dropdowns, UTC months from DB.
+- Skeleton only when `isPending && data === undefined` (true cold start)
+- SSR hydrate + `keepPreviousData` → filters/pages keep prior cards visible
+- Portfolio breakdown: icons/labels never skeleton; numbers only if no cached stats
 
 ## Invalidation
 
-`invalidateAllJobQueries` busts jobs/stats/charts/job(id)/filterOptions. Optimistic: list count, stats (status+mode+total), charts; `onSettled` revalidates.
-
-## Instant shell
-
-No `loading.tsx`. `void prefetchQuery` only — section headers in page.tsx; skeletons on toolbar badge, cards, pagination, stats, chart.
-
-## Scroll & overlays
-
-- `scrollbar-gutter: stable` + `OverlayScrollbar`
-- `DropdownMenu` / `Dialog` `modal={false}`; `GlassAlertDialog` for confirms
-- Job dialogs: `GlassDialogContent` 90vw×90vh
+`invalidateAllJobQueries` busts jobs/stats/charts/filterOptions. Optimistic list + stats + charts.
 
 ## Verify
 

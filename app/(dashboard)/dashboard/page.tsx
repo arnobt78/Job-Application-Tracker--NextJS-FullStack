@@ -1,4 +1,4 @@
-import { JobsFilterBar } from "@/components/jobs/jobs-filter-bar";
+import { JobsFilterSection } from "@/components/jobs/jobs-filter-section";
 import { DashboardPageHeader } from "@/components/jobs/dashboard-page-header";
 import { JobsResultsToolbar } from "@/components/jobs/jobs-results-toolbar";
 import { JobsGrid } from "@/components/jobs/jobs-grid";
@@ -81,10 +81,9 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
       <PageSectionHeader
         icon={SlidersHorizontal}
         title={filterCopy.title}
-        subtitle={filterCopy.subtitle}
         className="mb-2"
       />
-      <JobsFilterBar />
+      <JobsFilterSection />
 
       <JobsResultsToolbar />
 

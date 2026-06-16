@@ -13,7 +13,6 @@ export const DASHBOARD_COPY = {
   },
   results: {
     title: 'Matching Applications',
-    subtitle: 'Roles that fit your current filters',
   },
   addJob: {
     cta: 'New Application',

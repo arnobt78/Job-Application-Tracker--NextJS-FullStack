@@ -25,14 +25,16 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 `filter-types` · `filter-config` · `filter-params` (+ `hasActiveJobsFilters` / `clearedJobsListFilters`) · `month-utc`
 
 ## Routes
-- `/dashboard` — `DashboardPageHeader` · `JobsFilterBar` (clear filters) · `JobsResultsToolbar` (badge + portfolio breakdown) · `JobsGrid` · pagination below
+- `/dashboard` — `DashboardPageHeader` · `JobsFilterSection` (clear above card) · `JobsResultsToolbar` · `JobCardShell` grid · pagination below
 - `/dashboard/[id]` — edit dialog URL
 - `/stats` — instant shell · `StatsResult` includes mode + total counts
 
 ## Dashboard UI
-- `PageSectionHeader` + `lib/ui/dashboard-copy.ts` — shared title/subtitle/icon
-- `useJobsPortfolioStats` — global portfolio counts (prefetch `stats.all` on dashboard)
-- Add job CTA: "New Application" · Download chevron dropdown
+- `PageSectionHeader` (subtitle `ReactNode`) + `dashboard-copy.ts`
+- `PortfolioBreakdownRow` — icons+labels stable; number skeleton only on cold load
+- `useJobsListQuery` — `keepPreviousData`; skeleton when `isPending && !data`
+- `JobCardShell` — stable icons/buttons; text slots skeleton on cold load only
+- `useJobsPortfolioStats` · prefetch `stats.all`
 
 ## Glass UI
 - `glass-dropdown-menu` · `glass-search-input` · `glass-alert-dialog` · `glass-dialog-content` (90vw×90vh)

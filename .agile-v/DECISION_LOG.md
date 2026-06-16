@@ -32,3 +32,4 @@
 | 2026-06-16T13:00:00Z | Documentation Agent | C1 | Create `.agile-v/PLAYBOOK.md` one-command operating guide | User requested faster session startup with task routing and file map | REQ-0024 |
 | 2026-06-16T14:31:00Z | Build Agent (JS) | C1 | Dashboard UI redesign — section headers, clear filters, results toolbar, pagination fix | User plan: REQ-0003/0012/0014 dashboard polish | REQ-0003, REQ-0012, REQ-0014 |
 | 2026-06-16T15:41:00Z | Build Agent (JS) | C1 | Extract stats-optimistic lib; full portfolio bumps on CRUD | Status+mode+total instant updates; README sync | REQ-0014, REQ-0015 |
+| 2026-06-16T16:57:00Z | Build Agent (JS) | C1 | Dashboard skeleton UX — shell cards, breakdown icons, clear filter layout | keepPreviousData; no block skeleton flash | REQ-0014, REQ-0012 |
