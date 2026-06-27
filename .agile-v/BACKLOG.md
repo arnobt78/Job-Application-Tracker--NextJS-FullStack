@@ -19,6 +19,8 @@
 - **Notification bell** — `NotificationsProvider` + BroadcastChannel relay + `NotificationBell` in nav
 - **Resend email** — `lib/notifications/email.ts`; graceful no-op; lazy import
 - **publishNotification fix** — `enrich.ts` now fires SSE bell + email on posting change
+- **AiInsightsPanel wired** — `/dashboard/[id]` (`JobDetailPanels`) + `/discover` Details modal
+- **Posting Activity tab** — `getJobEvents()` client + action + `PostingActivityTab` + `JobDetailPanels` tabs
 - Docs: `PROJECT_PLAN.md`, `CLAUDE.md`, `PROJECT_WALKTHROUGH.md`, `.env.example` updated
 
 ### Next
@@ -32,7 +34,7 @@
 
 **REQ:** REQ-0027 · **Status:** SCAFFOLDED — needs deploy + real LLM keys  
 **Scope:** `python-ai-service/` FastAPI · 9-agent pipeline · Ollama/Groq/OpenRouter/Anthropic fallback  
-**Next:** Deploy on Coolify VPS · wire `AiInsightsPanel` into `/dashboard/[id]` page  
+**Next:** Deploy on Coolify VPS · wire real LLM keys · cover letter streaming UI  
 **Ref:** `docs/PROJECT_PLAN.md`
 
 ---

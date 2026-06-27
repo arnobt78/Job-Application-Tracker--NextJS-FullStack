@@ -1,15 +1,16 @@
 # Jobify v2 — Tech Stack Analysis
 
-**Version:** v1.0  
+**Version:** v1.1  
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19  
-**Project:** Jobify — Intelligent Job Search & Application OS  
-**Status:** Active Planning
+**Date:** 2026-06-19 · **Last updated:** 2026-06-27  
+**Project:** Jobify — Job Application Tracker with Live Enrichment & AI (planned)  
+**Status:** Phase 1 **implemented** · Phase 2 **scaffolded** · Phase 3 **planned**
 
 ---
 
 ## Table of Contents
 
+0. [Implementation Status (Audit)](#0-implementation-status-audit)
 1. [Current Stack (Existing)](#1-current-stack-existing)
 2. [Phase 1 Additions — Bluedoor Enrichment](#2-phase-1-additions--bluedoor-enrichment)
 3. [Phase 2 — Python AI Backend](#3-phase-2--python-ai-backend)
@@ -17,9 +18,85 @@
 5. [Automation Layer (n8n)](#5-automation-layer-n8n)
 6. [Infrastructure — Coolify VPS](#6-infrastructure--coolify-vps)
 7. [Frontend New Features Stack](#7-frontend-new-features-stack)
-8. [Database Schema Additions](#8-database-schema-additions)
+8. [Database Schema](#8-database-schema)
 9. [What NOT To Use](#9-what-not-to-use)
 10. [Full Stack Summary](#10-full-stack-summary)
+
+---
+
+## 0. Implementation Status (Audit)
+
+**Verified 2026-06-27:** lint ✓ · typecheck ✓ · test 49/49 ✓ · build ✓
+
+### Legend
+
+| Symbol | Meaning |
+| --- | --- |
+| ✅ | Implemented and in production codebase |
+| ⚠️ | Partial / scaffolded / optional dependency |
+| ⬜ | Planned, not in codebase |
+
+### By layer
+
+| Layer | Planned tool | Status | Notes |
+| --- | --- | --- | --- |
+| Next.js 16 App Router | ✅ | `force-dynamic` + SSR prefetch on all dashboard pages |
+| React 19 | ✅ | Server + Client Components |
+| Clerk 6 | ✅ | `proxy.ts` + custom auth UI |
+| Prisma 6 + PostgreSQL | ✅ | Single `Job` model + Bluedoor fields |
+| TanStack Query 5 | ✅ | Persist + hydration + optimistic mutations |
+| Redis (Upstash) | ⚠️ | Optional — in-memory + BroadcastChannel fallback |
+| Bluedoor API | ✅ | Client, enrich, discover, webhook, cron |
+| Resend | ⚠️ | Wrapper implemented; no-op without key |
+| React Email | ⬜ | Plain HTML in `email.ts` today |
+| Sentry | ⚠️ | Integrated; optional via env |
+| PostHog | ⬜ | Guide doc only — deferred, not in `package.json` |
+| Vitest | ✅ | 49 tests |
+| FastAPI AI service | ⚠️ | Code complete; not deployed |
+| Ollama | ⬜ | Router ready; no VPS Ollama instance |
+| Groq / OpenRouter / Anthropic | ⚠️ | Client code in python-ai-service |
+| n8n | ⬜ | Documented flows only |
+| Coolify VPS | ⬜ | Planned infrastructure |
+| ARQ / Celery | ⬜ | Pipeline is synchronous |
+
+### Phase 1 feature matrix
+
+| Feature | Status | Files |
+| --- | --- | --- |
+| `applyUrl` + Bluedoor enrichment fields | ✅ | `prisma/schema.prisma` |
+| Auto-enrich on CRUD | ✅ | `utils/actions.ts`, `lib/bluedoor/enrich.ts` |
+| Enrichment badges on cards | ✅ | `components/jobs/job-enrichment-badge.tsx` |
+| `/discover` search | ✅ | `app/(dashboard)/discover/` |
+| Infinite cursor pagination | ✅ | `useInfiniteQuery`, `buildDiscoverQueryOptions` |
+| Glass filter bar | ✅ | `components/discover/discover-filters.tsx` |
+| Track Application → dashboard sync | ✅ | `useCreateJobMutation` in `discover-job-card.tsx` |
+| Details modal | ✅ | `discover-job-details-modal.tsx` |
+| Inbound webhook | ✅ | `app/api/bluedoor/webhook/route.ts` |
+| Nightly cron resync | ✅ | `app/api/cron/enrich/route.ts`, `vercel.json` |
+| Notification bell (SSE) | ✅ | `notification-bell.tsx`, `notifications-context.tsx` |
+| Per-change email | ✅ | `lib/notifications/email.ts` |
+| Stats KPI row | ✅ | `components/stats/stats-kpi-row.tsx` |
+| 4 chart types + weekly query | ✅ | `components/stats/*`, `getCachedWeeklyCharts` |
+| Facet API (`/jobs/facets`) | ⬜ | Not wired |
+| Auto webhook subscription | ⬜ | Inbound only |
+| Weekly digest email | ⬜ | — |
+| Company logos | ⬜ | — |
+
+### Phase 2 feature matrix
+
+| Feature | Status | Files |
+| --- | --- | --- |
+| FastAPI app | ✅ | `python-ai-service/app/main.py` |
+| 9-agent pipeline | ✅ | `python-ai-service/app/pipeline/` |
+| LLM fallback router | ✅ | `python-ai-service/app/llm/router.py` |
+| Next.js proxy | ✅ | `app/api/ai/pipeline/route.ts` |
+| `useAIPipeline` + panel UI | ✅ | `hooks/useAIPipeline.ts`, `ai-insights-panel.tsx` |
+| `JobAIInsight` DB model | ⬜ | Not in Prisma schema |
+| `UserProfile` DB model | ⬜ | Not in Prisma schema |
+| AI output streaming | ⬜ | Blocking HTTP today |
+| n8n flows | ⬜ | — |
+| `/api/internal/*` routes | ⬜ | — |
+| Coolify deploy | ⬜ | — |
 
 ---
 
@@ -27,501 +104,407 @@
 
 The foundation. Phase 1 and 2 build on top — don't replace.
 
-| Layer | Tool | Version | Notes |
-|-------|------|---------|-------|
-| Framework | Next.js | 16 | App Router, RSC, Server Actions |
-| Runtime | React | 19 | Concurrent features |
-| Auth | Clerk | 6 | Proxy middleware, `currentUser()` |
-| ORM | Prisma | 6 | PostgreSQL driver |
-| Database | PostgreSQL | 16 | Primary data store |
-| Server cache | Redis | 7 | `unstable_cache` + tag-based invalidation |
-| Client state | TanStack Query | 5 | `PersistQueryClient`, SSR hydration |
-| Styling | Tailwind CSS | 3 | JIT, glass morphism design |
-| Components | Shadcn/ui | latest | Radix primitives, owned code |
-| Monitoring | Sentry | 8 | Error + performance |
-| Analytics | PostHog | 3 | Session replay + events |
-| Testing | Vitest | 2 | 49 tests, unit + integration |
-| Deployment | Vercel | — | SSR + Edge |
+| Layer | Tool | Version (package.json) | Notes |
+| --- | --- | --- | --- |
+| Framework | Next.js | 16.x | App Router, RSC, Server Actions, Turbopack dev |
+| Runtime | React | 19.x | Concurrent features |
+| Auth | Clerk | 6.x | `proxy.ts` middleware, `currentUser()` |
+| ORM | Prisma | 6.x | PostgreSQL driver |
+| Database | PostgreSQL | 16+ | Primary data store |
+| Server cache | Redis (Upstash) | optional | `unstable_cache` + tag invalidation + optional read-through |
+| Client state | TanStack Query | 5.x | `PersistQueryClient`, SSR hydration |
+| Styling | Tailwind CSS | 3.4.x | JIT, glass morphism design |
+| Components | shadcn/ui | latest | Radix primitives, owned code |
+| Charts | Recharts | 2.x | Stats page (Bar, Area, Pie, Composed) |
+| Monitoring | Sentry | 10.x | Error + performance (optional) |
+| Analytics | PostHog | — | **Deferred** — guide in `docs/Redis_Sentry_PostHog_INTEGRATION_GUIDE.md` |
+| Testing | Vitest | 4.x | 49 tests |
+| Deployment | Vercel | — | SSR + cron |
 | CI | GitHub Actions | — | lint → typecheck → test → build |
 
 **Current data flow:**
-```
-Clerk auth → proxy.ts → /dashboard
-Page: force-dynamic + prefetchQuery → dehydrate → PersistQueryClient
-CRUD: Server Actions → invalidateAllJobQueries → broadcast cross-tab
-Cache: unstable_cache + Redis + tag invalidation
+
+```text
+Clerk auth → proxy.ts → /dashboard · /discover · /stats
+Page: force-dynamic + prefetchQuery / prefetchInfiniteQuery → dehydrate → PersistQueryClient
+CRUD: Server Actions → useJobsMutation (optimistic) → invalidateAllJobQueries → broadcast
+Cache: unstable_cache + optional Redis + revalidateTag
+Realtime: SSE /api/jobs/events + BroadcastChannel (jobify-cache, jobify-notifications)
 ```
 
 ---
 
 ## 2. Phase 1 Additions — Bluedoor Enrichment
 
-Build inside Next.js. No new services.
+Built inside Next.js. No separate Bluedoor microservice.
 
-### 2.1 Bluedoor API
+### 2.1 Bluedoor API ✅
 
 | Property | Value |
-|----------|-------|
+| --- | --- |
 | Base URL | `https://api.bluedoor.sh/job-postings/v1` |
-| Auth | None (completely free, no API key required) |
+| Auth | None (free, no API key) |
 | Rate limits | Very high (confirmed by Sam — OSS projects won't hit ceiling) |
 | Coverage | 1.8M jobs · 60k+ companies · US-primary |
-| Sources | Greenhouse, Lever, Ashby, Workday, 30+ ATS providers |
 | Refresh | Daily |
-| Webhooks | Yes — `job.created`, `job.updated`, `job.closed`, `job.reopened` |
 
-**Key endpoints used:**
+**Endpoints — usage in Jobify:**
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /v1/jobs/search` | Discovery search + enrich lookup by company/title |
-| `GET /v1/jobs/{job_id}` | Full job detail with description |
-| `GET /v1/jobs/{job_id}/events` | Lifecycle history for a tracked job |
-| `GET /v1/jobs/facets` | Live filter counts (remote count, location counts) |
-| `POST /v1/webhook_endpoints` | Register Next.js webhook receiver |
-| `POST /v1/subscriptions` | Subscribe to events for a specific job_id |
-| `GET /v1/orgs/lookup` | Company info enrichment |
+| Endpoint | Purpose | Status |
+| --- | --- | --- |
+| `GET /jobs` (search) | Discovery + enrich lookup | ✅ `lib/bluedoor/client.ts` `searchJobs` |
+| `GET /jobs/{job_id}` | Full job detail | ✅ `getJobDetail` — Details modal |
+| `GET /jobs/{job_id}/events` | Lifecycle history | ⬜ Posting Activity tab not built |
+| `GET /jobs/facets` | Live filter counts | ⬜ Not integrated |
+| `POST /webhook_endpoints` | Register receiver | ⬜ Manual setup only |
+| `POST /subscriptions` | Subscribe to job_id | ⬜ Not auto-called on enrich |
+| `GET /orgs/lookup` | Company enrichment | ⬜ Not integrated |
 
-**Join strategy (priority):**
-1. Exact `apply_url` / `source_url` match
-2. ATS key extracted from URL (`gh_jid=`, Lever UUID, Ashby card ID)
-3. Fuzzy: `company + title + location` with threshold
+**Join strategy (implemented in `enrich.ts`):**
 
-### 2.2 Email — Resend
+1. ATS key from `apply_url`
+2. URL / source match via search
+3. Fuzzy company + title + location
+
+### 2.2 Email — Resend ⚠️
 
 | Property | Value |
-|----------|-------|
+| --- | --- |
 | Free tier | 3,000 emails/month |
-| SDK | `resend` npm package |
-| Template system | React Email (JSX templates) |
-| Use cases | Posting closed alerts · Salary added alerts · Weekly digest |
+| SDK | `resend` npm package ✅ in dependencies |
+| Template system | Plain HTML strings ✅ · React Email ⬜ |
+| Use cases | `posting_closed` · `jd_changed` · `salary_added` ✅ · weekly digest ⬜ |
 
-**Why Resend over SendGrid / Mailgun:**
-- Cleaner API, React Email native integration
-- Free tier sufficient for OSS solo product
-- Better deliverability than free Mailchimp
+**Implementation:** `lib/notifications/email.ts` — graceful no-op when `RESEND_API_KEY` absent.
 
-### 2.3 Scheduled Enrichment Sync
+### 2.3 Scheduled Enrichment Sync ✅
 
-| Option | Free? | Notes |
-|--------|-------|-------|
-| Vercel Cron (in `vercel.json`) | Yes (hobby: 1 cron/day) | Simple, no extra service |
-| n8n cron (Phase 2) | Yes (self-hosted) | More flexible, visual |
+| Option | Status | Notes |
+| --- | --- | --- |
+| Vercel Cron | ✅ | `vercel.json` → `/api/cron/enrich` at 03:00 UTC |
+| n8n cron | ⬜ | Planned Phase 2 migration |
 
-Phase 1: Vercel Cron. Phase 2: migrate to n8n.
+Batch: 10 jobs per batch, 150ms delay — polite to free API.
 
-### 2.4 Phase 1 New Dependencies
+### 2.4 Phase 1 Dependencies (actual)
 
 ```json
 {
-  "resend": "^4.x",
-  "@react-email/components": "^0.x",
-  "bluedoor": "no SDK — raw fetch client"
+  "resend": "^6.16.0"          // ✅ installed
+  // "@react-email/components"  // ⬜ not installed — planned
+  // bluedoor SDK               // N/A — raw fetch in lib/bluedoor/client.ts ✅
 }
 ```
+
+### 2.5 Phase 1 Architecture Choice: Server Actions vs API Routes
+
+| Approach | Plan doc (original) | **Actual implementation** |
+| --- | --- | --- |
+| Bluedoor search | `POST /api/bluedoor/search` | `searchBluedoorJobsAction` Server Action |
+| Enrich trigger | `POST /api/jobs/[id]/enrich` | `enrichJobAction` + `after()` on CRUD |
+| Webhook | API route | ✅ `POST /api/bluedoor/webhook` |
+| Cron | API route | ✅ `GET /api/cron/enrich` |
+
+Server Actions chosen for type safety, shared auth pattern, and consistency with existing CRUD.
 
 ---
 
 ## 3. Phase 2 — Python AI Backend
 
-Separate FastAPI service on Coolify VPS. Next.js calls it via internal HTTP.
+Separate FastAPI service. **Code in repo; not deployed to production.**
 
-### 3.1 Framework
+### 3.1 Framework ✅ (in repo)
 
-| Tool | Version | Why |
-|------|---------|-----|
-| Python | 3.12+ | Latest stable, async support |
-| FastAPI | 0.115+ | Fastest Python API framework, async native, auto OpenAPI docs |
-| Pydantic | v2 | Input validation, serialization, strict types |
-| uvicorn | latest | ASGI server, production-ready |
-| httpx | latest | Async HTTP client for LLM provider calls |
+| Tool | Version | Status |
+| --- | --- | --- |
+| Python | 3.12+ | ✅ `python-ai-service/` |
+| FastAPI | 0.115+ | ✅ `app/main.py` |
+| Pydantic | v2 | ✅ `app/models/` |
+| uvicorn | latest | ✅ Dockerfile |
+| httpx | latest | ✅ LLM provider clients |
 
-**Why FastAPI over Flask / Django:**
-- Async-first (critical for LLM streaming)
-- Auto Swagger UI (great for debugging 9-agent pipeline)
-- Pydantic v2 integration (typed agent I/O)
-- Python 3.12 type hints native
+### 3.2 LLM Orchestration ⚠️
 
-### 3.2 LLM Orchestration
+| Tool | Role | Status |
+| --- | --- | --- |
+| Ollama | Local LLM server | ⬜ Not running on VPS |
+| Ollama Python client | API calls | ✅ `ollama_client.py` |
+| Groq SDK | Cloud fallback | ✅ `groq_client.py` |
+| OpenRouter httpx | Cloud fallback | ✅ `openrouter_client.py` |
+| Anthropic SDK | Last resort | ✅ `anthropic_client.py` |
+| LangChain | Optional patterns | ⬜ Not used — raw clients preferred |
 
-| Tool | Role | Why |
-|------|------|-----|
-| Ollama | Local LLM server | Free, private, runs on VPS GPU/CPU |
-| `ollama` Python client | Ollama API calls | Official library |
-| `langchain-community` | Optional agent patterns | Good for chain primitives — use if helpful, skip if overkill |
-| `httpx` (async) | Direct API calls for Groq/OpenRouter | More control than SDK wrappers |
-| `anthropic` SDK | Claude fallback | Official SDK |
-| `groq` SDK | Groq fallback | Official SDK |
+**Router:** `app/llm/router.py` — try providers in priority order, log `model_used`.
 
-**LangChain stance:** Use selectively. Full LangChain abstractions often create debugging pain. Use raw Ollama client + httpx for primary path; pull in LangChain only for specific utilities (text splitter, prompt templates).
+### 3.3 Local Ollama Models (planned deploy)
 
-### 3.3 Local Ollama Models
+| Model | Size | Use case |
+| --- | --- | --- |
+| `llama3.2:8b` | 5GB | Primary |
+| `mistral:7b` | 4.1GB | Fallback 2 |
+| `gemma2:9b` | 5.5GB | Quality fallback |
+| `phi3:3.8b` | 2.2GB | Fast tasks |
+| `llama3.2:3b` | 2GB | Emergency fast path |
 
-All run on VPS. Order = quality vs speed tradeoff.
+**VPS RAM:** 16GB minimum (CX41), 32GB recommended (CX51).
 
-| Model | Size | Speed | Quality | Use case |
-|-------|------|-------|---------|----------|
-| `llama3.2:8b` | 5GB | Medium | High | Primary — best quality/speed |
-| `mistral:7b` | 4.1GB | Medium | High | Fallback 2 — great reasoning |
-| `gemma2:9b` | 5.5GB | Slow | Highest | Fallback 3 — best output quality |
-| `phi3:3.8b` | 2.2GB | Fast | Good | Quick tasks — digest, scoring |
-| `llama3.2:3b` | 2GB | Fastest | OK | Emergency fast path |
+### 3.4 Cloud LLM Fallbacks ✅ (client code ready)
 
-**VPS RAM requirement:** 16GB minimum to run 1-2 models simultaneously. 32GB recommended for parallel pipeline.
+| Provider | Free Tier | Status |
+| --- | --- | --- |
+| Groq | Yes | ✅ Client implemented |
+| OpenRouter | Free models | ✅ Client implemented |
+| Anthropic Haiku | Paid (cheap) | ✅ Client implemented |
 
-### 3.4 Cloud LLM Fallbacks
+### 3.5 Async Task Queue ⬜
 
-| Provider | Free Tier | Models | Rate limit |
-|----------|-----------|--------|------------|
-| **Groq** | Yes — free | llama-3.1-8b-instant, gemma2-9b-it, mixtral-8x7b | 14,400 tok/min |
-| **OpenRouter** | Yes — free models | mistral-7b-instruct:free, gemma-2-9b:free, phi-3-mini:free | Varies |
-| **Anthropic** | No — paid | claude-haiku-4-5-20251001 | Pay per token |
+| Tool | Status |
+| --- | --- |
+| ARQ + Redis | ⬜ Planned — pipeline is sync today |
+| Celery | ⬜ Overkill for current scale |
+| FastAPI BackgroundTasks | ⬜ Not used for pipeline |
 
-**Groq vs OpenRouter:** Groq is faster (purpose-built inference chips). OpenRouter has more model variety. Use both as fallbacks.
+### 3.6 Next.js ↔ Python Integration ✅
 
-### 3.5 Async Task Queue
-
-| Tool | Why | Free? |
-|------|-----|-------|
-| **ARQ** (Redis-backed) | Lightweight async job queue, Python, Redis native | Yes |
-| **Celery + Redis** | More powerful, more complex | Yes |
-| **FastAPI BackgroundTasks** | For quick non-queued tasks | Built-in |
-
-Recommendation: **ARQ** for Phase 2. Simple, async, Redis-backed (Redis already in stack). Celery only if job volume grows.
+| Piece | Status | Path |
+| --- | --- | --- |
+| Proxy route | ✅ | `app/api/ai/pipeline/route.ts` |
+| TS types + client | ✅ | `lib/ai/pipeline-client.ts` |
+| Mutation hook | ✅ | `hooks/useAIPipeline.ts` |
+| UI panel | ✅ | `components/jobs/ai-insights-panel.tsx` |
+| Env vars | ⚠️ | `AI_SERVICE_URL`, `AI_SERVICE_SECRET` |
 
 ---
 
 ## 4. LLM Provider Comparison
 
-Full comparison for decision-making:
+| Provider | Hosting | Cost | Privacy | Use in Chain |
+| --- | --- | --- | --- | --- |
+| Ollama (llama3.2:8b) | Self (VPS) | Free | Perfect | Priority 1-5 ⬜ deploy |
+| Groq | Cloud | Free tier | Data to US | Priority 6-7 ✅ code |
+| OpenRouter | Cloud | Free models | Data to providers | Priority 8-9 ✅ code |
+| Claude Haiku | Cloud | ~$0.001/1k tok | Anthropic policy | Last resort ✅ code |
 
-| Provider | Hosting | Cost | Privacy | Speed | Models | Use in Chain |
-|----------|---------|------|---------|-------|--------|-------------|
-| Ollama (llama3.2:8b) | Self (VPS) | Free | Perfect | Medium | llama3.2, mistral, gemma2, phi3 | Priority 1-5 |
-| Groq | Cloud | Free tier | Data sent to US | Very fast | llama3.1-8b, gemma2-9b | Priority 6-7 |
-| OpenRouter | Cloud | Free models | Data sent to providers | Varies | mistral, gemma, phi3 | Priority 8-9 |
-| Claude Haiku | Cloud | ~$0.001/1k tok | Anthropic policy | Fast | claude-haiku-4-5 | Last resort |
-| GPT-4o-mini | Cloud | Paid | OpenAI policy | Fast | gpt-4o-mini | Skip — not needed |
-| Together AI | Cloud | Free tier | Data sent | Fast | Various OSS | Alternative to Groq |
-| Fireworks AI | Cloud | Free tier | Data sent | Very fast | llama3, mixtral | Alternative to Groq |
-
-**Recommendation:** Ollama primary → Groq → OpenRouter → Claude Haiku. Covers all scenarios, mostly free.
+**Recommendation unchanged:** Ollama primary → Groq → OpenRouter → Claude Haiku.
 
 ---
 
 ## 5. Automation Layer (n8n)
 
-Self-hosted on Coolify. Free.
+**Status: ⬜ Planned — no n8n instance or workflows in repo.**
 
 ### 5.1 What is n8n
 
-Visual workflow automation (like Zapier, but self-hosted and free). Nodes connect triggers to actions. JavaScript custom code in nodes when needed.
+Visual workflow automation (self-hosted, free). Planned for Coolify VPS.
 
 ### 5.2 n8n vs alternatives
 
-| Tool | Cost | Self-host | Visual | Verdict |
-|------|------|-----------|--------|---------|
-| **n8n** | Free (self-host) | Yes | Yes | **USE — fits Coolify VPS** |
-| Zapier | $20+/mo | No | Yes | Skip — paid |
-| Make (Integromat) | $9+/mo | No | Yes | Skip — paid |
-| Prefect | Free tier | Yes | Yes | Overkill — Python-first |
-| Airflow | Free | Yes | Yes | Heavy — overkill |
-| Custom cron scripts | Free | Yes | No | OK fallback, less maintainable |
+| Tool | Verdict |
+| --- | --- |
+| **n8n** | **USE** — fits Coolify VPS (when deployed) |
+| Zapier / Make | Skip — paid |
+| Prefect / Airflow | Overkill |
+| Vercel Cron | ✅ **In use today** for nightly enrich |
 
-### 5.3 Key n8n Flows
+### 5.3 Key n8n Flows (planned)
 
-**Flow 1: Daily Job Discovery Digest**
-```
-Cron (8am) → Fetch user profiles (PostgreSQL node)
-  → For each user: Bluedoor search (HTTP node, user profile params)
-  → FastAPI Analyzer (HTTP node: POST /pipeline/analyze)
-  → Filter top 5 matches
-  → Resend email (HTTP node)
-  → Log to DB (PostgreSQL node)
-```
+| Flow | Today | n8n (planned) |
+| --- | --- | --- |
+| Nightly enrichment | ✅ Vercel cron | Migrate for flexibility |
+| Daily job digest | ⬜ | n8n + Resend |
+| Stale app alert | ⬜ | n8n + FastAPI |
+| Interview prep auto-trigger | ⬜ | n8n on status change |
+| Posting closed alert | ⚠️ Webhook + Resend in Next.js | Could move to n8n |
 
-**Flow 2: Enrichment Sync**
-```
-Cron (2am nightly) → Fetch all jobs with bluedoor_job_id (PostgreSQL)
-  → Batch GET /v1/jobs/{id} calls (Bluedoor)
-  → Compare status, hash, salary
-  → If changed: UPDATE DB + emit Next.js SSE event (HTTP node)
-```
+### 5.4 n8n + Next.js Integration (planned)
 
-**Flow 3: Interview Prep Auto-Trigger**
-```
-PostgreSQL trigger (status changed to 'interview') → webhook
-  → n8n receives webhook
-  → FastAPI POST /pipeline/run (full 9-agent)
-  → Store result in DB
-  → Resend email "Your interview prep is ready"
-```
+Internal routes **not yet built:**
 
-**Flow 4: Stale Application Check**
-```
-Cron (Sunday 9am) → Query apps: status unchanged 30+ days (PostgreSQL)
-  → FastAPI: generate follow-up email draft (POST /pipeline/draft-followup)
-  → Store draft in DB
-  → Notify user in-app + email
-```
+- `POST /api/internal/enrich-job`
+- `POST /api/internal/notify`
+- `GET /api/internal/users/digest-eligible`
 
-### 5.4 n8n + Next.js Integration
-
-Next.js exposes internal API endpoints that n8n calls:
-- `POST /api/internal/enrich-job` — trigger enrichment for job_id
-- `POST /api/internal/notify` — push notification to user SSE stream
-- `GET /api/internal/users/digest-eligible` — users who want daily digest
-
-These routes protected by internal secret (`X-Internal-Secret` header, env var).
+Protected by `X-Internal-Secret` header.
 
 ---
 
 ## 6. Infrastructure — Coolify VPS
 
-### 6.1 Coolify Overview
+**Status: ⬜ Planned — Next.js currently on Vercel.**
 
-Self-hosted PaaS. Like Railway/Render/Vercel but runs on your own VPS. Free to use (you pay VPS cost only).
+### 6.1 Target services (all ⬜ except Vercel Next.js today)
 
-| Feature | Value |
-|---------|-------|
-| VPS provider | Hetzner (existing, per HETZNER_VPS_MIGRATION_GUIDE.md) |
-| Management UI | Coolify web dashboard |
-| Container runtime | Docker |
-| SSL | Auto via Let's Encrypt |
-| Domains | Custom domain per service |
-| Deployment | Git push → auto build → deploy |
-
-### 6.2 Services on Coolify VPS
-
-```
-Coolify VPS
-├── jobify-web (Next.js)           — main app
-├── jobify-ai (FastAPI)            — AI pipeline service
-├── jobify-db (PostgreSQL)         — shared DB
-├── jobify-redis (Redis)           — cache + job queue
-├── jobify-ollama (Ollama)         — local LLM server
-├── jobify-n8n (n8n)               — automation
-└── jobify-smtp (optional Mailhog) — dev email testing
+```text
+Coolify VPS (planned)
+├── jobify-web (Next.js)     — currently Vercel ✅
+├── jobify-ai (FastAPI)      — code ready ⬜
+├── jobify-db (PostgreSQL)   — external (Neon/VPS) ✅
+├── jobify-redis (Redis)     — Upstash optional ✅
+├── jobify-ollama (Ollama)   — ⬜
+└── jobify-n8n (n8n)         — ⬜
 ```
 
-### 6.3 Hetzner VPS Sizing
+### 6.2 Hetzner VPS Sizing
 
-| Plan | RAM | CPU | Storage | Cost/mo | Sufficient for |
-|------|-----|-----|---------|---------|----------------|
-| CX31 | 8GB | 2 | 80GB SSD | €8.9 | Phase 1 only (no Ollama) |
-| CX41 | 16GB | 4 | 160GB SSD | €17.9 | Phase 2 with Ollama 7B models |
-| CX51 | 32GB | 8 | 240GB SSD | €34.9 | Phase 2 with 13B models + n8n + all services |
-
-**Recommendation for Phase 2:** CX41 minimum. CX51 if running concurrent LLM calls.
-
-### 6.4 Service Communication
-
-```
-Next.js (internal)
-  → FastAPI: http://jobify-ai:8000 (Docker network — no egress)
-  → PostgreSQL: postgresql://jobify-db:5432
-  → Redis: redis://jobify-redis:6379
-
-n8n (internal)
-  → Next.js: http://jobify-web:3000/api/internal/...
-  → FastAPI: http://jobify-ai:8000/...
-  → PostgreSQL: direct node
-
-Ollama (internal)
-  → FastAPI calls: http://jobify-ollama:11434
-```
+| Plan | RAM | Sufficient for |
+| --- | --- | --- |
+| CX31 (8GB) | 8GB | Phase 1 only |
+| CX41 (16GB) | 16GB | Phase 2 + Ollama 7B |
+| CX51 (32GB) | 32GB | Concurrent LLM + n8n |
 
 ---
 
 ## 7. Frontend New Features Stack
 
-New UI components/libraries for Phase 1 + 2 features.
-
-| Feature | Tool | Notes |
-|---------|------|-------|
-| Job discovery search | Existing filter pattern (TanStack Query) | Extend current filter bar |
-| Infinite scroll | `@tanstack/react-virtual` or native Intersection Observer | Bluedoor cursor pagination |
-| AI output streaming | `ReadableStream` via fetch / Vercel AI SDK | FastAPI SSE → Next.js |
-| Markdown rendering | `react-markdown` + `remark-gfm` | Cover letter / AI output |
-| Syntax highlighting | `shiki` | Code in JD descriptions |
-| Notification center | Custom SSE-fed component (existing SSE infra) | Bell icon in navbar |
-| Company logos | Clearbit Logo API (free) or `logo.dev` (free) | Company name → logo URL |
-| Job card status badges | Tailwind + Framer Motion | Animated status change |
-| AI progress indicator | Framer Motion steps component | 9-agent pipeline progress |
-| Salary range display | Custom range component | Min/max with currency |
-
-**Company logos:** `https://logo.dev/img/logos/{domain}.png` — free, no API key, domain-based.
-
-### 7.1 AI Output UI Pattern
-
-Stream FastAPI response to UI via Server-Sent Events:
-```
-User clicks "Generate AI Insights"
-  → Next.js API route opens SSE to FastAPI
-  → FastAPI streams: agent progress events + final JSON
-  → UI shows: animated pipeline progress (agents 1-9 completing)
-  → Final output rendered as rich card (fit score, cover letter tabs)
-```
+| Feature | Tool | Status |
+| --- | --- | --- |
+| Job discovery search | TanStack Query + Server Actions | ✅ |
+| Infinite scroll | `useInfiniteQuery` + cursor | ✅ |
+| Glass filter dropdowns | `GlassDropdownTrigger` pattern | ✅ |
+| Static card shells | `JobCardShell`, `DiscoverCardShell` | ✅ |
+| Stats charts | Recharts (4 chart types) | ✅ |
+| KPI derived metrics | `StatsKpiRow` (no extra DB query) | ✅ |
+| Notification center | SSE + BroadcastChannel | ✅ |
+| AI output display | `AiInsightsPanel` (blocking) | ⚠️ scaffold |
+| AI streaming | ReadableStream / Vercel AI SDK | ⬜ |
+| Markdown rendering | `react-markdown` | ⬜ |
+| Company logos | logo.dev / Clearbit | ⬜ |
+| Framer Motion badges | Animated status change | ⬜ |
+| 9-agent progress UI | Step indicator | ⬜ |
 
 ---
 
-## 8. Database Schema Additions
+## 8. Database Schema
 
-New Prisma model fields for Phase 1. Phase 2 adds AI output tables.
-
-### 8.1 Phase 1 — Enrich Job model
+### 8.1 Phase 1 — Job model ✅ (actual schema)
 
 ```prisma
 model Job {
-  // ... existing fields ...
+  id        String   @id @default(uuid())
+  clerkId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  position  String
+  company   String
+  location  String
+  status    String   // pending | interview | declined
+  mode      String   // full-time | part-time | internship
 
-  // Bluedoor enrichment
+  applyUrl              String?   @map("apply_url")
   bluedoorJobId         String?   @map("bluedoor_job_id")
-  bluedoorSyncedAt      DateTime? @map("bluedoor_synced_at")
-  bluedoorStatus        String?   @map("bluedoor_status")  // active | expired | unknown
-  bluedoorProvider      String?   @map("bluedoor_provider") // greenhouse | lever | ashby
+  bluedoorOrgId         String?   @map("bluedoor_org_id")
+  bluedoorProvider      String?   @map("bluedoor_provider")
+  bluedoorStatus        String?   @map("bluedoor_status")
+  bluedoorWorkplaceType String?   @map("bluedoor_workplace_type")
   bluedoorSalaryMin     Float?    @map("bluedoor_salary_min")
   bluedoorSalaryMax     Float?    @map("bluedoor_salary_max")
   bluedoorSalaryCurrency String?  @map("bluedoor_salary_currency")
-  bluedoorWorkplaceType String?   @map("bluedoor_workplace_type") // remote | hybrid | on_site
   bluedoorDescHash      String?   @map("bluedoor_desc_hash")
-  bluedoorSourceUrl     String?   @map("bluedoor_source_url")
-  bluedoorApplyUrl      String?   @map("bluedoor_apply_url")
-  bluedoorWebhookSubId  String?   @map("bluedoor_webhook_sub_id")
+  bluedoorSyncedAt      DateTime? @map("bluedoor_synced_at")
+  bluedoorChangedAt     DateTime? @map("bluedoor_changed_at")
 
-  // Change tracking
-  statusChangedAt       DateTime? @map("status_changed_at")
-  lastCheckedAt         DateTime? @map("last_checked_at")
+  @@index([clerkId])
+  @@index([clerkId, status])
+  @@index([clerkId, createdAt(sort: Desc)])
+  @@index([bluedoorJobId])
 }
 ```
 
-### 8.2 Phase 2 — AI Outputs
+**Not in schema (planned):** `bluedoorWebhookSubId`, `statusChangedAt`, `lastCheckedAt`, `bluedoorSourceUrl`.
+
+### 8.2 Phase 2 — AI Outputs ⬜ (planned, not migrated)
 
 ```prisma
-model JobAIInsight {
-  id              String   @id @default(cuid())
-  jobId           String   @map("job_id")
-  job             Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
-  
-  // Pipeline metadata
-  modelUsed       String   @map("model_used")
-  pipelineMs      Int      @map("pipeline_ms")
-  confidenceScore Float    @map("confidence_score")
-  
-  // Agent outputs
-  fitScore        Float    @map("fit_score")      // 0.0 - 1.0
-  skillsMatched   Json     @map("skills_matched") // string[]
-  skillsGap       Json     @map("skills_gap")     // string[]
-  
-  // Generated content
-  coverLetterDraft   String? @map("cover_letter_draft")
-  resumeBullets      Json?   @map("resume_bullets")   // string[]
-  interviewAngles    Json?   @map("interview_angles") // string[]
-  interviewPrepNotes String? @map("interview_prep_notes")
-  
-  // Validation
-  validatorPassed Boolean @map("validator_passed")
-  finalBossScore  Float   @map("final_boss_score") // 0.0 - 1.0
-  humanReviewFlag Boolean @default(false) @map("human_review_flag")
-
-  @@map("job_ai_insights")
-}
-
-model UserProfile {
-  id              String   @id @default(cuid())
-  clerkUserId     String   @unique @map("clerk_user_id")
-  
-  // For AI matching
-  skills          Json     // string[]
-  experience      String?  // free text or structured
-  targetRoles     Json     // string[]
-  targetLocations Json     // string[]
-  targetSalaryMin Float?   @map("target_salary_min")
-  preferRemote    Boolean  @default(false) @map("prefer_remote")
-  
-  // Digest preferences
-  digestEnabled   Boolean  @default(true) @map("digest_enabled")
-  digestTime      String   @default("08:00") @map("digest_time")
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@map("user_profiles")
-}
+// PLANNED — not yet in prisma/schema.prisma
+model JobAIInsight { ... }
+model UserProfile { ... }
 ```
+
+See `docs/PROJECT_PLAN.md` §2.2 for intended fields.
+
+### 8.3 Query / cache keys ✅
+
+| Key | Persisted | Invalidated on CRUD |
+| --- | --- | --- |
+| `jobs.*` | ✅ | ✅ |
+| `stats` | ✅ | ✅ |
+| `charts` | ✅ | ✅ |
+| `charts-weekly` | ✅ | ✅ |
+| `job(id)` | ✅ | ✅ |
+| `discover.*` | ❌ | N/A (live external) |
+| `ai.pipeline(id)` | ❌ | N/A (on-demand) |
 
 ---
 
 ## 9. What NOT To Use
 
 | Tool | Why Skip |
-|------|----------|
-| LangChain (full) | Too much abstraction, hard to debug agent failures. Use raw clients + selective LangChain utilities |
-| LangGraph | Overkill for linear 9-agent pipeline. Custom orchestrator is simpler and debuggable |
-| AutoGen / CrewAI | Experimental, unpredictable, hard to control output format |
-| GPT-4 / GPT-4o | Paid, not needed — Ollama + Groq covers use cases |
-| Pinecone / Weaviate | Vector DB not needed in Phase 2. Add only if building semantic job search later |
-| Kafka / RabbitMQ | Message queue overkill. Redis + ARQ sufficient |
-| Kubernetes | VPS Coolify + Docker Compose is sufficient at this scale |
-| Airflow | Heavy data pipeline tool. n8n is simpler and visual |
-| Django | Full ORM framework unnecessary — FastAPI + raw SQL or SQLAlchemy for AI service |
-| Scrapy | Not scraping — using official Bluedoor API |
-| Selenium | Not automating browser — not auto-applying |
-| Multiple databases | Keep single PostgreSQL. AI service connects to same DB as Next.js |
-| WebSockets (new) | Existing SSE infrastructure handles real-time. No need for WS |
+| --- | --- |
+| LangChain (full) | Too much abstraction — raw clients used instead ✅ |
+| LangGraph | Overkill for linear pipeline ✅ |
+| AutoGen / CrewAI | Unpredictable output ✅ |
+| GPT-4 / GPT-4o | Paid, not needed |
+| Pinecone / Weaviate | No vector search in Phase 2 |
+| Kafka / RabbitMQ | Redis + ARQ sufficient |
+| Kubernetes | Coolify + Docker Compose sufficient |
+| Scrapy | Official Bluedoor API used ✅ |
+| WebSockets (new) | SSE infrastructure sufficient ✅ |
+| Separate Bluedoor API routes | Server Actions chosen instead ✅ |
 
 ---
 
 ## 10. Full Stack Summary
 
-### Phase 1 Stack
+### Shipped today (production codebase)
 
 | Layer | Tool | Free? |
-|-------|------|-------|
+| --- | --- | --- |
 | Frontend | Next.js 16 + React 19 | Yes |
 | Auth | Clerk 6 | Free tier |
 | Database | PostgreSQL + Prisma 6 | Yes |
-| Cache | Redis 7 | Yes |
+| Cache | Redis (optional) + unstable_cache | Yes |
 | Client state | TanStack Query 5 + Persist | Yes |
-| Job data | Bluedoor API | Yes — confirmed |
-| Email alerts | Resend + React Email | Yes (3k/mo) |
-| Scheduled sync | Vercel Cron | Yes (hobby: 1/day) |
+| Job enrichment | Bluedoor API | Yes |
+| Email alerts | Resend | Yes (3k/mo) |
+| Scheduled sync | Vercel Cron | Yes |
+| Notifications | SSE + BroadcastChannel | Yes |
 | Monitoring | Sentry | Free tier |
 | Deployment | Vercel | Free hobby |
-| CI | GitHub Actions | Free |
+| Testing | Vitest 49 tests | Yes |
 
-### Phase 2 Stack (additions)
+### Scaffolded (code in repo, not production-deployed)
 
-| Layer | Tool | Free? |
-|-------|------|-------|
-| AI service | FastAPI + Python 3.12 | Yes |
-| Local LLM | Ollama | Yes |
-| LLM models | llama3.2:8b, mistral:7b, gemma2:9b, phi3 | Yes |
-| LLM fallback 1 | Groq (14k tok/min free) | Yes |
-| LLM fallback 2 | OpenRouter (free models) | Yes |
-| LLM fallback 3 | Claude Haiku | Paid (cheap) |
-| Task queue | ARQ + Redis | Yes |
-| Automation | n8n (self-hosted) | Yes |
-| Container PaaS | Coolify (self-hosted) | Yes |
-| VPS | Hetzner CX41 | ~€18/mo |
-| Email (more volume) | Resend | Yes (3k/mo) |
+| Layer | Tool |
+| --- | --- |
+| AI service | FastAPI + 9-agent pipeline |
+| LLM clients | Ollama, Groq, OpenRouter, Anthropic |
+| AI UI | AiInsightsPanel + useAIPipeline |
+
+### Planned (not in codebase)
+
+| Layer | Tool |
+| --- | --- |
+| Automation | n8n (self-hosted) |
+| Container PaaS | Coolify on Hetzner |
+| Local LLM runtime | Ollama on VPS |
+| Task queue | ARQ + Redis |
+| Analytics | PostHog |
+| Email templates | React Email |
+| AI persistence | JobAIInsight + UserProfile tables |
 
 ### Tech Decisions Rationale
 
 | Decision | Rationale |
-|----------|-----------|
-| FastAPI over Django/Flask | Async-first for LLM streaming, auto-docs, Pydantic v2 |
-| Ollama primary | Privacy, free, no rate limits, runs on VPS |
-| Groq as first cloud fallback | Fastest inference (custom chips), free tier generous |
-| OpenRouter as second fallback | More free model variety |
-| n8n over custom cron scripts | Visual debugging, no-code modifications, webhook support |
-| ARQ over Celery | Simpler, async-native, Redis-backed, sufficient for Phase 2 |
-| Bluedoor over scraping | Official API, free, legal, 1.8M jobs, webhooks |
-| Single PostgreSQL | No multi-DB complexity, AI service reads same DB via Prisma or raw SQL |
-| Resend over SendGrid | Better DX, React Email native, free tier sufficient |
+| --- | --- |
+| Server Actions over Bluedoor API routes | Type-safe, shared auth, matches existing CRUD |
+| Ollama primary | Privacy, free, no rate limits |
+| Vercel Cron before n8n | Simpler for Phase 1 nightly sync |
+| SSE over WebSockets | Already built for invalidation + notifications |
+| Discover not persisted | Live external data — always fresh |
+| AI queries not persisted | LLM output varies; regenerate on demand until DB model added |
+| Single PostgreSQL | No multi-DB complexity |
 
 ---
 
-_Document version: v1.0 — Update as Phase 1 implementation begins._  
-_See also: [PROJECT_PLAN.md](./PROJECT_PLAN.md) for full roadmap and architecture._
+_Document version: v1.1 — Last updated 2026-06-27_  
+_See also: [PROJECT_PLAN.md](./PROJECT_PLAN.md) · [PROJECT_WALKTHROUGH.md](./PROJECT_WALKTHROUGH.md)_

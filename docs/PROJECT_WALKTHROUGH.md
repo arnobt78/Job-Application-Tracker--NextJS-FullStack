@@ -2,11 +2,72 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
+**Last updated:** 2026-06-27  
+**Verification:** `npm run lint && npm run typecheck && npm run test && npm run build` — **49/49 tests passing**
+
+---
+
 ## What Jobify Is
 
-A **job application tracker**: users log applications (company, role, status), filter their pipeline, view stats/charts, export data. **Phase 1 (complete)** adds Bluedoor live posting enrichment, `/discover` search, SSE notification bell, and Resend email alerts. **Phase 2 (scaffolded)** adds a Python FastAPI AI service with 9-agent pipeline and LLM fallback chain.
+A **job application tracker (CRM)** at its core: users log applications (company, role, status), filter their pipeline, view stats/charts, and export data.
 
-**Roadmap:** `docs/PROJECT_PLAN.md` — Phase 2 = FastAPI + Ollama multi-agent pipeline on Coolify VPS.
+| Layer | Status |
+| --- | --- |
+| **Core tracker** | ✅ Complete — CRUD, filters, pagination, export, optimistic UI, SSE sync |
+| **Phase 1 — Bluedoor** | ✅ Mostly complete — enrichment, discover, webhooks, cron, notifications, email |
+| **Stats overhaul** | ✅ Complete — KPI row + 4 chart types + weekly velocity |
+| **Phase 2 — AI** | 🔄 Scaffolded — FastAPI + 9 agents + UI panel; needs deploy + persistence |
+| **Phase 2 — n8n / Coolify** | ⬜ Not started — planned in roadmap only |
+| **Phase 3** | ⬜ Future — resume parser, browser extension, etc. |
+
+**Roadmap detail:** `docs/PROJECT_PLAN.md` · **Stack decisions:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
+
+---
+
+## Implementation Status (Audit)
+
+### ✅ Shipped and working
+
+| Area | What exists |
+| --- | --- |
+| **Auth** | Clerk 6, custom sign-in/up, `proxy.ts` route protection |
+| **Dashboard** | URL filters, glass filter bar, `JobCardShell` skeletons, pagination, download |
+| **CRUD** | Server Actions + `useJobsMutation` optimistic updates + cross-tab invalidation |
+| **Bluedoor enrich** | `lib/bluedoor/client.ts`, `enrich.ts`, ATS/URL/fuzzy match, `after()` on create/update |
+| **Enrichment UI** | `JobEnrichmentBadge` — LIVE / CLOSED / CHANGED / SALARY / Syncing |
+| **Discover** | `/discover` — glass filters, infinite scroll (`useInfiniteQuery`), Details modal, Track Application |
+| **Notifications** | SSE + `NotificationsProvider` + `NotificationBell` + BroadcastChannel relay |
+| **Email** | Resend wrapper on posting change (`posting_closed`, `jd_changed`, `salary_added`) |
+| **Cron** | `GET /api/cron/enrich` — nightly batch resync (Vercel cron 03:00 UTC) |
+| **Webhook** | `POST /api/bluedoor/webhook` — HMAC verify + `resyncJob` |
+| **Stats** | Status cards, KPI row, monthly trend, weekly velocity, status donut, mode bars |
+| **AI (scaffold)** | `python-ai-service/`, `/api/ai/pipeline`, `AiInsightsPanel`, `useAIPipeline` |
+| **Posting Activity tab** | `JobDetailPanels` — tabbed AI Insights + Bluedoor event timeline on `/dashboard/[id]` |
+
+### ⚠️ Partial / deferred within Phase 1
+
+| Item | Current state | Gap |
+| --- | --- | --- |
+| **Bluedoor facet filters** | Static dropdown filters | `GET /jobs/facets` not wired — no live facet counts |
+| **Webhook subscriptions** | Inbound handler only | No auto-register via Bluedoor `webhook_endpoints` + `subscriptions` API on enrich |
+| **Email templates** | Plain HTML in `email.ts` | React Email JSX templates not added |
+| **Weekly digest email** | Per-change alerts only | No Sunday/weekly summary cron |
+| **Company display** | `formatOrgName(org_id)` helper | No Clearbit/logo.dev logos; org name is derived from slug |
+| **Discover layout** | Filter bar + grid (dashboard parity) | Not the two-panel facet sidebar from original vision doc |
+| **Dashboard timeline** | — | No merged application + Bluedoor event timeline view |
+| **PostHog** | Guide doc only | Not in `package.json` — deferred |
+
+### ⬜ Phase 2+ not implemented
+
+| Item | Notes |
+| --- | --- |
+| Coolify VPS deploy (Next.js + FastAPI + Ollama + n8n) | Infrastructure planned, not in repo ops |
+| n8n automation flows | Daily digest, stale alert, interview prep trigger |
+| `JobAIInsight` / `UserProfile` Prisma models | AI output not persisted to DB |
+| Cover letter **streaming** UI | Panel shows full response after pipeline completes |
+| Internal API routes (`/api/internal/*`) | For n8n → Next.js integration |
+| ARQ / Celery job queue | Pipeline runs synchronously in FastAPI request |
+| Phase 3 features | Resume parser, salary intelligence, browser extension |
 
 ---
 
@@ -14,17 +75,20 @@ A **job application tracker**: users log applications (company, role, status), f
 
 ```text
 force-dynamic
-  dashboard/layout → currentUser() → NavUserProvider (avatar SSR)
-  page.tsx → await prefetchQuery → HydrationBoundary
+  dashboard/layout → currentUser() → NavUserProvider + NotificationsProvider
+  page.tsx → await prefetchQuery / prefetchInfiniteQuery → HydrationBoundary
   PersistQueryClient (localStorage jobify-query-cache, buster v1)
-  lib/jobs/queries.ts (unstable_cache + tags + Redis)
+    persists: jobs · stats · charts · charts-weekly · job(id)
+    NOT persisted: discover · ai
+  lib/jobs/queries.ts (unstable_cache + tags + optional Redis)
   utils/actions.ts (Clerk + Bluedoor search/enrich)
 
 Client: useQueryBodyLoading → skeleton only on cold cache
-CRUD: useJobsMutation (optimistic) → onSuccess invalidateAll+broadcast · onSettled invalidateAll (no re-broadcast) · SSE · BroadcastChannel
+CRUD: useJobsMutation (optimistic) → onSuccess invalidateAll+broadcast · onSettled invalidateAll (no re-broadcast)
+Sync: SSE /api/jobs/events + BroadcastChannel (jobify-cache + jobify-notifications)
 
 Bluedoor: create/update with applyUrl → after() enrichJob → invalidateUserJobCaches → SSE updates cards
-Discover: queryKeys.discover.* — NOT persisted; SSR prefetch on /discover
+Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Load More
 ```
 
 ---
@@ -34,30 +98,38 @@ Discover: queryKeys.discover.* — NOT persisted; SSR prefetch on /discover
 | Path | Role |
 | --- | --- |
 | `app/(dashboard)/layout.tsx` | SSR Clerk user → NavUserProvider + NotificationsProvider |
-| `app/(dashboard)/dashboard/page.tsx` | await prefetch list + filterOptions + stats |
-| `app/(dashboard)/stats/page.tsx` | await prefetch stats + charts |
-| `app/(dashboard)/dashboard/[id]/page.tsx` | await prefetch job detail |
-| `app/(dashboard)/discover/page.tsx` | prefetchInfiniteQuery Bluedoor; URL-driven filters |
-| `lib/bluedoor/client.ts` | Bluedoor API client + ATS URL parser |
-| `lib/bluedoor/enrich.ts` | Match + enrich + resync; publishNotification + sendPostingChangeEmail |
-| `lib/jobs-events.ts` | SSE event bus: invalidate + notify (JobsEvent union) |
-| `lib/notifications/email.ts` | Resend email wrapper — graceful no-op without RESEND_API_KEY |
-| `lib/ai/pipeline-client.ts` | TypeScript types + runAiPipeline() → Python service |
+| `app/(dashboard)/dashboard/page.tsx` | prefetch list + filterOptions + stats |
+| `app/(dashboard)/stats/page.tsx` | prefetch stats + charts + chartsWeekly |
+| `app/(dashboard)/dashboard/[id]/page.tsx` | prefetch job detail + EditJobDialog |
+| `app/(dashboard)/discover/page.tsx` | `prefetchInfiniteQuery` via `buildDiscoverQueryOptions` |
+| `lib/bluedoor/client.ts` | Bluedoor API client + ATS URL parser + `normalizeSearchParams` |
+| `lib/bluedoor/enrich.ts` | Match + enrich + resync; `publishNotification` + `sendPostingChangeEmail` |
+| `lib/jobs-events.ts` | SSE event bus: `invalidate` \| `notify` |
+| `lib/notifications/email.ts` | Resend wrapper — graceful no-op without `RESEND_API_KEY` |
+| `lib/ai/pipeline-client.ts` | TypeScript types + `runAiPipeline()` → Python service |
 | `lib/query-body-loading.ts` | Warm cache check (SSR/persist/hydrate) |
+| `lib/jobs/queries.ts` | `getCachedJobs`, `getCachedStats`, `getCachedCharts`, `getCachedWeeklyCharts` |
 | `hooks/useJobsListBodyLoading.ts` | List query + bodyLoading |
 | `hooks/useJobsCacheSync.ts` | SSE + BroadcastChannel cache sync; relays notify events |
 | `hooks/useNavUserSession.ts` | SSR snapshot + Clerk useUser |
 | `hooks/useAIPipeline.ts` | useMutation → POST /api/ai/pipeline |
-| `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist |
-| `lib/invalidate-jobs.ts` | jobs · stats · charts · filterOptions · job(id) |
-| `lib/query-keys.ts` | includes discover.search/detail · ai.pipeline |
+| `hooks/useJobsMutation.ts` | Optimistic CRUD + `invalidateAllJobQueries` |
+| `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist rules |
+| `lib/invalidate-jobs.ts` | jobs · stats · charts · chartsWeekly · filterOptions · job(id) |
+| `lib/query-keys.ts` | discover.search/detail · ai.pipeline · chartsWeekly |
 | `context/notifications-context.tsx` | BroadcastChannel subscriber; AppNotification[] state |
 | `components/layout/notification-bell.tsx` | Bell icon + unread badge + popover list |
-| `components/jobs/job-enrichment-badge.tsx` | LIVE / CLOSED / CHANGED badges |
+| `components/jobs/job-enrichment-badge.tsx` | LIVE / CLOSED / CHANGED / SALARY / Syncing |
 | `components/jobs/job-card-shell.tsx` | Stable chrome; text skeletons cold only |
 | `components/jobs/ai-insights-panel.tsx` | On-demand AI fit score + cover letter + interview angles |
-| `components/discover/discover-results.tsx` | useInfiniteQuery; buildDiscoverQueryOptions factory |
-| `components/discover/discover-job-details-modal.tsx` | On-demand Bluedoor detail fetch |
+| `components/jobs/job-detail-panels.tsx` | Tab wrapper: AI Insights + Posting Activity — rendered in `/dashboard/[id]` |
+| `components/jobs/posting-activity-tab.tsx` | Bluedoor event timeline — status changes, JD edits, salary disclosures |
+| `components/discover/discover-results.tsx` | `useInfiniteQuery` + `DiscoverCardShellGrid` + Load More |
+| `components/discover/discover-job-details-modal.tsx` | On-demand Bluedoor detail + AiInsightsPanel |
+| `components/discover/discover-page-header.tsx` | Static h1 (dashboard layout parity) |
+| `components/discover/discover-filter-section.tsx` | Subtitle + clear button + DiscoverFilters |
+| `components/discover/discover-results-toolbar.tsx` | Live posting count badge |
+| `components/stats/*` | application-trend, weekly-velocity, status/mode charts, stats-kpi-row |
 | `app/api/jobs/events/route.ts` | SSE — multiplexes invalidate + notify |
 | `app/api/ai/pipeline/route.ts` | Clerk auth proxy → Python AI service |
 | `app/api/bluedoor/webhook/route.ts` | Lifecycle events → resync linked jobs |
@@ -68,19 +140,38 @@ Discover: queryKeys.discover.* — NOT persisted; SSR prefetch on /discover
 
 ## Dashboard layout
 
-1. `DashboardPageHeader`
-2. Filter subtitle + Clear (reserved width) + `JobsFilterBar`
-3. `JobsResultsToolbar` — badge + `PortfolioBreakdownRow` + download
-4. `JobCardShell` grid → enrichment badge + apply link → pagination
+1. `DashboardPageHeader` — h1 + Add Job dialog
+2. `PageSectionHeader` — Search & Filter (static, outside Suspense)
+3. `JobsFilterSection` — subtitle + clear button + `JobsFilterBar` (GlassCard sky)
+4. `JobsResultsToolbar` — count badge + `PortfolioBreakdownRow` + download
+5. `JobsGrid` — `JobCardShell` grid → enrichment badge + apply link
+6. `JobsPagination`
 
 ---
 
 ## Discover layout
 
-1. `PageSectionHeader` — Discover Jobs
-2. `DiscoverFilters` — debounced `q`, country, workplace, employment, salary (URL params)
-3. `DiscoverResults` — `useInfiniteQuery` via `buildDiscoverQueryOptions`; Load More cursor pagination
-4. `DiscoverJobCard` — **Details** modal (on-demand fetch) · Apply link · **Track Application** (creates job + triggers enrich)
+1. `DiscoverPageHeader` — h1 + subtitle (static)
+2. `PageSectionHeader` — Search & Filter (static)
+3. `DiscoverFilterSection` — subtitle + clear + `DiscoverFilters` (glass dropdowns)
+4. `DiscoverResultsToolbar` — live posting count badge
+5. `DiscoverResults` — `useInfiniteQuery` grid + **Load More** (cursor pagination)
+6. `DiscoverJobCard` — Details modal · View (external) · Track Application (`useCreateJobMutation`)
+
+**Data path:** `searchBluedoorJobsAction` (Server Action) — not a separate `/api/bluedoor/search` route.
+
+---
+
+## Stats layout
+
+1. `PageSectionHeader` — Statistics (h1)
+2. `StatsContainer` — pending / interview / declined cards
+3. `StatsKpiRow` — response rate, interview rate, top job type
+4. `ApplicationTrendChart` — monthly bar + projected line (GlassCard sky)
+5. `WeeklyVelocityChart` — 12-week area chart (GlassCard violet)
+6. `StatusDistributionChart` + `ModeDistributionChart` — side-by-side (emerald / amber)
+
+**Prefetch:** `stats.all` + `charts.all` + `chartsWeekly.all` in parallel on SSR.
 
 ---
 
@@ -88,11 +179,11 @@ Discover: queryKeys.discover.* — NOT persisted; SSR prefetch on /discover
 
 1. User saves `applyUrl` on create/edit (optional field on forms).
 2. `createJobAction` / `updateJobAction` calls `after(() => enrichJob(…))`.
-3. `enrich.ts` matches Bluedoor job (ATS key → URL → fuzzy).
-4. Prisma fields updated (`bluedoorJobId`, `bluedoorStatus`, salary, workplace, desc hash, …).
+3. `enrich.ts` matches Bluedoor job (ATS key → URL → fuzzy company+title).
+4. Prisma fields updated (`bluedoorJobId`, `bluedoorStatus`, salary, workplace, `bluedoorDescHash`, …).
 5. `invalidateUserJobCaches` → tags + Redis + SSE → dashboard cards update without refresh.
 6. Webhook/cron call `resyncJob` when posting closes or JD changes.
-7. `resyncJob` detects statusChanged / descChanged / salaryAdded → `publishNotification` (SSE bell) + `sendPostingChangeEmail` (Resend).
+7. `resyncJob` detects `statusChanged` / `descChanged` / `salaryAdded` → `publishNotification` (bell) + `sendPostingChangeEmail` (Resend).
 
 **Prisma:** `applyUrl` + 11 `bluedoor*` columns on `Job` (see `prisma/schema.prisma`).
 
@@ -103,7 +194,7 @@ Discover: queryKeys.discover.* — NOT persisted; SSR prefetch on /discover
 1. Enrichment `resyncJob` detects change → `publishNotification(userId, type, jobId, message)`.
 2. `lib/jobs-events.ts` dispatches `notify` event to in-memory SSE listener for that userId.
 3. SSE route encodes event → client `EventSource` in `useJobsCacheSync`.
-4. `useJobsCacheSync` relays via `new BroadcastChannel('jobify-notifications').postMessage(event)`.
+4. `useJobsCacheSync` relays via `BroadcastChannel('jobify-notifications')`.
 5. `NotificationsProvider` (dashboard layout) subscribes → appends to `notifications[]`.
 6. `NotificationBell` in nav reads `useNotifications()` → badge count + popover.
 
@@ -112,28 +203,35 @@ Discover: queryKeys.discover.* — NOT persisted; SSR prefetch on /discover
 ## AI pipeline flow (Phase 2 — scaffolded)
 
 1. `AiInsightsPanel` "Generate Insights" → `useAIPipeline` mutation → `POST /api/ai/pipeline`.
-2. Next.js route: Clerk auth + X-Internal-Secret header → `runAiPipeline(payload)`.
-3. `lib/ai/pipeline-client.ts` → `python-ai-service /pipeline/run` (30s timeout).
-4. FastAPI: 9-agent pipeline (Extractor → Analyzer → Preprocessor → Optimizer → **Synthesizer LLM** → Validator → Assembler → ViewFormatter → FinalVerifier).
-5. LLM fallback: Ollama (local) → Groq → OpenRouter → Anthropic claude-haiku-4-5-20251001.
+2. Next.js route: Clerk auth + `X-Internal-Secret` → `runAiPipeline(payload)`.
+3. `lib/ai/pipeline-client.ts` → `python-ai-service POST /pipeline/run` (~30s timeout).
+4. FastAPI: 9-agent pipeline (Extractor → … → FinalVerifier).
+5. LLM fallback: Ollama → Groq → OpenRouter → Anthropic claude-haiku-4-5-20251001.
 6. `PipelineResponse` returned — fit score, cover letter, interview angles, summary.
+
+**Wired in:** `EditJobDialog` / `/dashboard/[id]` and `DiscoverJobDetailsModal`.  
+**Not yet:** DB persistence, streaming, pipeline progress UI, production deploy.
 
 ---
 
 ## Loading UX
 
 - `useQueryBodyLoading` — no skeleton when SSR/hydrate/persist has data
-- `keepPreviousData` / `placeholderData` on list + discover — no flash on filter change
+- `placeholderData` / `keepPreviousData` on jobs list + discover — no flash on filter change
+- `JobCardShell` / `DiscoverCardShell` — static chrome; skeleton only on text slots
 - Navbar avatar — pulse only when no SSR seed and Clerk not loaded
-- `/discover/loading.tsx` — route-level skeleton for Bluedoor cold fetch
+- `/discover/loading.tsx` — route-level skeleton matching dashboard parity layout
 
 ---
 
 ## Invalidation
 
-`invalidateAllJobQueries`: jobs.all, stats, charts, filterOptions, job.detail(id). Mutations: onSuccess broadcasts once; onSettled resyncs all keys without re-broadcast. Server: `invalidateUserJobCaches` + tags + Redis + SSE (+ `/discover` path revalidate).
+**Client** (`invalidateAllJobQueries`): `jobs.all`, `stats`, `charts`, `chartsWeekly`, `filterOptions`, `job.detail(id)`.  
+Mutations: `onSuccess` broadcasts once; `onSettled` resyncs all keys without re-broadcast.
 
-Discover queries are **not** in persist scope — refetch on navigation/filter change.
+**Server** (`invalidateUserJobCaches`): `revalidatePath` dashboard/stats/discover + `revalidateTag` all user tags + Redis delete + SSE publish.
+
+Discover and AI queries are **not** in persist scope — always refetch on navigation/filter change.
 
 ---
 
@@ -141,26 +239,36 @@ Discover queries are **not** in persist scope — refetch on navigation/filter c
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | yes | Clerk auth |
+| `CLERK_SECRET_KEY` | yes | Clerk server |
+| `DATABASE_URL` / `DIRECT_URL` | yes | PostgreSQL |
+| `UPSTASH_REDIS_REST_URL` / `TOKEN` | optional | Redis cache + SSE streams |
 | `BLUEDOOR_WEBHOOK_SECRET` | optional | HMAC verify inbound Bluedoor webhooks |
-| `CRON_SECRET` | prod | Authorize Vercel cron → `/api/cron/enrich` |
-| `RESEND_API_KEY` | optional | Email alerts on posting changes (no-op if absent) |
-| `EMAIL_FROM` | optional | From address for Resend emails (default: `Jobify <noreply@jobify.app>`) |
-| `NEXT_PUBLIC_APP_URL` | optional | Base URL for job deep-links in emails |
-| `AI_SERVICE_URL` | optional | Python AI service URL (default: `http://localhost:8000`) |
-| `AI_SERVICE_SECRET` | optional | Shared secret for Next.js → Python auth header |
+| `CRON_SECRET` | prod cron | Authorize Vercel cron → `/api/cron/enrich` |
+| `RESEND_API_KEY` | optional | Email alerts (no-op if absent) |
+| `EMAIL_FROM` | optional | From address for Resend |
+| `NEXT_PUBLIC_APP_URL` | optional | Job deep-links in emails |
+| `AI_SERVICE_URL` | optional | Python AI service (default `http://localhost:8000`) |
+| `AI_SERVICE_SECRET` | optional | Shared secret for Next.js → Python |
+| Sentry vars | optional | Error monitoring |
 
-Bluedoor API requires no API key (free tier per Sam Crombie).
+Bluedoor API requires **no API key** (free tier per Sam Crombie).
 
 ---
 
 ## Verify
 
-`npm run lint && npm run typecheck && npm run test && npm run build` — 49 tests.
+```bash
+npm run lint && npm run typecheck && npm run test && npm run build
+```
+
+49 tests · all routes `force-dynamic` on dashboard pages.
 
 ---
 
 ## Related docs
 
-- `docs/PROJECT_PLAN.md` — v2 vision, 9-agent pipeline, n8n flows
-- `docs/JOBIFY_TECH_STACK_ANALYSIS.md` — stack decisions (Jobify-specific)
+- `docs/PROJECT_PLAN.md` — v2 vision, phased roadmap, what's left
+- `docs/JOBIFY_TECH_STACK_ANALYSIS.md` — stack decisions + implementation matrix
+- `README.md` — full educational guide for learners
 - `.agile-v/PLAYBOOK.md` — Agile V session protocol

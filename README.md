@@ -1,4 +1,4 @@
-# Job Tracking Application - Next.js, TypeScript, Clerk, Prisma, React Query, PostgreSQL FullStack Project
+# Job Application Tracker & Discovery — Next.js, TypeScript, Clerk, Prisma, PostgreSQL, Bluedoor API (+ FastAPI AI Pipeline) FullStack Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -10,8 +10,9 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791)](https://www.postgresql.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC)](https://tailwindcss.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18)](https://vitest.dev/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Phase_2-009688)](https://fastapi.tiangolo.com/)
 
-A production-style, full-stack job application tracker built to teach modern web development patterns: App Router SSR, server actions, typed ORM access, optimistic UI, multi-layer caching, and secure authentication. Track applications, filter and search your pipeline, visualize trends, and export reports—all with a polished glassmorphic UI and dark mode support.
+A production-style, full-stack **job application CRM** — not a generic job board. It helps you track applications you have already submitted, enrich them with live posting data from the free [Bluedoor Job Postings API](https://bluedoor.sh/apis/job-postings), discover new roles to track, visualize your search with charts and KPIs, and (Phase 2) run an AI insights pipeline. Built for learning: App Router SSR, Server Actions, TanStack Query hydration, optimistic UI, multi-layer caching, SSE cross-tab sync, and strict TypeScript end-to-end.
 
 - **Live-Demo:** [https://jobify-tracker.vercel.app/](https://jobify-tracker.vercel.app/)
 
@@ -34,6 +35,9 @@ A production-style, full-stack job application tracker built to teach modern web
 - [Server Actions (Backend)](#server-actions-backend)
 - [Authentication](#authentication)
 - [State Management & Caching](#state-management--caching)
+- [Bluedoor Enrichment & Discover](#bluedoor-enrichment--discover)
+- [Notifications & Email Alerts](#notifications--email-alerts)
+- [AI Pipeline (Phase 2)](#ai-pipeline-phase-2)
 - [Components Guide](#components-guide)
 - [Custom Hooks](#custom-hooks)
 - [Code Examples](#code-examples)
@@ -47,15 +51,17 @@ A production-style, full-stack job application tracker built to teach modern web
 
 ## Overview
 
-Jobify helps job seekers **organize**, **track**, and **analyze** their job search in one place. Each authenticated user gets a private dashboard where they can:
+Jobify helps job seekers **organize**, **track**, **enrich**, and **analyze** their job search in one place. Each authenticated user gets a private dashboard where they can:
 
-- Add job applications (position, company, location, status, employment mode)
-- Search and filter applications
-- Edit or delete entries via glassmorphic dialogs
-- View statistics and charts (pending, interview, declined)
+- Add and manage job applications (position, company, location, status, employment mode)
+- Attach an **apply URL** so Bluedoor can enrich the record with live salary, status, and workplace data
+- Search and filter their pipeline with URL-synced filters and pagination
+- **Discover** 1.8M+ live postings and track any role with one click
+- View stats, KPIs, and multiple chart types (monthly trend, weekly velocity, status/mode breakdown)
 - Export data as CSV or Excel
+- Receive in-app notifications (and optional email) when a tracked posting closes or changes
 
-The app is built as a **learning-oriented full-stack reference**: server-rendered pages for fast first paint, client-side React Query for instant interactions, and Prisma + PostgreSQL for persistent storage.
+The app is built as a **learning-oriented full-stack reference**: server-rendered pages for fast first paint, client-side TanStack Query for instant interactions, Prisma + PostgreSQL for persistence, and optional Redis/Sentry/Resend for production polish.
 
 ---
 
@@ -63,24 +69,35 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 
 ### Core Functionality
 
-| Feature             | Description                                         |
-| ------------------- | --------------------------------------------------- |
-| **CRUD**            | Create, read, update, delete job applications       |
-| **Search**          | Filter by position or company name (URL-synced)     |
-| **Status filter**   | `all`, `pending`, `interview`, `declined`           |
-| **Pagination**      | Paginated job list for large datasets               |
-| **Stats dashboard** | Count cards + 6-month trend charts                  |
-| **Export**          | Download CSV/Excel with monthly grouping            |
-| **Dialogs**         | Add/Edit jobs in modal dialogs (no page navigation) |
+| Feature              | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| **CRUD**             | Create, read, update, delete job applications                        |
+| **Search & filters** | Filter by position/company, status, mode, month (URL-synced)         |
+| **Pagination**       | Paginated job list for large datasets                                |
+| **Stats dashboard**  | Status cards + KPI row (response rate, interview rate, top job type) |
+| **Charts**           | Monthly trend + projection, weekly velocity, status donut, mode bars |
+| **Export**           | Download CSV/Excel with monthly grouping                             |
+| **Dialogs**          | Add/Edit jobs in modal dialogs (no page navigation)                  |
+
+### Bluedoor Integration (Phase 1)
+
+| Feature               | Description                                                              |
+| --------------------- | ------------------------------------------------------------------------ |
+| **Live enrichment**   | Match tracked jobs to Bluedoor via apply URL (ATS key, URL, fuzzy match) |
+| **Enrichment badges** | LIVE / CLOSED / JD CHANGED / SALARY / Syncing on job cards               |
+| **Discover page**     | Search 1.8M+ postings; one-click **Track Application**                   |
+| **Nightly cron**      | Batch re-sync linked jobs (`/api/cron/enrich`)                           |
+| **Webhook**           | Bluedoor lifecycle events → resync affected jobs                         |
 
 ### User Experience
 
 - **Clerk authentication** — email/password, OAuth, guest demo sign-in
 - **Custom auth UI** — branded Sign In / Sign Up forms (no default Clerk chrome)
+- **Notification bell** — SSE + BroadcastChannel; unread badge + popover list
 - **Dark / light / system theme** — via `next-themes`
+- **Glassmorphism UI** — `GlassCard`, glass dropdowns, targeted skeletons
 - **Responsive layout** — mobile hamburger nav, grid cards on desktop
-- **Loading skeletons** — consistent dimensions via `lib/ui/dimensions.ts`
-- **Toast feedback** — success/error notifications
+- **Toast feedback** — success/error notifications via Sonner
 - **Form validation** — React Hook Form + Zod (client + server)
 
 ### Technical Highlights
@@ -89,6 +106,7 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 - **Optimistic mutations** — UI updates before server round-trip
 - **Multi-layer cache** — `unstable_cache`, tags, optional Redis read-through
 - **Cross-tab sync** — BroadcastChannel + SSE (`/api/jobs/events`)
+- **localStorage persist** — jobs/stats/charts cached client-side (not discover/ai)
 - **Sentry integration** — optional error tracking with browser tunnel
 - **Type-safe end-to-end** — TypeScript + Prisma + Zod
 
@@ -98,39 +116,52 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 
 ### Frontend
 
-| Library             | Version | What it does                                                |
-| ------------------- | ------- | ----------------------------------------------------------- |
-| **Next.js**         | 16.x    | React framework with App Router, SSR, Server Actions        |
-| **React**           | 19.x    | UI library with Server/Client Components                    |
-| **TypeScript**      | 5.8.x   | Static typing across the codebase                           |
-| **Tailwind CSS**    | 3.4.x   | Utility-first styling                                       |
-| **shadcn/ui**       | —       | Accessible Radix-based components (Button, Dialog, Select…) |
-| **Lucide React**    | —       | Icon set                                                    |
-| **React Hook Form** | 7.x     | Form state with minimal re-renders                          |
-| **Zod**             | 3.x     | Schema validation (shared client + server)                  |
-| **Recharts**        | 2.x     | Stats page bar charts                                       |
-| **next-themes**     | —       | Theme switching without flash                               |
-| **TanStack Query**  | 5.x     | Server state, cache, optimistic updates                     |
+| Library             | Version | What it does                                                     |
+| ------------------- | ------- | ---------------------------------------------------------------- |
+| **Next.js**         | 16.x    | React framework — App Router, SSR, Server Actions, Turbopack dev |
+| **React**           | 19.x    | UI library with Server/Client Components                         |
+| **TypeScript**      | 5.8.x   | Static typing across the codebase                                |
+| **Tailwind CSS**    | 3.4.x   | Utility-first styling                                            |
+| **shadcn/ui**       | —       | Accessible Radix-based components (Button, Dialog, Select…)      |
+| **Lucide React**    | —       | Icon set                                                         |
+| **React Hook Form** | 7.x     | Form state with minimal re-renders                               |
+| **Zod**             | 3.x     | Schema validation (shared client + server)                       |
+| **Recharts**        | 2.x     | Stats page charts (Bar, Area, Pie, Composed)                     |
+| **next-themes**     | —       | Theme switching without flash                                    |
+| **TanStack Query**  | 5.x     | Server state, cache, optimistic updates, persist                 |
+| **Sonner**          | —       | Toast notifications                                              |
 
 ### Backend & Data
 
-| Library                    | Version  | What it does                                  |
-| -------------------------- | -------- | --------------------------------------------- |
-| **Next.js Server Actions** | —        | Type-safe server functions (`"use server"`)   |
-| **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations     |
-| **PostgreSQL**             | —        | Relational database for job records           |
-| **Clerk**                  | 6.x      | Authentication, session, user identity        |
-| **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams |
-| **exceljs / papaparse**    | —        | Excel/CSV export generation                   |
-| **dayjs**                  | —        | Date formatting in exports                    |
+| Library                    | Version  | What it does                                                |
+| -------------------------- | -------- | ----------------------------------------------------------- |
+| **Next.js Server Actions** | —        | Type-safe server functions (`"use server"`)                 |
+| **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations                   |
+| **PostgreSQL**             | —        | Relational database for job records                         |
+| **Clerk**                  | 6.x      | Authentication, session, user identity                      |
+| **Bluedoor API**           | —        | Free job postings API — enrichment + discover (no auth key) |
+| **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams               |
+| **Resend**                 | optional | Email alerts when postings change                           |
+| **exceljs / papaparse**    | —        | Excel/CSV export generation                                 |
+| **dayjs**                  | —        | Date formatting in exports and charts                       |
+
+### Phase 2 — Python AI Service
+
+| Library                           | What it does                      |
+| --------------------------------- | --------------------------------- |
+| **FastAPI**                       | HTTP API for 9-agent LLM pipeline |
+| **Ollama**                        | Local LLM (primary)               |
+| **Groq / OpenRouter / Anthropic** | Free-tier cloud fallbacks         |
+
+See `python-ai-service/` and `docs/PROJECT_PLAN.md` for the full roadmap.
 
 ### Dev & Quality
 
-| Tool       | Purpose                                         |
-| ---------- | ----------------------------------------------- |
-| **Vitest** | Unit tests (`lib/__tests__`, `hooks/__tests__`) |
-| **ESLint** | Linting (`eslint-config-next`)                  |
-| **Sentry** | Optional production error monitoring            |
+| Tool       | Purpose                                                                 |
+| ---------- | ----------------------------------------------------------------------- |
+| **Vitest** | Unit tests (`lib/__tests__`, `hooks/__tests__`, `components/__tests__`) |
+| **ESLint** | Linting (`eslint-config-next`)                                          |
+| **Sentry** | Optional production error monitoring                                    |
 
 ---
 
@@ -141,27 +172,31 @@ Understanding the flow is key to extending this project.
 ### Read path (SSR → client)
 
 ```text
-page.tsx (force-dynamic)
-  └─ prefetchQuery on server (QueryClient)
+page.tsx (export const dynamic = 'force-dynamic')
+  └─ await prefetchQuery on server (QueryClient)
   └─ HydrationBoundary → dehydrate state
-       └─ Client component (JobsList, StatsContainer…)
+       └─ Client component (JobsGrid, StatsContainer, DiscoverResults…)
             └─ useQuery with same queryKey → instant data, no loading flash
                  └─ lib/jobs/queries.ts (unstable_cache + tags + optional Redis)
                       └─ Prisma → PostgreSQL
 ```
 
+**Why `force-dynamic`?** Every dashboard page is user-specific. SSR prefetch + client cache gives fast first paint without stale public HTML.
+
 ### Write path (mutation → invalidation)
 
 ```text
-User action (CreateJobForm / DeleteJobButton)
+User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
   └─ useJobsMutation (optimistic UI patch)
        └─ Server Action (utils/actions.ts)
             └─ Prisma write
+            └─ after() → enrichJob() if applyUrl present (non-blocking)
             └─ invalidateUserJobCaches(userId, jobId?)
                  ├─ revalidateTag / revalidatePath (Next cache)
                  ├─ Redis cache key delete (optional)
                  └─ publishInvalidation → SSE stream
                       └─ useJobsCacheSync → invalidateAllJobQueries (React Query)
+                           └─ BroadcastChannel → other browser tabs
 ```
 
 ### Why this pattern?
@@ -170,6 +205,7 @@ User action (CreateJobForm / DeleteJobButton)
 - **Optimistic updates** make the UI feel instant
 - **Tag-based revalidation** keeps server cache correct after mutations
 - **SSE + BroadcastChannel** keeps multiple tabs/instances in sync
+- **Targeted skeletons** — static chrome always visible; only data slots pulse on cold cache
 
 ---
 
@@ -183,52 +219,68 @@ User action (CreateJobForm / DeleteJobButton)
 │   ├── providers.tsx                 # Theme + React Query providers
 │   ├── error.tsx / global-error.tsx  # Error boundaries
 │   ├── (dashboard)/                  # Authenticated area (route group)
-│   │   ├── layout.tsx                # DashboardNav shell
+│   │   ├── layout.tsx                # DashboardNav + NotificationsProvider
 │   │   ├── dashboard/
 │   │   │   ├── page.tsx              # /dashboard — jobs list + Add Job dialog
 │   │   │   └── [id]/page.tsx         # /dashboard/[id] — edit dialog via URL
+│   │   ├── discover/
+│   │   │   ├── page.tsx              # /discover — Bluedoor job search
+│   │   │   └── loading.tsx           # Streaming skeleton (static card shells)
 │   │   └── stats/
-│   │       └── page.tsx              # /stats — analytics
+│   │       └── page.tsx              # /stats — analytics + charts
 │   ├── sign-in/[[...sign-in]]/       # Custom sign-in page
 │   ├── sign-up/[[...sign-up]]/       # Custom sign-up page
 │   ├── user-profile/[[...user-profile]]/
 │   └── api/
-│       ├── jobs/events/route.ts      # SSE invalidation stream
+│       ├── jobs/events/route.ts      # SSE invalidation + notification stream
+│       ├── bluedoor/webhook/route.ts # Bluedoor lifecycle webhook (HMAC)
+│       ├── cron/enrich/route.ts      # Nightly batch re-sync (CRON_SECRET)
+│       ├── ai/pipeline/route.ts      # AI proxy → Python FastAPI
 │       └── monitoring/route.ts       # Sentry browser tunnel
-├── components/                       # React components
-│   ├── layout/                       # NavShell, LandingNav, DashboardNav, hero…
+├── components/
+│   ├── layout/                       # NavShell, DashboardNav, NotificationBell…
+│   ├── jobs/                         # JobsGrid, JobCardShell, enrichment badge…
+│   ├── discover/                     # DiscoverFilters, DiscoverJobCard, results…
+│   ├── stats/                        # ApplicationTrendChart, WeeklyVelocity…
 │   ├── dialogs/                      # AddJobDialog, EditJobDialog
-│   ├── pages/                        # HomePage, SignInPageContent…
-│   ├── ui/                           # shadcn primitives + GlassCard, SafeImage…
-│   ├── JobCard.tsx, JobsList.tsx     # Dashboard list UI
-│   ├── CreateJobForm.tsx             # Add job form
-│   ├── EditJobForm.tsx               # Edit job form
-│   └── SignInForm.tsx, SignUpForm.tsx
+│   ├── ui/                           # shadcn + GlassCard, glass-dropdown-menu…
+│   └── CreateJobForm.tsx, EditJobForm.tsx, StatsContainer.tsx…
+├── context/
+│   └── notifications-context.tsx     # In-app notification state (max 50)
 ├── hooks/
 │   ├── useJobsMutation.ts            # Optimistic CRUD mutations
 │   ├── useJobsCacheSync.ts           # SSE + BroadcastChannel sync
-│   ├── useGuestSignIn.ts             # Demo account login
-│   └── useSignUpForm.ts              # Custom sign-up flow
+│   ├── useJobsListParams.ts          # URL-driven dashboard filters
+│   ├── useAIPipeline.ts              # AI insights mutation
+│   └── useGuestSignIn.ts, useNavUserSession.ts…
 ├── lib/
-│   ├── jobs/queries.ts               # Cached Prisma reads
+│   ├── jobs/queries.ts               # Cached Prisma reads (stats, charts, weekly)
+│   ├── bluedoor/                     # client.ts, enrich.ts, types.ts
+│   ├── ai/pipeline-client.ts         # TypeScript types for AI service
+│   ├── notifications/email.ts        # Resend wrapper (no-op without key)
+│   ├── jobs-events.ts                # SSE event bus (invalidate | notify)
 │   ├── invalidate-jobs.ts            # Client query invalidation
 │   ├── invalidate-jobs-server.ts     # Server cache bust
 │   ├── query-keys.ts                 # Canonical React Query keys
-│   ├── cache-tags.ts                 # Next.js cache tags per user
-│   ├── redis.ts                      # Optional Upstash integration
-│   ├── format-date.ts                # Hydration-safe UTC dates
-│   └── auth/clerk-oauth.ts           # OAuth redirect URLs
+│   ├── query-persist.ts              # localStorage persist rules
+│   └── cache-tags.ts, redis.ts…
 ├── utils/
-│   ├── actions.ts                    # Server Actions (CRUD + reads)
+│   ├── actions.ts                    # Server Actions (CRUD + Bluedoor + stats)
 │   ├── types.ts                      # JobType + Zod schema
 │   └── db.ts                         # Prisma client singleton
 ├── prisma/
-│   ├── schema.prisma                 # Database schema
+│   ├── schema.prisma                 # Job model (+ Bluedoor enrichment fields)
 │   └── seed.ts                       # Sample data script
+├── python-ai-service/                # Phase 2 — FastAPI 9-agent pipeline
+│   ├── app/main.py
+│   ├── app/pipeline/agents/          # Extractor → Final Verifier
+│   ├── app/llm/router.py             # Ollama → Groq → OpenRouter → Anthropic
+│   └── docker-compose.yml
 ├── proxy.ts                          # Clerk middleware (auth + legacy redirects)
+├── vercel.json                       # Cron schedule + security headers
 ├── next.config.ts                    # Images, headers, Sentry wrapper
 ├── .env.example                      # Environment variable template
-└── docs/                             # Additional guides (walkthrough, auth, styling)
+└── docs/                             # Walkthrough, styling, auth, roadmap
 ```
 
 ---
@@ -237,14 +289,14 @@ User action (CreateJobForm / DeleteJobButton)
 
 Before you start, install:
 
-| Requirement            | Notes                                       |
-| ---------------------- | ------------------------------------------- |
-| **Node.js 20+**        | LTS recommended (Node 24 default on Vercel) |
-| **npm** (or pnpm/yarn) | Package manager                             |
-| **PostgreSQL**         | Local Docker, Neon, Supabase, or VPS        |
-| **Clerk account**      | Free tier works for development             |
+| Requirement            | Notes                                |
+| ---------------------- | ------------------------------------ |
+| **Node.js 20+**        | LTS recommended                      |
+| **npm** (or pnpm/yarn) | Package manager                      |
+| **PostgreSQL**         | Local Docker, Neon, Supabase, or VPS |
+| **Clerk account**      | Free tier works for development      |
 
-Optional: **Upstash Redis** (production cache/SSE), **Sentry** (error tracking).
+Optional: **Upstash Redis**, **Sentry**, **Resend**, **Python 3.11+** (for AI service).
 
 ---
 
@@ -265,13 +317,11 @@ npm install
 
 ### 3. Configure environment variables
 
-Copy the example file and fill in your values:
-
 ```bash
 cp .env.example .env.local
 ```
 
-See [Environment Variables](#environment-variables) below for every key explained.
+Fill in **Clerk keys** and **PostgreSQL URLs** — see [Environment Variables](#environment-variables).
 
 ### 4. Set up the database
 
@@ -289,12 +339,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+**Different port** (if 3000 is busy):
+
+```bash
+npm run dev -- -p 3001
+```
+
 ---
 
 ## Environment Variables
 
-> **Minimum to run locally:** Clerk keys + PostgreSQL `DATABASE_URL` / `DIRECT_URL`.  
-> Everything else is optional and the app degrades gracefully without it.
+> **Minimum to run locally:** Clerk keys + `DATABASE_URL` / `DIRECT_URL`.  
+> Everything else is optional — the app degrades gracefully without it.
 
 Create `.env.local` in the project root (never commit it). A full template lives in `.env.example`.
 
@@ -304,10 +360,10 @@ Create `.env.local` in the project root (never commit it). A full template lives
 | ----------------------------------- | ----------------------------------- | --------------------------------------------------------- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key (browser-safe)     | [Clerk Dashboard](https://dashboard.clerk.com) → API Keys |
 | `CLERK_SECRET_KEY`                  | Clerk secret key (server only)      | Same as above                                             |
-| `DATABASE_URL`                      | PostgreSQL connection string        | Your DB host (Neon, Supabase, local Postgres…)            |
+| `DATABASE_URL`                      | PostgreSQL connection string        | Neon, Supabase, local Postgres…                           |
 | `DIRECT_URL`                        | Direct DB URL for Prisma migrations | Usually same as `DATABASE_URL`                            |
 
-**Clerk URL settings** (local defaults — already in `.env.example`):
+**Clerk URL settings** (local defaults — in `.env.example`):
 
 ```env
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
@@ -326,21 +382,27 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public
 DIRECT_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
 ```
 
-### Optional (recommended for production)
+### Optional — Production & Integrations
 
-| Variable                   | Purpose                              |
-| -------------------------- | ------------------------------------ |
-| `UPSTASH_REDIS_REST_URL`   | Redis REST endpoint for cache + SSE  |
-| `UPSTASH_REDIS_REST_TOKEN` | Redis auth token                     |
-| `NEXT_PUBLIC_SENTRY_DSN`   | Browser error reporting              |
-| `SENTRY_ORG`               | Sentry organization slug             |
-| `SENTRY_PROJECT`           | Sentry project slug                  |
-| `SENTRY_AUTH_TOKEN`        | Source map upload at build time only |
+| Variable                                              | Purpose                                          |
+| ----------------------------------------------------- | ------------------------------------------------ |
+| `UPSTASH_REDIS_REST_URL`                              | Redis REST endpoint for cache + SSE              |
+| `UPSTASH_REDIS_REST_TOKEN`                            | Redis auth token                                 |
+| `NEXT_PUBLIC_SENTRY_DSN`                              | Browser error reporting                          |
+| `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Source map upload at build                       |
+| `BLUEDOOR_WEBHOOK_SECRET`                             | HMAC verification for Bluedoor webhooks          |
+| `CRON_SECRET`                                         | Bearer auth for Vercel cron → `/api/cron/enrich` |
+| `RESEND_API_KEY`                                      | Email alerts when postings change                |
+| `EMAIL_FROM`                                          | Verified sender address                          |
+| `NEXT_PUBLIC_APP_URL`                                 | Base URL for email deep-links                    |
+| `AI_SERVICE_URL`                                      | FastAPI base URL (Phase 2)                       |
+| `AI_SERVICE_SECRET`                                   | Shared secret for `/api/ai/pipeline` proxy       |
 
-**Without Redis:** app uses in-memory cache + BroadcastChannel (single instance / same browser).  
-**Without Sentry:** error boundaries still work; errors are not reported externally.
-
-**Schema:** only the `Job` model is used. Legacy `Task`, `Tour`, and `Token` tables were removed — run `npx prisma migrate deploy` (or `db push`) after pulling.
+**Without Redis:** in-memory cache + BroadcastChannel (single instance / same browser).  
+**Without Sentry:** error boundaries still work; errors are not reported externally.  
+**Without Resend:** `sendPostingChangeEmail()` is a graceful no-op.  
+**Without AI service:** `/api/ai/pipeline` returns 500; `AiInsightsPanel` shows error state.  
+**Bluedoor API:** free, no API key — enrichment and discover work out of the box.
 
 ---
 
@@ -361,6 +423,19 @@ model Job {
   location  String
   status    String   // pending | interview | declined
   mode      String   // full-time | part-time | internship
+
+  applyUrl              String?   // URL user applied through
+  bluedoorJobId           String?   // Bluedoor match ID
+  bluedoorOrgId           String?
+  bluedoorProvider        String?   // greenhouse | lever | ashby | workday
+  bluedoorStatus          String?   // active | expired | unknown
+  bluedoorWorkplaceType   String?   // remote | hybrid | on_site
+  bluedoorSalaryMin       Float?
+  bluedoorSalaryMax       Float?
+  bluedoorSalaryCurrency  String?
+  bluedoorDescHash        String?   // detects JD edits
+  bluedoorSyncedAt        DateTime?
+  bluedoorChangedAt       DateTime?
 }
 ```
 
@@ -369,26 +444,11 @@ Each job belongs to one Clerk user via `clerkId`. Server actions always filter b
 ### Commands
 
 ```bash
-# Generate Prisma Client after schema changes
-npm run prisma:generate
-
-# Push schema to database (dev)
-npm run prisma:push
-
-# Open visual DB browser
-npm run prisma:studio
-
-# Seed sample data
-npm run db:seed
+npm run prisma:generate   # Generate Prisma Client after schema changes
+npm run prisma:push       # Push schema to database (dev)
+npm run prisma:studio     # Open visual DB browser
+npm run db:seed           # Seed sample data
 ```
-
-### Utility scripts
-
-| Script              | Command                     | Purpose                 |
-| ------------------- | --------------------------- | ----------------------- |
-| Inspect DB          | `npm run db:inspect`        | Debug database contents |
-| Seed test user jobs | `npm run db:seed-test-user` | Populate demo data      |
-| Fix status values   | `npm run db:fix-status`     | Data cleanup migration  |
 
 ---
 
@@ -401,7 +461,7 @@ npm run db:seed
 | `npm start`         | Run production server                               |
 | `npm run lint`      | ESLint                                              |
 | `npm run typecheck` | TypeScript check                                    |
-| `npm test`          | Vitest unit tests (20 tests)                        |
+| `npm test`          | Vitest unit tests (49 tests)                        |
 
 **Full verification (recommended before deploy):**
 
@@ -420,7 +480,8 @@ npm run lint && npm run typecheck && npm test && npm run build
 | `/sign-up`        | Public    | Custom sign-up form + email verification           |
 | `/dashboard`      | Protected | Main jobs dashboard (list, search, Add Job dialog) |
 | `/dashboard/[id]` | Protected | Opens edit job dialog for direct URL sharing       |
-| `/stats`          | Protected | Stats cards + Recharts trend graph                 |
+| `/discover`       | Protected | Bluedoor job search — filter, track applications   |
+| `/stats`          | Protected | Stats cards, KPIs, 4 chart sections                |
 | `/user-profile`   | Protected | Clerk user profile management                      |
 
 **Legacy redirects** (handled in `proxy.ts`):
@@ -434,27 +495,36 @@ npm run lint && npm run typecheck && npm test && npm run build
 
 ## API Endpoints
 
-This project uses **Server Actions** for most data operations. Two HTTP routes exist:
+This project uses **Server Actions** for most data operations. HTTP routes:
 
 ### `GET /api/jobs/events`
 
-- **Purpose:** Server-Sent Events stream for cache invalidation after CRUD
+- **Purpose:** Server-Sent Events — cache invalidation + in-app notifications
 - **Auth:** Clerk session required (401 if unauthenticated)
 - **Used by:** `hooks/useJobsCacheSync.ts`
-- **Flow:** Client opens EventSource → receives invalidation events → React Query refetches
+- **Events:** `{ type: 'invalidate' }` and `{ type: 'notify', payload }`
 
-```typescript
-// Simplified client usage (inside useJobsCacheSync)
-const source = new EventSource("/api/jobs/events");
-source.onmessage = (event) => {
-  const { jobId } = JSON.parse(event.data);
-  invalidateAllJobQueries(queryClient, jobId, { broadcast: false });
-};
-```
+### `POST /api/bluedoor/webhook`
+
+- **Purpose:** Receive Bluedoor lifecycle events (posting closed, JD changed, etc.)
+- **Auth:** HMAC-SHA256 via `BLUEDOOR_WEBHOOK_SECRET`
+- **Flow:** Verify signature → `resyncJob()` for affected tracked jobs → notify user
+
+### `GET /api/cron/enrich`
+
+- **Purpose:** Nightly batch re-sync of all Bluedoor-linked jobs
+- **Auth:** Bearer `CRON_SECRET` (Vercel cron at 03:00 UTC)
+- **Schedule:** Defined in `vercel.json`
+
+### `POST /api/ai/pipeline`
+
+- **Purpose:** Proxy to Python FastAPI 9-agent pipeline
+- **Auth:** Clerk session + `X-Internal-Secret` header
+- **Requires:** `AI_SERVICE_URL` + `AI_SERVICE_SECRET`
 
 ### `POST /api/monitoring`
 
-- **Purpose:** Sentry browser tunnel (same-origin proxy so ad blockers don't block error reports)
+- **Purpose:** Sentry browser tunnel (same-origin proxy)
 - **Optional:** Only active when `NEXT_PUBLIC_SENTRY_DSN` is set
 
 ---
@@ -463,16 +533,21 @@ source.onmessage = (event) => {
 
 All server-side data logic lives in `utils/actions.ts` with `"use server"`.
 
-| Action                                          | Purpose                               |
-| ----------------------------------------------- | ------------------------------------- |
-| `createJobAction(values)`                       | Create a new job for current user     |
-| `getAllJobsAction({ search, jobStatus, page })` | Paginated, filtered job list          |
-| `getSingleJobAction(id)`                        | Single job (redirects if not found)   |
-| `updateJobAction(id, values)`                   | Update existing job                   |
-| `deleteJobAction(id)`                           | Delete job                            |
-| `getStatsAction()`                              | Pending / interview / declined counts |
-| `getChartsDataAction()`                         | Monthly application counts (6 months) |
-| `getAllJobsForDownloadAction()`                 | All jobs for CSV/Excel export         |
+| Action                                                              | Purpose                                                     |
+| ------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `createJobAction(values)`                                           | Create job; triggers `after()` enrichment if `applyUrl` set |
+| `getAllJobsAction({ search, jobStatus, jobMode, monthYear, page })` | Paginated filtered list                                     |
+| `getJobFilterOptionsAction()`                                       | Distinct months for month filter dropdown                   |
+| `getSingleJobAction(id)`                                            | Single job (redirects if not found)                         |
+| `updateJobAction(id, values)`                                       | Update job; re-enrich if applyUrl changed                   |
+| `deleteJobAction(id)`                                               | Delete job                                                  |
+| `getStatsAction()`                                                  | Pending / interview / declined + mode breakdown             |
+| `getChartsDataAction()`                                             | Monthly application counts (6 months)                       |
+| `getWeeklyChartsDataAction()`                                       | Weekly velocity (12 weeks)                                  |
+| `getAllJobsForDownloadAction()`                                     | All jobs for CSV/Excel export                               |
+| `enrichJobAction(jobId)`                                            | Manual Bluedoor enrichment trigger                          |
+| `searchBluedoorJobsAction(params)`                                  | Discover page — live Bluedoor search                        |
+| `getBluedoorJobDetailsAction(jobId)`                                | On-demand full posting detail for modal                     |
 
 **Security pattern** (every action):
 
@@ -486,39 +561,21 @@ async function authenticateAndRedirect(): Promise<string> {
 
 Prisma queries always include `clerkId: userId` so users cannot access each other's data.
 
-**Validation** (shared Zod schema):
-
-```typescript
-export const createAndEditJobSchema = z.object({
-  position: z.string().min(2),
-  company: z.string().min(2),
-  location: z.string().min(2),
-  status: z.nativeEnum(JobStatus),
-  mode: z.nativeEnum(JobMode),
-});
-```
-
 ---
 
 ## Authentication
 
 ### Clerk integration
 
-- **Middleware:** `proxy.ts` protects `/dashboard`, `/stats`, `/user-profile`
-- **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards, no Clerk footer
+- **Middleware:** `proxy.ts` protects `/dashboard`, `/discover`, `/stats`, `/user-profile`
+- **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards
 - **OAuth:** `AuthOAuthButtons` + `lib/auth/clerk-oauth.ts`
 - **Demo login:** `TryDemoAccountButton` + `useGuestSignIn` (test credentials in dev)
+- **SSR user:** `dashboard/layout.tsx` → `currentUser()` → `NavUserProvider`
 
 ### Post-auth redirect
 
 After sign-in or sign-up, users land on **`/dashboard`**.
-
-### Reusing auth in another project
-
-1. Install `@clerk/nextjs`
-2. Add `proxy.ts` (or `middleware.ts` on older Next.js) with `clerkMiddleware`
-3. Wrap app in `<ClerkProvider>` in root layout
-4. Call `auth()` in server actions to get `userId`
 
 ---
 
@@ -527,40 +584,127 @@ After sign-in or sign-up, users land on **`/dashboard`**.
 ### React Query keys (`lib/query-keys.ts`)
 
 ```typescript
-queryKeys.jobs.list(search, jobStatus, jobMode, monthYear, page);
-// ['jobs', search, jobStatus, jobMode, monthYear, page]
-queryKeys.jobs.filterOptions; // ['jobs', 'filter-options']
-queryKeys.stats.all; // ['stats']
-queryKeys.charts.all; // ['charts']
-queryKeys.job.detail(id); // ['job', id]
+queryKeys.jobs.list(search, jobStatus, jobMode, monthYear, page)
+queryKeys.jobs.filterOptions          // ['jobs', 'filter-options']
+queryKeys.stats.all                   // ['stats']
+queryKeys.charts.all                  // ['charts']
+queryKeys.chartsWeekly.all            // ['charts-weekly']
+queryKeys.job.detail(id)              // ['job', id]
+queryKeys.discover.search(q, …)       // NOT persisted
+queryKeys.discover.detail(jobId)      // NOT persisted
+queryKeys.ai.pipeline(jobId)            // NOT persisted
 ```
 
 ### Optimistic mutations (`hooks/useJobsMutation.ts`)
 
-- **Create:** prepends new job to list cache instantly
+- **Create:** prepends new job to list + bumps stats + charts
 - **Delete:** removes job from cache before server confirms
-- **Update:** patches job detail + list entries
+- **Update:** patches job detail + list + stats (if status/mode changed)
 
-On settle, `invalidateAllJobQueries` ensures server truth wins.
+On success: `invalidateAllJobQueries` (+ BroadcastChannel).  
+On settled: same invalidation without re-broadcast (avoids ping-pong).
 
 ### Server cache (`lib/jobs/queries.ts`)
 
-Uses Next.js `unstable_cache` with per-user tags from `lib/cache-tags.ts`. Optional Redis layer in `lib/redis.ts` adds read-through caching for production.
+Uses Next.js `unstable_cache` with per-user tags from `lib/cache-tags.ts`. Optional Redis in `lib/redis.ts` adds read-through caching for production.
+
+### localStorage persist (`lib/query-persist.ts`)
+
+Persists `jobs`, `stats`, `charts`, `charts-weekly`, `job` keys — **not** `discover` or `ai` (live/external data).
 
 ### Hydration-safe dates
 
-`lib/format-date.ts` formats job dates in **UTC** so SSR and client render identical text (prevents React hydration mismatch):
+`lib/format-date.ts` formats job dates in **UTC** so SSR and client render identical text (prevents React hydration mismatch).
 
-```typescript
-export function formatJobDate(value: Date | string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(value));
-}
+---
+
+## Bluedoor Enrichment & Discover
+
+### What is Bluedoor?
+
+[Bluedoor Job Postings API](https://bluedoor.sh/apis/job-postings) tracks 1.8M+ US job postings across Greenhouse, Lever, Ashby, Workday, and 30+ ATS providers. **Free, no API key required.**
+
+### Enrichment flow
+
+```text
+User saves job with applyUrl
+  └─ after() → enrichJob(jobId, userId)
+       └─ findBluedoorMatch (ATS key → URL match → fuzzy company+title)
+       └─ buildEnrichmentPatch → Prisma update
+       └─ invalidateUserJobCaches → SSE → dashboard badge updates
 ```
+
+**Badges on job cards:** LIVE · CLOSED · JD CHANGED · SALARY · Syncing
+
+### Discover page (`/discover`)
+
+- Glass filter bar (country, workplace, employment type, salary)
+- SSR prefetch + TanStack Query with `placeholderData` (no grid flash on filter change)
+- **Track Application** uses `useCreateJobMutation` → dashboard updates instantly
+- Location strings cleaned (semicolon-joined multi-location → first entry only)
+
+### Key files
+
+| File                                        | Role                                       |
+| ------------------------------------------- | ------------------------------------------ |
+| `lib/bluedoor/client.ts`                    | API client, search, facets, ATS URL parser |
+| `lib/bluedoor/enrich.ts`                    | Match strategies, enrich, resync           |
+| `components/discover/discover-job-card.tsx` | Result card + track button                 |
+| `components/jobs/job-enrichment-badge.tsx`  | Live status badge                          |
+
+---
+
+## Notifications & Email Alerts
+
+### In-app notifications
+
+- **SSE bus:** `lib/jobs-events.ts` multiplexes `invalidate` and `notify` events
+- **Provider:** `context/notifications-context.tsx` — max 50, read/unread state
+- **Bell:** `components/layout/notification-bell.tsx` — badge + popover list
+- **Cross-tab:** `useJobsCacheSync` relays `notify` via BroadcastChannel `jobify-notifications`
+
+Triggered when Bluedoor resync detects: posting closed, JD changed, salary added.
+
+### Email (optional)
+
+- **Resend:** `lib/notifications/email.ts` — lazy import, no-op without `RESEND_API_KEY`
+- Requires `EMAIL_FROM` and `NEXT_PUBLIC_APP_URL` for deep-links
+
+---
+
+## AI Pipeline (Phase 2)
+
+Scaffolded — requires `python-ai-service/` running separately.
+
+### Architecture
+
+```text
+AiInsightsPanel (client)
+  └─ useAIPipeline → POST /api/ai/pipeline (Clerk auth)
+       └─ X-Internal-Secret → FastAPI /pipeline
+            └─ 9-agent pipeline:
+                 Extractor → Analyzer → Preprocessor → Optimizer
+                 → Synthesizer → Validator → Assembler → View → Final Verifier
+            └─ LLM fallback: Ollama → Groq → OpenRouter → Anthropic Haiku
+```
+
+### Run Python service locally
+
+```bash
+cd python-ai-service
+cp .env.example .env
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+```
+
+Set in `.env.local`:
+
+```env
+AI_SERVICE_URL=http://localhost:8000
+AI_SERVICE_SECRET=change-me-in-production
+```
+
+See `docs/PROJECT_PLAN.md` for Coolify VPS deployment and n8n automation roadmap.
 
 ---
 
@@ -568,40 +712,44 @@ export function formatJobDate(value: Date | string): string {
 
 ### Layout & navigation
 
-| Component       | Path                                   | Reuse                                                    |
-| --------------- | -------------------------------------- | -------------------------------------------------------- |
-| `NavShell`      | `components/layout/nav-shell.tsx`      | Fixed glass navbar chrome — compose with any nav content |
-| `LandingNav`    | `components/layout/landing-nav.tsx`    | Marketing page nav + theme toggle                        |
-| `DashboardNav`  | `components/layout/dashboard-nav.tsx`  | Authenticated top nav with pills + avatar                |
-| `PageContainer` | `components/layout/page-container.tsx` | Consistent max-width page wrapper                        |
-| `GlassCard`     | `components/ui/glass-card.tsx`         | Frosted card variants (`neutral`, `sky`, `violet`)       |
+| Component              | Path                                    | Reuse                                               |
+| ---------------------- | --------------------------------------- | --------------------------------------------------- |
+| `NavShell`             | `components/layout/nav-shell.tsx`       | Fixed glass navbar chrome                           |
+| `DashboardNav`         | `components/layout/dashboard-nav.tsx`   | Authenticated nav + notification bell               |
+| `GlassCard`            | `components/ui/glass-card.tsx`          | Frosted card variants (`neutral`, `sky`, `violet`…) |
+| `PageSectionHeader`    | `components/ui/page-section-header.tsx` | Icon + title + subtitle + badge                     |
+| `GlassDropdownTrigger` | `components/ui/glass-dropdown-menu.tsx` | Shared filter dropdown pattern                      |
 
-**Example — reuse NavShell:**
+### Dashboard
 
-```tsx
-import { NavShell } from "@/components/layout/nav-shell";
+| Component                        | Purpose                                          |
+| -------------------------------- | ------------------------------------------------ |
+| `JobsGrid` / `JobCardShell`      | Static card chrome; skeleton only on text slots  |
+| `JobCard`                        | Single job card + enrichment badge + edit/delete |
+| `JobsFilterBar`                  | Glass search + dropdown filters (URL-driven)     |
+| `AddJobDialog` / `EditJobDialog` | Modal forms                                      |
+| `DownloadDropdown`               | CSV/Excel export                                 |
+| `AiInsightsPanel`                | On-demand AI fit score + cover letter (Phase 2)  |
 
-export function MyNav() {
-  return (
-    <NavShell>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-    </NavShell>
-  );
-}
-```
+### Discover
 
-### Dashboard components
+| Component                | Purpose                                       |
+| ------------------------ | --------------------------------------------- |
+| `DiscoverFilters`        | Glass filter bar in `GlassCard variant="sky"` |
+| `DiscoverJobCard`        | Result card + Track Application               |
+| `DiscoverResults`        | TanStack Query grid + static card shells      |
+| `DiscoverResultsToolbar` | Live posting count badge                      |
 
-| Component                            | Purpose                                   |
-| ------------------------------------ | ----------------------------------------- |
-| `JobsList`                           | React Query job grid with search params   |
-| `JobCard`                            | Single job card with edit dialog + delete |
-| `SearchForm`                         | URL-synced search + status filter         |
-| `AddJobDialog`                       | Modal with `CreateJobForm`                |
-| `EditJobDialog`                      | Modal with `EditJobForm`                  |
-| `DownloadDropdown`                   | CSV/Excel export                          |
-| `StatsContainer` / `ChartsContainer` | Stats page widgets                        |
+### Stats
+
+| Component                 | Purpose                                       |
+| ------------------------- | --------------------------------------------- |
+| `StatsContainer`          | 3 status cards (pending, interview, declined) |
+| `StatsKpiRow`             | Response rate, interview rate, top job type   |
+| `ApplicationTrendChart`   | Monthly bar + projected line                  |
+| `WeeklyVelocityChart`     | 12-week area chart                            |
+| `StatusDistributionChart` | Donut chart                                   |
+| `ModeDistributionChart`   | Horizontal bar chart                          |
 
 ### Forms
 
@@ -614,27 +762,21 @@ Both forms accept a **`standalone`** prop:
 <CreateJobForm standalone={false} onSuccess={() => setOpen(false)} />
 ```
 
-### Landing page
-
-| Component               | Purpose                                       |
-| ----------------------- | --------------------------------------------- |
-| `HeroVisualCarousel`    | SVG carousel with glow + LCP-optimized images |
-| `ScrollStagger`         | Viewport-triggered stagger animations         |
-| `ScrollParallaxSection` | Subtle parallax sections                      |
-| `TryDemoAccountButton`  | One-click demo sign-in                        |
-
 ---
 
 ## Custom Hooks
 
-| Hook                   | File                  | Purpose                              |
-| ---------------------- | --------------------- | ------------------------------------ |
-| `useCreateJobMutation` | `useJobsMutation.ts`  | Optimistic job creation              |
-| `useUpdateJobMutation` | `useJobsMutation.ts`  | Optimistic job update                |
-| `useDeleteJobMutation` | `useJobsMutation.ts`  | Optimistic job delete                |
-| `useJobsCacheSync`     | `useJobsCacheSync.ts` | SSE + BroadcastChannel invalidation  |
-| `useGuestSignIn`       | `useGuestSignIn.ts`   | Demo account login flow              |
-| `useSignUpForm`        | `useSignUpForm.ts`    | Multi-step sign-up with email verify |
+| Hook                     | File                        | Purpose                             |
+| ------------------------ | --------------------------- | ----------------------------------- |
+| `useCreateJobMutation`   | `useJobsMutation.ts`        | Optimistic job creation             |
+| `useUpdateJobMutation`   | `useJobsMutation.ts`        | Optimistic job update               |
+| `useDeleteJobMutation`   | `useJobsMutation.ts`        | Optimistic job delete               |
+| `useJobsCacheSync`       | `useJobsCacheSync.ts`       | SSE + BroadcastChannel invalidation |
+| `useJobsListParams`      | `useJobsListParams.ts`      | URL-driven dashboard filter state   |
+| `useJobsListBodyLoading` | `useJobsListBodyLoading.ts` | Skeleton only on cold cache         |
+| `useAIPipeline`          | `useAIPipeline.ts`          | AI insights mutation                |
+| `useGuestSignIn`         | `useGuestSignIn.ts`         | Demo account login flow             |
+| `useNavUserSession`      | `useNavUserSession.ts`      | SSR avatar + Clerk useUser          |
 
 **Reuse `useJobsMutation` in another project:**
 
@@ -651,75 +793,54 @@ Both forms accept a **`standalone`** prop:
 
 ```tsx
 // app/(dashboard)/dashboard/page.tsx
-import { parseJobsListFiltersFromSearchParamsRecord } from '@/lib/jobs/filter-params';
-
 export const dynamic = "force-dynamic";
 
 async function DashboardPage({ searchParams }) {
-  const params = await searchParams;
-  const filters = parseJobsListFiltersFromSearchParamsRecord(params);
+  const filters = parseJobsListFiltersFromSearchParamsRecord(
+    await searchParams,
+  );
   const queryClient = new QueryClient();
 
-  // void — shell renders instantly; prefetch does not block
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.jobs.list(
-      filters.search,
-      filters.jobStatus,
-      filters.jobMode,
-      filters.monthYear,
-      filters.page,
-    ),
-    queryFn: () =>
-      getAllJobsAction({
-        search: filters.search,
-        jobStatus: filters.jobStatus,
-        jobMode: filters.jobMode,
-        monthYear: filters.monthYear,
-        page: filters.page,
-      }),
-  });
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.jobs.filterOptions,
-    queryFn: () => getJobFilterOptionsAction(),
-  });
-  void queryClient.prefetchQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-  });
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.jobs.list(/* … */),
+      queryFn: () =>
+        getAllJobsAction({
+          /* … */
+        }),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.stats.all,
+      queryFn: () => getStatsAction(),
+    }),
+  ]);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <DashboardPageHeader />
-      <PageSectionHeader {...filterCopy} icon={SlidersHorizontal} className="mb-2" />
-      <JobsFilterBar />
+      <JobsFilterSection />
       <JobsResultsToolbar />
       <JobsGrid />
-      <div className="mt-8 flex w-full justify-center">
-        <JobsPagination />
-      </div>
     </HydrationBoundary>
   );
 }
 ```
 
-```tsx
-// hooks/useJobsListQuery.ts (client)
-"use client";
-const { data, isPending } = useJobsListQuery();
-// Internally: parseJobsListFilters(searchParams) + queryKeys.jobs.list(...)
-```
-
-### Creating a job (optimistic)
+### Track a job from Discover
 
 ```tsx
-const createMutation = useCreateJobMutation();
-createMutation.mutate({
-  position: "Frontend Engineer",
-  company: "Acme Corp",
-  location: "Remote",
-  status: "pending",
-  mode: "full-time",
+// components/discover/discover-job-card.tsx
+const { mutate, isPending } = useCreateJobMutation();
+
+mutate({
+  position: job.title,
+  company: job.org_id,
+  location: cleanLocation(job.location_text ?? job.country ?? "Unknown"),
+  status: JobStatus.Pending,
+  mode: toJobMode(job.employment_type),
+  applyUrl: job.apply_url,
 });
+// → optimistic dashboard update + invalidateAllJobQueries + Bluedoor enrichment
 ```
 
 ### Protected middleware
@@ -728,14 +849,12 @@ createMutation.mutate({
 // proxy.ts
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
+  "/discover(.*)",
   "/stats",
   "/user-profile(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (pathname.startsWith("/jobs") || pathname === "/add-job") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
   if (isProtectedRoute(req)) await auth.protect();
 });
 ```
@@ -744,7 +863,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 ## Testing & Quality
 
-Tests live in `lib/__tests__/` and `hooks/__tests__/`.
+Tests live in `lib/__tests__/`, `hooks/__tests__/`, and `components/__tests__/`.
 
 | Test file                  | Covers                                 |
 | -------------------------- | -------------------------------------- |
@@ -753,14 +872,12 @@ Tests live in `lib/__tests__/` and `hooks/__tests__/`.
 | `invalidate-jobs.test.ts`  | Client cache invalidation              |
 | `cache-tags.test.ts`       | Per-user cache tags                    |
 | `chart-optimistic.test.ts` | Optimistic chart patches               |
-| `stats-optimistic.test.ts` | Optimistic stats portfolio patches     |
-| `filter-params.test.ts`    | URL filter parse/build/clear helpers   |
+| `stats-optimistic.test.ts` | Optimistic stats patches               |
+| `filter-params.test.ts`    | URL filter parse/build/clear           |
 | `useJobsMutation.test.ts`  | Optimistic list mutations              |
 
-Run tests:
-
 ```bash
-npm test
+npm test   # 49 tests
 ```
 
 ---
@@ -781,28 +898,33 @@ npm test
 - [ ] `DATABASE_URL` + `DIRECT_URL` in Vercel env
 - [ ] Clerk redirect URLs include your production domain
 - [ ] Optional: Upstash Redis for multi-instance cache/SSE
+- [ ] Optional: `CRON_SECRET` for nightly Bluedoor re-sync
+- [ ] Optional: `BLUEDOOR_WEBHOOK_SECRET` for live webhook events
+- [ ] Optional: Resend for email alerts
 - [ ] Optional: Sentry DSN + auth token for source maps
+- [ ] Optional: Python AI service on Coolify VPS
 
-See also: `docs/VERCEL_PRODUCTION_GUARDRAILS.md`
+See also: `docs/VERCEL_PRODUCTION_GUARDRAILS.md`, `docs/PROJECT_PLAN.md`
 
 ---
 
 ## Keywords
 
-`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `Clerk authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `Redis Streams` · `Upstash` · `Job tracker` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
+`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `Clerk authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `BroadcastChannel` · `Redis Streams` · `Upstash` · `Bluedoor API` · `Job enrichment` · `Job discovery` · `Resend email` · `FastAPI` · `Ollama` · `LLM pipeline` · `Job tracker CRM` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
 
 ---
 
 ## Conclusion
 
-Jobify demonstrates how a modern full-stack application combines **secure authentication**, **type-safe data access**, **performant caching**, and **polished UX** in a single Next.js codebase. Use it to:
+Jobify demonstrates how a modern full-stack application combines **secure authentication**, **type-safe data access**, **live external API enrichment**, **performant multi-layer caching**, and **polished UX** in a single Next.js codebase. Use it to:
 
 - Learn App Router patterns (SSR, Server Actions, Client Components)
 - Study production-ready cache and invalidation strategies
-- Fork as a starter for dashboards, CRMs, or any CRUD app
+- Understand how to integrate a free external API (Bluedoor) without breaking your architecture
+- Fork as a starter for dashboards, CRMs, or any CRUD app with live data enrichment
 - Teach full-stack concepts with real, runnable code
 
-Explore `docs/PROJECT_WALKTHROUGH.md` for a shorter agent-oriented reference, and `docs/` for deeper guides on auth, styling, and integrations.
+Explore `docs/PROJECT_WALKTHROUGH.md` for a shorter technical reference, `docs/PROJECT_PLAN.md` for the Phase 2 AI roadmap, and `docs/JOBIFY_TECH_STACK_ANALYSIS.md` for stack deep-dives.
 
 ---
 

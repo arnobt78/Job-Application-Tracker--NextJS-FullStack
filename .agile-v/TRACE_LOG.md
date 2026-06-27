@@ -69,3 +69,8 @@
 | 2026-06-27T18:20:00Z | prove | red-team-verifier | REQ-0025, REQ-0026, REQ-0027 | EVAL-0009 lint/typecheck/test(49)/build PASS post Phase 1+2 | SUCCESS |
 | 2026-06-27T19:00:00Z | prove | red-team-verifier | REQ-0025, REQ-0026, REQ-0027 | EVAL-0010 full deep audit; fixed publishNotification missing in enrich.ts; lint/typecheck/test(49)/build PASS | SUCCESS |
 | 2026-06-27T19:00:00Z | evolve | documentation-agent | REQ-0024, REQ-0025, REQ-0026, REQ-0027 | Sync CLAUDE.md, PROJECT_WALKTHROUGH.md, .env.example, .agile-v STATE/BACKLOG/VALIDATION | SUCCESS |
+
+| 2026-06-27T19:30:00Z | orchestrate | build-agent-js | REQ-0026, REQ-0027 | Wire AiInsightsPanel into /dashboard/[id] (JobDetailPanels) + /discover Details modal | SUCCESS |
+| 2026-06-27T19:30:00Z | orchestrate | build-agent-js | REQ-0026 | Posting Activity tab: getJobEvents() client + getBluedoorJobEventsAction + PostingActivityTab + JobDetailPanels + discover.events query key | SUCCESS |
+| 2026-06-27T19:30:00Z | prove | red-team-verifier | REQ-0025, REQ-0026, REQ-0027 | EVAL-0011 lint/typecheck/test(49)/build PASS; no console.log; no dead imports | SUCCESS |
+| 2026-06-27T19:30:00Z | evolve | documentation-agent | REQ-0024 | Sync CLAUDE.md, PROJECT_WALKTHROUGH.md, .agile-v STATE/BACKLOG/VALIDATION/TRACE | SUCCESS |

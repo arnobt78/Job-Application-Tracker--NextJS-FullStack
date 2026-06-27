@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | **Cycle** | C1 |
-| **Stage** | 3 Synthesis — **Phase 1+2 complete** (uncommitted, pre-commit audit done) |
+| **Stage** | 3 Synthesis — **Phase 1+2 complete + Posting Activity tab** (uncommitted) |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
-| **Pipeline** | Phase 1 complete + Phase 2 scaffolded → pre-commit audit PASS → ready to commit |
-| **Last Updated** | 2026-06-27T18:30:00Z |
-| **Git HEAD** | `1a1bec0` (+ Phase 1+2 **uncommitted**, audit+docs updated) |
+| **Pipeline** | Phase 1+2 + Posting Activity tab → audit PASS (EVAL-0011) → ready to commit |
+| **Last Updated** | 2026-06-27T19:30:00Z |
+| **Git HEAD** | `1a1bec0` (+ Phase 1+2 + Posting Activity **uncommitted**) |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -62,14 +62,16 @@
 | **Phase 1 completion** — SSE notification bus + bell + discover details modal + cursor pagination + Resend emails | REQ-0025, REQ-0026 |
 | **Phase 2 scaffold** — FastAPI 9-agent pipeline + LLM router + AiInsightsPanel | REQ-0027 |
 | **publishNotification fix** — enrich.ts now fires SSE bell on posting change | REQ-0026 |
+| **AiInsightsPanel wired** — `/dashboard/[id]` + `/discover` Details modal | REQ-0027 |
+| **Posting Activity tab** — `JobDetailPanels` tabbed AI+timeline; `getJobEvents()` client + server action | REQ-0026 |
 
 **Verify @ local (`2026-06-27`):** lint ✓ typecheck ✓ test **49/49** ✓ build ✓ (all 5 API routes)
 
 ## Active Backlog
 
-**BL-0008** (READY TO COMMIT) — Phase 1+2 implemented, pre-commit audit PASS  
+**BL-0008** (READY TO COMMIT) — Phase 1+2 + Posting Activity tab implemented, audit PASS  
 **BL-0009** (SCAFFOLDED) — Phase 2 Python service ready; needs Coolify deploy + real LLM keys  
-Next: git commit · manual QA discover/enrich/bell/AI panel · Gate 1 · BL-0003 E2E
+Next: git commit · manual QA discover/enrich/bell/AI panel/activity tab · Gate 1 · BL-0003 E2E
 
 ## Gates
 

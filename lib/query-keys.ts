@@ -40,6 +40,8 @@ export const queryKeys = {
       ['discover', 'search', q, country, workplaceType, employmentType, salaryExists] as const,
     // Full job detail — fetched on demand when user opens View Details modal
     detail: (jobId: string) => ['discover', 'detail', jobId] as const,
+    // Posting lifecycle events — fetched on demand in Posting Activity tab
+    events: (bluedoorJobId: string) => ['discover', 'events', bluedoorJobId] as const,
   },
   // AI pipeline — per-job insights (fit score, cover letter, interview angles).
   // NOT persisted: LLM output changes each run; user regenerates on demand.

@@ -8,6 +8,7 @@
 
 import type {
   BluedoorJob,
+  BluedoorJobEventsResponse,
   BluedoorSearchParams,
   BluedoorSearchResponse,
 } from '@/lib/bluedoor/types';
@@ -119,6 +120,16 @@ export async function getJobDetail(jobId: string): Promise<BluedoorJob> {
     `/jobs/${encodeURIComponent(jobId)}?include=description`
   );
   return res.data;
+}
+
+/** GET /v1/jobs/{job_id}/events — posting lifecycle events (status changes, JD edits, salary) */
+export async function getJobEvents(
+  bluedoorJobId: string,
+  limit = 20
+): Promise<BluedoorJobEventsResponse> {
+  return bluedoorFetch<BluedoorJobEventsResponse>(
+    `/jobs/${encodeURIComponent(bluedoorJobId)}/events?limit=${limit}`
+  );
 }
 
 // ─────────────────────────────────────────────

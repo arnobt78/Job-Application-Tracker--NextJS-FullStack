@@ -17,8 +17,8 @@ import {
 } from "@/lib/jobs/queries";
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
 import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
-import type { BluedoorJob, BluedoorSearchResponse } from "@/lib/bluedoor/types";
-import { getJobDetail, searchJobs } from "@/lib/bluedoor/client";
+import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse } from "@/lib/bluedoor/types";
+import { getJobDetail, getJobEvents, searchJobs } from "@/lib/bluedoor/client";
 import type { DiscoverSearchParams } from "@/lib/bluedoor/types";
 
 async function authenticateAndRedirect(): Promise<string> {
@@ -292,6 +292,24 @@ export async function getBluedoorJobDetailsAction(
   } catch (error) {
     console.error('[getBluedoorJobDetailsAction] error:', error);
     return null;
+  }
+}
+
+/**
+ * Fetch posting lifecycle events for a Bluedoor-linked job.
+ * Called from PostingActivityTab when user opens the Activity panel.
+ */
+export async function getBluedoorJobEventsAction(
+  bluedoorJobId: string
+): Promise<BluedoorJobEvent[]> {
+  await authenticateAndRedirect();
+
+  try {
+    const res = await getJobEvents(bluedoorJobId);
+    return res.data;
+  } catch (error) {
+    console.error('[getBluedoorJobEventsAction] error:', error);
+    return [];
   }
 }
 

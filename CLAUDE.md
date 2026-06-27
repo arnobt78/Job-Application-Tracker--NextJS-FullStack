@@ -46,12 +46,12 @@ Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL 
 - Types: `lib/ai/pipeline-client.ts`
 
 ## Query keys
-`jobs.list(…)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)` · `discover.search(…)` · `discover.detail(id)` · `ai.pipeline(id)`
+`jobs.list(…)` · `jobs.filterOptions` · `stats` · `charts` · `job(id)` · `discover.search(…)` · `discover.detail(id)` · `discover.events(bluedoorJobId)` · `ai.pipeline(id)`
 
 ## Routes
 - `/dashboard` — filter bar · results toolbar · `JobCardShell` grid · pagination · enrichment badges
-- `/dashboard/[id]` — edit dialog · await prefetch job
-- `/discover` — Bluedoor search · cursor pagination · Details modal · Track Application → `createJobAction` + enrich
+- `/dashboard/[id]` — edit dialog · `JobDetailPanels` (AI Insights + Posting Activity tabs) · await prefetch job
+- `/discover` — Bluedoor search · cursor pagination · Details modal + AiInsightsPanel · Track Application → `createJobAction` + enrich
 - `/stats` — StatsContainer + ChartsContainer body loading
 - `POST /api/ai/pipeline` — AI proxy (Clerk auth)
 

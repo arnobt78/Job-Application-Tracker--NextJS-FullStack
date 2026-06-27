@@ -3,24 +3,36 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 3 Synthesis — Phase 1+2 complete (pre-commit) |
+| Stage | 3 Synthesis — Phase 1+2 + Posting Activity tab (pre-commit) |
 | Status | `READY_TO_COMMIT` |
-| Last Updated | 2026-06-27T19:00:00Z |
-| Red Team | EVAL-0010 @ local — PASS |
+| Last Updated | 2026-06-27T19:30:00Z |
+| Red Team | EVAL-0011 @ local — PASS |
 
 ## Findings Summary
 
 ```
-Scope: Phase 1+2 complete | Traceability: REQ-0025, REQ-0026, REQ-0027, REQ-0024
-Findings: PASS: 14 / FAIL: 0 / FLAG: 2 (manual QA; Python deploy)
-Bug fixed: publishNotification missing in enrich.ts (SSE bell never fired)
+Scope: Phase 1+2 + Posting Activity tab | Traceability: REQ-0025, REQ-0026, REQ-0027, REQ-0024
+Findings: PASS: 16 / FAIL: 0 / FLAG: 2 (manual QA; Python deploy)
 ```
 
 | Severity | Count | REQ-IDs | Notes |
 |---|---|---|---|
-| PASS | 14 | REQ-0024…0027 | lint/typecheck/test(49)/build all 5 API routes |
+| PASS | 16 | REQ-0024…0027 | lint/typecheck/test(49)/build · AiInsightsPanel wired · Posting Activity tab |
 | FLAG | 2 | REQ-0025, REQ-0027 | Manual: real ATS URL enrich · Python LLM keys + Coolify deploy |
 | FAIL | 0 | — | — |
+
+## EVAL-0011 Evidence (Phase 1+2 + Posting Activity tab)
+
+| Check | Result | Notes |
+|---|---|---|
+| lint | PASS | 0 warnings |
+| typecheck | PASS | 0 errors |
+| test | PASS 49/49 | Vitest |
+| AiInsightsPanel wired | PASS | `JobDetailPanels` `/dashboard/[id]`; `AiInsightsPanel` in Discover Details modal |
+| Posting Activity tab | PASS | `getJobEvents()` client + `getBluedoorJobEventsAction` + `PostingActivityTab` + `JobDetailPanels` tabs |
+| `discover.events` query key | PASS | Added to `lib/query-keys.ts` |
+| no console.log | PASS | grep returned 0 results |
+| dead code | PASS | `AiInsightsPanel` import removed from `EditJobDialogPage` (replaced by `JobDetailPanels`) |
 
 ## EVAL-0010 Evidence (Phase 1+2 deep audit)
 
