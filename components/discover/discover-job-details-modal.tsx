@@ -31,10 +31,12 @@ import {
 import { getBluedoorJobDetailsAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
 import { useCreateJobMutation } from '@/hooks/useJobsMutation';
+import { AiInsightsPanel } from '@/components/jobs/ai-insights-panel';
 import { JobStatus, JobMode } from '@/utils/types';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import type { BluedoorJob } from '@/lib/bluedoor/types';
+import type { PipelineJobInput } from '@/lib/ai/pipeline-client';
 
 // ─────────────────────────────────────────────
 // Helpers (duplicated from discover-job-card to keep modal self-contained)
@@ -80,6 +82,24 @@ function toJobMode(employment_type: string | null): JobMode {
   if (t.includes('contract') || t.includes('1099')) return JobMode.Internship;
   if (t.includes('intern')) return JobMode.Internship;
   return JobMode.FullTime;
+}
+
+/** Map BluedoorJob → PipelineJobInput for the AI pipeline (uses Bluedoor job_id). */
+function toBluedoorPipelineInput(job: BluedoorJob): PipelineJobInput {
+  return {
+    job_id: job.job_id,
+    position: job.title,
+    company: formatOrgName(job.org_id),
+    location: job.location_text ? cleanLocation(job.location_text) : 'Unknown',
+    status: 'pending', // not yet tracked in the user's pipeline
+    mode: toJobMode(job.employment_type),
+    apply_url: job.apply_url ?? null,
+    bluedoor_status: job.active ? 'active' : 'expired',
+    bluedoor_workplace_type: job.workplace_type ?? null,
+    bluedoor_salary_min: job.salary_min ?? null,
+    bluedoor_salary_max: job.salary_max ?? null,
+    bluedoor_salary_currency: job.salary_currency ?? null,
+  };
 }
 
 // ─────────────────────────────────────────────
@@ -207,6 +227,9 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
       ) : (
         <p className="text-xs text-muted-foreground">No description available.</p>
       )}
+
+      {/* AI Insights — on-demand fit score, cover letter, interview angles */}
+      <AiInsightsPanel job={toBluedoorPipelineInput(data)} />
 
       {/* Actions */}
       <div className="flex items-center gap-2">

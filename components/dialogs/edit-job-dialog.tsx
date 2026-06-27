@@ -33,6 +33,12 @@ type EditJobDialogProps = {
    * Typically used to navigate back to /dashboard.
    */
   onExternalClose?: () => void;
+  /**
+   * Optional AI panel rendered below the edit form inside the dialog.
+   * Used by EditJobDialogPage (/dashboard/[id]) to show AiInsightsPanel.
+   * Not rendered on JobCard quick-edit (no full job data available there).
+   */
+  aiPanel?: React.ReactNode;
 };
 
 /**
@@ -47,6 +53,7 @@ export function EditJobDialog({
   showTrigger = false,
   defaultOpen = false,
   onExternalClose,
+  aiPanel,
 }: EditJobDialogProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [open, setOpen] = useState(defaultOpen);
@@ -105,6 +112,12 @@ export function EditJobDialog({
                 formLoading={formLoading}
                 onSuccess={() => handleOpenChange(false)}
               />
+              {/* AI Insights panel — rendered only when full job data available (URL access) */}
+              {aiPanel && (
+                <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+                  {aiPanel}
+                </div>
+              )}
             </div>
           </GlassCard>
         </GlassDialogContent>
