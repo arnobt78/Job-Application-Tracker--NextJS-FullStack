@@ -37,6 +37,7 @@ function CreateJobForm({ onSuccess, standalone = true }: CreateJobFormProps) {
       location: '',
       status: JobStatus.Pending,
       mode: JobMode.FullTime,
+      applyUrl: '',
     },
   });
 
@@ -74,6 +75,13 @@ function CreateJobForm({ onSuccess, standalone = true }: CreateJobFormProps) {
               required
             />
           </div>
+          {/* applyUrl — optional; when provided, Bluedoor enrichment runs automatically */}
+          <CustomFormField
+            name="applyUrl"
+            control={form.control}
+            labelText="apply URL (optional)"
+            placeholder="https://jobs.lever.co/company/…"
+          />
           <Button
             type="submit"
             className="w-full capitalize"

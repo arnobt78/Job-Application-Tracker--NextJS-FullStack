@@ -1,30 +1,40 @@
-import ChartsContainer from "@/components/ChartsContainer";
-import StatsContainer from "@/components/StatsContainer";
-import { GlassCard } from "@/components/ui/glass-card";
-import type { Metadata } from "next";
-import { createPageMetadata } from "@/lib/site-metadata";
-import { queryKeys } from "@/lib/query-keys";
-import { getChartsDataAction, getStatsAction } from "@/utils/actions";
+import StatsContainer from '@/components/StatsContainer';
+import { StatsKpiRow } from '@/components/stats/stats-kpi-row';
+import { ApplicationTrendChart } from '@/components/stats/application-trend-chart';
+import { WeeklyVelocityChart } from '@/components/stats/weekly-velocity-chart';
+import { StatusDistributionChart } from '@/components/stats/status-distribution-chart';
+import { ModeDistributionChart } from '@/components/stats/mode-distribution-chart';
+import { GlassCard } from '@/components/ui/glass-card';
+import { PageSectionHeader } from '@/components/ui/page-section-header';
+import type { Metadata } from 'next';
+import { createPageMetadata } from '@/lib/site-metadata';
+import { queryKeys } from '@/lib/query-keys';
+import {
+  getChartsDataAction,
+  getStatsAction,
+  getWeeklyChartsDataAction,
+} from '@/utils/actions';
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from "@tanstack/react-query";
-import { BarChart2, BarChart3 } from "lucide-react";
+} from '@tanstack/react-query';
+import { BarChart2, TrendingUp, Activity, PieChart } from 'lucide-react';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Statistics",
+  title: 'Statistics',
   description:
-    "Analyze your job track with pending, interview, and declined counts plus application trends over the last six months.",
-  path: "/stats",
+    'Analyze your job applications with trends, velocity charts, status breakdown, and response rate KPIs.',
+  path: '/stats',
   noIndex: true,
 });
 
 async function StatsPage() {
   const queryClient = new QueryClient();
 
+  // SSR prefetch all stats + charts data in parallel
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: queryKeys.stats.all,
@@ -34,29 +44,77 @@ async function StatsPage() {
       queryKey: queryKeys.charts.all,
       queryFn: () => getChartsDataAction(),
     }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.chartsWeekly.all,
+      queryFn: () => getWeeklyChartsDataAction(),
+    }),
   ]);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      {/* Page header */}
       <div className="mb-6">
-        <h1 className="flex items-center gap-2 text-3xl font-bold">
-          <BarChart2 className="h-7 w-7 text-primary" />
-          Statistics
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Track your application trends and status breakdown
-        </p>
+        <PageSectionHeader
+          icon={BarChart2}
+          title="Statistics"
+          subtitle="Track your application trends, velocity, and response rates"
+          headingLevel="h1"
+        />
       </div>
 
+      {/* Main status cards + derived KPI row */}
       <StatsContainer />
+      <StatsKpiRow />
 
-      <GlassCard variant="sky" className="mt-16">
-        <h2 className="mb-6 flex items-center justify-center gap-2 text-center text-4xl font-semibold">
-          <BarChart3 className="h-8 w-8 text-sky-400" />
-          Monthly Applications
-        </h2>
-        <ChartsContainer />
-      </GlassCard>
+      {/* Monthly trend — ComposedChart with 2-month projection */}
+      <div className="mt-12">
+        <PageSectionHeader
+          icon={TrendingUp}
+          title="Monthly Trend"
+          subtitle="Applications per month with projected next month"
+          className="mb-4"
+        />
+        <GlassCard variant="sky">
+          <ApplicationTrendChart />
+        </GlassCard>
+      </div>
+
+      {/* Weekly velocity — Area chart, last 12 weeks */}
+      <div className="mt-10">
+        <PageSectionHeader
+          icon={Activity}
+          title="Weekly Velocity"
+          subtitle="Application pace week-over-week for the last 12 weeks"
+          className="mb-4"
+        />
+        <GlassCard variant="violet">
+          <WeeklyVelocityChart />
+        </GlassCard>
+      </div>
+
+      {/* Application breakdown — status donut + mode bars side by side */}
+      <div className="mt-10">
+        <PageSectionHeader
+          icon={PieChart}
+          title="Application Breakdown"
+          subtitle="Status distribution and job type breakdown"
+          className="mb-4"
+        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <GlassCard variant="emerald">
+            <h3 className="mb-4 text-center text-sm font-semibold text-emerald-300">
+              Status Distribution
+            </h3>
+            <StatusDistributionChart />
+          </GlassCard>
+          <GlassCard variant="amber">
+            <h3 className="mb-4 text-center text-sm font-semibold text-amber-300">
+              Job Type Breakdown
+            </h3>
+            <ModeDistributionChart />
+          </GlassCard>
+        </div>
+      </div>
     </HydrationBoundary>
   );
 }

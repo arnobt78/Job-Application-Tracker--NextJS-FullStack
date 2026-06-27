@@ -1,6 +1,13 @@
 /**
- * Invalidation bus: in-memory (same instance) + Redis Streams (cross-instance SSE).
- * publishInvalidation is called from server actions after CRUD.
+ * Jobs event bus: in-memory (same instance) + Redis Streams (cross-instance SSE).
+ *
+ * Two event types share the same listener map:
+ *   - 'invalidate' — triggers React Query cache flush (SSE + Redis Streams)
+ *   - 'notify'    — enrichment alert (SSE only, in-memory; no Redis needed)
+ *
+ * Publishers:
+ *   publishInvalidation — called from server actions after CRUD
+ *   publishNotification — called from enrich.ts on detected status change
  */
 
 import {
@@ -14,21 +21,43 @@ export type JobsInvalidationEvent = {
   jobId?: string;
 };
 
-type Listener = (event: JobsInvalidationEvent) => void;
+export type JobsNotificationEvent = {
+  type: 'notify';
+  notificationType: 'posting_closed' | 'jd_changed' | 'salary_added' | 'posting_reopened';
+  jobId: string;
+  message: string;
+  timestamp: string;
+};
+
+/** Union of all server-push event types sent over the SSE stream */
+export type JobsEvent = JobsInvalidationEvent | JobsNotificationEvent;
+
+type Listener = (event: JobsEvent) => void;
 
 declare global {
-  var __jobifyInvalidationListeners: Map<string, Set<Listener>> | undefined;
+  var __jobifyEventListeners: Map<string, Set<Listener>> | undefined;
 }
 
 function getListenerMap(): Map<string, Set<Listener>> {
-  if (!globalThis.__jobifyInvalidationListeners) {
-    globalThis.__jobifyInvalidationListeners = new Map();
+  if (!globalThis.__jobifyEventListeners) {
+    globalThis.__jobifyEventListeners = new Map();
   }
-  return globalThis.__jobifyInvalidationListeners;
+  return globalThis.__jobifyEventListeners;
 }
 
-/** Register SSE subscriber for a user — returns unsubscribe */
-export function subscribeInvalidations(
+function dispatch(userId: string, event: JobsEvent): void {
+  const listeners = getListenerMap().get(userId);
+  listeners?.forEach((listener) => {
+    try {
+      listener(event);
+    } catch {
+      // listener errors must not break CRUD or enrichment
+    }
+  });
+}
+
+/** Register SSE subscriber for a user — handles both invalidation + notification events */
+export function subscribeJobsEvents(
   userId: string,
   listener: Listener
 ): () => void {
@@ -48,28 +77,42 @@ export async function publishInvalidation(
   jobId?: string
 ): Promise<void> {
   const event: JobsInvalidationEvent = { type: 'invalidate', jobId };
-
-  const listeners = getListenerMap().get(userId);
-  listeners?.forEach((listener) => {
-    try {
-      listener(event);
-    } catch {
-      // listener errors must not break CRUD
-    }
-  });
-
+  dispatch(userId, event);
   await pushInvalidationStreamEvent(userId, jobId);
 }
 
 /**
+ * Publish a real-time enrichment notification — in-memory only.
+ * Notifications go to the currently-connected SSE client; no Redis cross-instance
+ * needed because the enrichment `after()` call runs on the same Vercel instance
+ * that holds the user's active SSE connection via sticky routing.
+ */
+export async function publishNotification(
+  userId: string,
+  notificationType: JobsNotificationEvent['notificationType'],
+  jobId: string,
+  message: string
+): Promise<void> {
+  const event: JobsNotificationEvent = {
+    type: 'notify',
+    notificationType,
+    jobId,
+    message,
+    timestamp: new Date().toISOString(),
+  };
+  dispatch(userId, event);
+}
+
+/**
  * Blocking read from Redis Stream — used by SSE route instead of interval polling.
+ * Only invalidation events are stored in Redis (notifications are in-memory only).
  * Returns empty array when Redis is not configured (in-memory bus still works).
  */
-export async function awaitRemoteInvalidations(
+export async function awaitRemoteJobsEvents(
   userId: string,
   lastStreamId: string,
   blockMs = 5_000
-): Promise<{ events: JobsInvalidationEvent[]; lastId: string }> {
+): Promise<{ events: JobsEvent[]; lastId: string }> {
   const payloads: StreamInvalidationPayload[] =
     await readInvalidationStreamEvents(userId, lastStreamId, blockMs);
 
@@ -78,7 +121,7 @@ export async function awaitRemoteInvalidations(
   }
 
   const lastId = payloads[payloads.length - 1]!.id;
-  const events = payloads.map((p) => ({
+  const events: JobsEvent[] = payloads.map((p) => ({
     type: 'invalidate' as const,
     jobId: p.jobId,
   }));

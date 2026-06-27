@@ -2,9 +2,9 @@
 
 <!-- Load agile-v-core FIRST on every session | Apply SCOPE-V on every task -->
 
-## Activation Status: **ACTIVE** (Infinity Loop · 2026-06-16T12:46:37Z)
+## Activation Status: **ACTIVE** (Infinity Loop · 2026-06-19T17:00:00Z)
 
-Cycle C1 · Git `1615de6` · Checkpoint INT-0003 `c1-dev-20260612` · **24 skills registered**
+Cycle C1 · Git `1a1bec0` + Phase 1 Bluedoor (uncommitted) · Checkpoint INT-0003 · **24 skills registered**
 
 All skills below are registered for this project. Orchestrator loads framework skills + role-appropriate agent skills per task.
 
@@ -90,7 +90,9 @@ All skills below are registered for this project. Orchestrator loads framework s
 
 ## This Chat Binding
 
-- User instruction `/agile-v-core` applied for this session.
+- User instruction `/agile-v-core` applied for this session (2026-06-18).
 - Process scope linked to `REQ-0024` for governance traceability.
 - Continue from INT-0003 unless user requests Human Gate flow.
+- EVAL-0007 PASS — Phase 1 Bluedoor @ local (REQ-0025, REQ-0026)
+- **Roadmap:** `docs/PROJECT_PLAN.md` · **Stack:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
 - **Startup guide:** `.agile-v/PLAYBOOK.md` — paste one-command block in any new chat.

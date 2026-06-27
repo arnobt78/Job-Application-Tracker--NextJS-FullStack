@@ -1,54 +1,52 @@
 /**
  * Types and Validation Schema File
- * 
- * This file defines:
- * - TypeScript types for job data
- * - Enums for job status and mode values
- * - Zod validation schema for form inputs
- * 
- * Zod is a TypeScript-first schema validation library that provides:
- * - Runtime validation (catches errors before they reach the database)
- * - Type inference (TypeScript types are generated from schemas)
- * - Clear error messages for invalid data
+ *
+ * Defines TypeScript types for job data, enums for status/mode values,
+ * Zod validation schemas for form inputs, and Bluedoor enrichment enums.
  */
 import * as z from 'zod';
 
 /**
- * JobType - TypeScript type matching the Prisma Job model
- * 
- * This type represents a job application record in the database.
- * All fields match the database schema defined in prisma/schema.prisma
+ * JobType — TypeScript type matching the full Prisma Job model including
+ * Bluedoor enrichment fields. All enrichment fields are optional and null
+ * until the background enrich task runs.
  */
 export type JobType = {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  clerkId: string; // User ID from Clerk authentication
-  position: string; // Job title/position
-  company: string; // Company name
-  location: string; // Job location
-  status: string; // Application status (pending, interview, declined)
-  mode: string; // Employment type (full-time, part-time, internship)
+  clerkId: string;
+  position: string;
+  company: string;
+  location: string;
+  status: string; // pending | interview | declined
+  mode: string;   // full-time | part-time | internship
+
+  // URL the user applied through — key for Bluedoor join
+  applyUrl?: string | null;
+
+  // Bluedoor live-posting enrichment — absent or null until enrich runs
+  bluedoorJobId?: string | null;
+  bluedoorOrgId?: string | null;
+  bluedoorProvider?: string | null; // greenhouse | lever | ashby | workday
+  bluedoorStatus?: string | null;   // active | expired | unknown
+  bluedoorWorkplaceType?: string | null; // remote | hybrid | on_site
+  bluedoorSalaryMin?: number | null;
+  bluedoorSalaryMax?: number | null;
+  bluedoorSalaryCurrency?: string | null;
+  bluedoorDescHash?: string | null;
+  bluedoorSyncedAt?: Date | null;
+  bluedoorChangedAt?: Date | null;
 };
 
-/**
- * JobStatus Enum
- * 
- * Enum ensures type safety - only these values are allowed for job status.
- * Prevents typos and invalid status values.
- */
+/** Application status values */
 export enum JobStatus {
   Pending = 'pending',
   Interview = 'interview',
   Declined = 'declined',
 }
 
-/**
- * JobMode Enum
- * 
- * Enum ensures type safety for employment type.
- * Values match what's stored in the database.
- */
+/** Employment type values */
 export enum JobMode {
   FullTime = 'full-time',
   PartTime = 'part-time',
@@ -56,19 +54,25 @@ export enum JobMode {
 }
 
 /**
- * Zod Validation Schema for Job Creation/Editing
- * 
- * This schema validates form data before it's sent to the server.
- * 
- * Validation Rules:
- * - position: Minimum 2 characters
- * - company: Minimum 2 characters
- * - location: Minimum 2 characters
- * - status: Must be one of the JobStatus enum values
- * - mode: Must be one of the JobMode enum values
- * 
- * If validation fails, Zod returns clear error messages that can be
- * displayed to the user in the form.
+ * Bluedoor posting status — reflects whether the live job posting is
+ * still active or has been taken down since the user applied.
+ */
+export enum BluedoorStatus {
+  Active = 'active',
+  Expired = 'expired',
+  Unknown = 'unknown',
+}
+
+/** Bluedoor workplace type values (normalised by Bluedoor) */
+export enum BluedoorWorkplaceType {
+  Remote = 'remote',
+  Hybrid = 'hybrid',
+  OnSite = 'on_site',
+}
+
+/**
+ * Zod schema for job create/edit form.
+ * applyUrl is optional — enrichment triggers automatically when provided.
  */
 export const createAndEditJobSchema = z.object({
   position: z.string().min(2, {
@@ -80,16 +84,27 @@ export const createAndEditJobSchema = z.object({
   location: z.string().min(2, {
     message: 'location must be at least 2 characters.',
   }),
-  status: z.nativeEnum(JobStatus), // Validates against JobStatus enum
-  mode: z.nativeEnum(JobMode), // Validates against JobMode enum
+  status: z.nativeEnum(JobStatus),
+  mode: z.nativeEnum(JobMode),
+  // Optional URL — empty string or valid URL both accepted
+  applyUrl: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || v === '' || isValidUrl(v), {
+      message: 'Must be a valid URL (e.g. https://jobs.lever.co/…)',
+    })
+    .transform((v) => (v === '' ? undefined : v)),
 });
 
-/**
- * TypeScript type inferred from Zod schema
- * 
- * z.infer extracts the TypeScript type from the Zod schema.
- * This ensures the TypeScript type always matches the validation rules.
- * 
- * Usage: Used as the parameter type for createJobAction and updateJobAction
- */
 export type CreateAndEditJobType = z.infer<typeof createAndEditJobSchema>;
+
+/** Loose URL check — allows http and https, any host */
+function isValidUrl(val: string): boolean {
+  try {
+    const u = new URL(val);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}

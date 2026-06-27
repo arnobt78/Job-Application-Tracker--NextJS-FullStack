@@ -70,6 +70,21 @@
 | ART-0064 | C1 | Trace Log | `.agile-v/TRACE_LOG.md` | REQ-0024 | Governance sync `1615de6` |
 | ART-0065 | C1 | Decision Log | `.agile-v/DECISION_LOG.md` | REQ-0024 | Governance sync `1615de6` |
 | ART-0066 | C1 | Playbook | `.agile-v/PLAYBOOK.md` | REQ-0024 | One-command operating guide |
+| ART-0067 | C1 | Schema | `prisma/schema.prisma` (Bluedoor fields) | REQ-0025 | Phase 1 `2026-06-19` |
+| ART-0068 | C1 | Lib | `lib/bluedoor/client.ts` | REQ-0025, REQ-0026 | Phase 1 |
+| ART-0069 | C1 | Lib | `lib/bluedoor/enrich.ts` | REQ-0025 | Phase 1 |
+| ART-0070 | C1 | Lib | `lib/bluedoor/types.ts` | REQ-0025, REQ-0026 | Phase 1 |
+| ART-0071 | C1 | Server Actions | `utils/actions.ts` (enrich, discover) | REQ-0025, REQ-0026 | Phase 1 |
+| ART-0072 | C1 | Component | `components/jobs/job-enrichment-badge.tsx` | REQ-0025 | Phase 1 |
+| ART-0073 | C1 | API | `app/api/bluedoor/webhook/route.ts` | REQ-0025 | Phase 1 |
+| ART-0074 | C1 | API | `app/api/cron/enrich/route.ts` | REQ-0025 | Phase 1 |
+| ART-0075 | C1 | Config | `vercel.json` (cron schedule) | REQ-0025 | Phase 1 |
+| ART-0076 | C1 | Component | `components/JobCard.tsx`, forms `applyUrl` | REQ-0025 | Phase 1 |
+| ART-0077 | C1 | Page | `app/(dashboard)/discover/page.tsx` | REQ-0026 | Phase 1 |
+| ART-0078 | C1 | Loading | `app/(dashboard)/discover/loading.tsx` | REQ-0026 | Phase 1 |
+| ART-0079 | C1 | Component | `components/discover/*` | REQ-0026 | Phase 1 |
+| ART-0080 | C1 | Nav | `components/layout/dashboard-nav.tsx` (Discover) | REQ-0026 | Phase 1 |
+| ART-0081 | C1 | Docs | `docs/PROJECT_PLAN.md`, `JOBIFY_TECH_STACK_ANALYSIS.md` | REQ-0027 | Planning |
 
 ## Deprecated / removed
 

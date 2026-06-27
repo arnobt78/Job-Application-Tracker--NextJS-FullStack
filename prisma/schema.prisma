@@ -22,7 +22,25 @@ model Job {
   status    String // pending | interview | declined
   mode      String // full-time | part-time | internship
 
+  // URL user applied through — primary key for Bluedoor enrichment join
+  applyUrl  String? @map("apply_url")
+
+  // Bluedoor live-posting enrichment fields — all optional, populated by enrich.ts
+  bluedoorJobId         String?   @map("bluedoor_job_id")
+  bluedoorOrgId         String?   @map("bluedoor_org_id")
+  bluedoorProvider      String?   @map("bluedoor_provider") // greenhouse | lever | ashby | workday
+  bluedoorStatus        String?   @map("bluedoor_status")   // active | expired | unknown
+  bluedoorWorkplaceType String?   @map("bluedoor_workplace_type") // remote | hybrid | on_site
+  bluedoorSalaryMin     Float?    @map("bluedoor_salary_min")
+  bluedoorSalaryMax     Float?    @map("bluedoor_salary_max")
+  bluedoorSalaryCurrency String?  @map("bluedoor_salary_currency")
+  bluedoorDescHash      String?   @map("bluedoor_desc_hash")   // SHA-256 of description — detects JD edits
+  bluedoorSyncedAt      DateTime? @map("bluedoor_synced_at")   // last successful Bluedoor fetch
+  bluedoorChangedAt     DateTime? @map("bluedoor_changed_at")  // when Bluedoor last reported a change
+
   @@index([clerkId])
   @@index([clerkId, status])
   @@index([clerkId, createdAt(sort: Desc)])
+  // Index for nightly cron: find all jobs with a Bluedoor link across all users
+  @@index([bluedoorJobId])
 }

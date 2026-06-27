@@ -36,6 +36,7 @@ export function invalidateAllJobQueries(
   void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
   void queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
   void queryClient.invalidateQueries({ queryKey: queryKeys.charts.all });
+  void queryClient.invalidateQueries({ queryKey: queryKeys.chartsWeekly.all });
   void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.filterOptions });
   if (jobId) {
     void queryClient.invalidateQueries({

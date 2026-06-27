@@ -36,6 +36,8 @@ export type StatsResult = {
 
 export type ChartPoint = { date: string; count: number };
 
+export type WeeklyChartPoint = { week: string; count: number };
+
 /** Paginated jobs list — tagged per user for instant bust on CRUD */
 export async function getCachedJobs(
   userId: string,
@@ -58,8 +60,9 @@ export async function getCachedJobs(
         whereClause = {
           ...whereClause,
           OR: [
-            { position: { contains: search } },
-            { company: { contains: search } },
+            // mode: 'insensitive' — PostgreSQL contains is case-sensitive by default
+            { position: { contains: search, mode: 'insensitive' } },
+            { company: { contains: search, mode: 'insensitive' } },
           ],
         };
       }
@@ -277,6 +280,56 @@ export async function getCachedCharts(userId: string): Promise<ChartPoint[]> {
       return result;
     },
     ['charts', userId],
+    { tags: [chartsTag(userId)] }
+  )();
+}
+
+/** Weekly application velocity — last 12 weeks, tagged per user alongside monthly charts */
+export async function getCachedWeeklyCharts(
+  userId: string
+): Promise<WeeklyChartPoint[]> {
+  return unstable_cache(
+    async () => {
+      const redisKey = `charts-weekly:${userId}`;
+      const cached = await getCache<WeeklyChartPoint[]>(redisKey);
+      if (cached) return cached;
+
+      const now = dayjs();
+      // Align to the current week's Monday, then go back 12 weeks
+      const weekStart = now.startOf('week').add(1, 'day'); // Monday
+      const twelveWeeksAgo = weekStart.subtract(12, 'week').toDate();
+
+      const jobs = await prisma.job.findMany({
+        where: {
+          clerkId: userId,
+          createdAt: { gte: twelveWeeksAgo, lte: now.toDate() },
+        },
+        select: { createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      // Build a map: week Monday key → count
+      const weekMap = new Map<string, number>();
+      for (const job of jobs) {
+        const d = dayjs(job.createdAt);
+        // Get ISO week Monday
+        const monday = d.subtract((d.day() + 6) % 7, 'day').startOf('day');
+        const key = monday.format('MMM D');
+        weekMap.set(key, (weekMap.get(key) ?? 0) + 1);
+      }
+
+      // Fill in all 12 weeks in order (include zeros)
+      const result: WeeklyChartPoint[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const monday = weekStart.subtract(i, 'week');
+        const key = monday.format('MMM D');
+        result.push({ week: key, count: weekMap.get(key) ?? 0 });
+      }
+
+      await setCache(redisKey, result);
+      return result;
+    },
+    ['charts-weekly', userId],
     { tags: [chartsTag(userId)] }
   )();
 }

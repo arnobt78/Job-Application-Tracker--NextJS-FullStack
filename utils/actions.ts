@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import prisma from "./db";
 import { auth } from "@clerk/nextjs/server";
 import { JobType, CreateAndEditJobType, createAndEditJobSchema } from "./types";
@@ -10,10 +11,15 @@ import {
   getCachedJob,
   getCachedStats,
   getCachedCharts,
+  getCachedWeeklyCharts,
   getCachedJobFilterOptions,
   type StatsResult,
 } from "@/lib/jobs/queries";
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
+import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
+import type { BluedoorJob, BluedoorSearchResponse } from "@/lib/bluedoor/types";
+import { getJobDetail, searchJobs } from "@/lib/bluedoor/client";
+import type { DiscoverSearchParams } from "@/lib/bluedoor/types";
 
 async function authenticateAndRedirect(): Promise<string> {
   const { userId } = await auth();
@@ -23,6 +29,10 @@ async function authenticateAndRedirect(): Promise<string> {
   return userId;
 }
 
+// ─────────────────────────────────────────────
+// Job CRUD
+// ─────────────────────────────────────────────
+
 export async function createJobAction(
   values: CreateAndEditJobType
 ): Promise<JobType | null> {
@@ -30,14 +40,26 @@ export async function createJobAction(
 
   try {
     createAndEditJobSchema.parse(values);
-    const job: JobType = await prisma.job.create({
+    const job = await prisma.job.create({
       data: {
         ...values,
+        // Zod transform returns undefined for empty string — coerce to null for DB
+        applyUrl: values.applyUrl ?? null,
         clerkId: userId,
       },
     });
+
     await invalidateUserJobCaches(userId, job.id);
-    return job;
+
+    // Fire Bluedoor enrichment after response is sent — non-blocking
+    // `after` is stable in Next.js 15+ (v16 here). Runs post-response.
+    if (job.applyUrl) {
+      after(async () => {
+        await enrichJob(job.id, userId);
+      });
+    }
+
+    return job as JobType;
   } catch (error) {
     console.error(error);
     return null;
@@ -99,11 +121,11 @@ export async function deleteJobAction(id: string): Promise<JobType | null> {
   const userId = await authenticateAndRedirect();
 
   try {
-    const job: JobType = await prisma.job.delete({
+    const job = await prisma.job.delete({
       where: { id, clerkId: userId },
     });
     await invalidateUserJobCaches(userId, id);
-    return job;
+    return job as JobType;
   } catch {
     return null;
   }
@@ -133,12 +155,34 @@ export async function updateJobAction(
 
   try {
     createAndEditJobSchema.parse(values);
-    const job: JobType = await prisma.job.update({
+
+    // Capture previous applyUrl to detect change
+    const previous = await prisma.job.findUnique({
       where: { id, clerkId: userId },
-      data: { ...values },
+      select: { applyUrl: true, bluedoorJobId: true },
     });
+
+    const job = await prisma.job.update({
+      where: { id, clerkId: userId },
+      data: {
+        ...values,
+        applyUrl: values.applyUrl ?? null,
+      },
+    });
+
     await invalidateUserJobCaches(userId, id);
-    return job;
+
+    const applyUrlChanged = previous?.applyUrl !== (values.applyUrl ?? null);
+    const hasNewApplyUrl = !!values.applyUrl;
+
+    // Re-enrich when applyUrl is added or changed
+    if (hasNewApplyUrl && (applyUrlChanged || !previous?.bluedoorJobId)) {
+      after(async () => {
+        await enrichJob(id, userId);
+      });
+    }
+
+    return job as JobType;
   } catch {
     return null;
   }
@@ -166,16 +210,127 @@ export async function getChartsDataAction(): Promise<
   }
 }
 
+/** Weekly application velocity — last 12 weeks. Used by WeeklyVelocityChart. */
+export async function getWeeklyChartsDataAction(): Promise<
+  Array<{ week: string; count: number }>
+> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    return await getCachedWeeklyCharts(userId);
+  } catch {
+    redirect("/dashboard");
+  }
+}
+
 export async function getAllJobsForDownloadAction(): Promise<JobType[]> {
   const userId = await authenticateAndRedirect();
 
   try {
-    return await prisma.job.findMany({
+    const jobs = await prisma.job.findMany({
       where: { clerkId: userId },
       orderBy: { createdAt: "desc" },
     });
+    return jobs as JobType[];
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+// ─────────────────────────────────────────────
+// Bluedoor Enrichment
+// ─────────────────────────────────────────────
+
+/**
+ * Manual enrichment trigger — user clicks "Refresh Posting" on a job card.
+ * Re-runs full Bluedoor lookup and updates enrichment fields.
+ */
+export async function enrichJobAction(jobId: string): Promise<boolean> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id: jobId, clerkId: userId },
+      select: { bluedoorJobId: true, applyUrl: true },
+    });
+
+    if (!job) return false;
+
+    if (job.bluedoorJobId) {
+      // Already linked — do a targeted resync
+      return await resyncJob(jobId, userId, job.bluedoorJobId);
+    }
+
+    if (job.applyUrl) {
+      // Not yet linked — run full enrichment flow
+      await enrichJob(jobId, userId);
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────
+// Discover — Bluedoor live job search
+// ─────────────────────────────────────────────
+
+/**
+ * Fetch full Bluedoor job detail — called when user opens View Details modal.
+ * Includes description_text (full JD) via ?include=description.
+ */
+export async function getBluedoorJobDetailsAction(
+  jobId: string
+): Promise<BluedoorJob | null> {
+  await authenticateAndRedirect();
+
+  try {
+    return await getJobDetail(jobId);
+  } catch (error) {
+    console.error('[getBluedoorJobDetailsAction] error:', error);
+    return null;
+  }
+}
+
+/**
+ * Search Bluedoor for live job postings. Called from /discover page SSR
+ * prefetch and client-side TanStack Query refetches (including infinite pages).
+ *
+ * cursor — opaque pagination token from meta.next_cursor of a prior response.
+ *           Absent on the first page.
+ */
+export async function searchBluedoorJobsAction(
+  params: Partial<DiscoverSearchParams> & { cursor?: string }
+): Promise<BluedoorSearchResponse> {
+  await authenticateAndRedirect();
+
+  try {
+    return await searchJobs({
+      q: params.q || undefined,
+      country: params.country || "United States",
+      workplace_type:
+        (params.workplaceType as "remote" | "hybrid" | "on_site") || undefined,
+      employment_type:
+        (params.employmentType as
+          | "full_time"
+          | "part_time"
+          | "contract"
+          | "temporary"
+          | "internship"
+          | undefined) || undefined,
+      salary_exists: params.salaryExists || undefined,
+      cursor: params.cursor || undefined,
+      limit: 20,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn('[searchBluedoorJobsAction] Bluedoor request timed out');
+    } else {
+      console.error('[searchBluedoorJobsAction] error:', error);
+    }
+    return { data: [], meta: { limit: 20, order: '', total_matching_unavailable: true } };
   }
 }

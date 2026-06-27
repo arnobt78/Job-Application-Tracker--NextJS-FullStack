@@ -9,7 +9,7 @@ import { PERSIST_CACHE_KEY } from '@/lib/query-client';
  */
 export function shouldPersistQuery(query: Query): boolean {
   const root = query.queryKey[0];
-  if (root === 'jobs' || root === 'stats' || root === 'charts' || root === 'job') {
+  if (root === 'jobs' || root === 'stats' || root === 'charts' || root === 'charts-weekly' || root === 'job') {
     return true;
   }
   return false;

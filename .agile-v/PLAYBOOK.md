@@ -69,10 +69,12 @@ Specify → Constrain → Orchestrate → Prove → Evolve → Verify
 |---|---|
 | Cycle | C1 |
 | Checkpoint | **INT-0003** `c1-dev-20260612` (Dev-Active) |
-| Backlog | BL-0007 — user-driven extension |
+| Backlog | **BL-0008** — Phase 1 Bluedoor (implemented, uncommitted) |
+| Phase 2 | **BL-0009** — AI pipeline (planned, `docs/PROJECT_PLAN.md`) |
 | Gate 1 | PENDING (`c1-gate1-baseline-20260611`) |
 | Gate 2 | NOT_REACHED |
 | Governance | REQ-0024 (always-on traceability) |
+| New REQs | REQ-0025 enrichment · REQ-0026 discover · REQ-0027 Phase 2 AI |
 
 ---
 
@@ -141,7 +143,7 @@ Full rules: `CLAUDE.md` at repo root.
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-Current baseline: **49 tests** passing · HEAD `280e284`
+Current baseline: **49 tests** passing · Phase 1 Bluedoor uncommitted on `1a1bec0`
 
 ---
 
@@ -172,10 +174,12 @@ Decision Points: [choices] | Log: [TIMESTAMP | AGENT | DECISION | RATIONALE | LI
 | Range | Scope |
 |---|---|
 | REQ-0001…0018 | C1 baseline (implemented) |
-| REQ-0019…0022 | C2 backlog |
-| REQ-0023 | Custom auth cards — done |
-| REQ-0020 | Prisma cleanup — done |
+| REQ-0019 | Auth SSR avatar — done |
+| REQ-0020…0023 | Prisma cleanup / auth UI — done |
 | REQ-0024 | Agile V governance — active |
+| REQ-0025 | Bluedoor enrichment — Phase 1 implemented |
+| REQ-0026 | `/discover` search — Phase 1 implemented |
+| REQ-0027 | AI agent pipeline — Phase 2 planned |
 
 Full list: `.agile-v/REQUIREMENTS.md`  
 Traceability: `.agile-v/ATM.md`

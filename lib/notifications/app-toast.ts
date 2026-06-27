@@ -80,6 +80,44 @@ export function notifyJobDeleteError(position: string, company: string): void {
   });
 }
 
+// ─────────────────────────────────────────────
+// Bluedoor enrichment notifications
+// ─────────────────────────────────────────────
+
+/** Shown when Bluedoor enrichment succeeds and updates a card */
+export function notifyEnrichmentComplete(company: string): void {
+  toast.success('Posting data synced', {
+    description: `Live status from ${company} was updated via Bluedoor.`,
+    duration: 3500,
+  });
+}
+
+/** Shown when enrichment is manually triggered but job has no apply URL */
+export function notifyEnrichmentNoUrl(): void {
+  toast.info('No apply URL found', {
+    description: 'Add the apply URL to this job so Jobify can fetch live posting status.',
+    duration: 4000,
+  });
+}
+
+/** Shown when a tracked posting changes status (active → expired) */
+export function notifyPostingClosed(position: string, company: string): void {
+  toast.warning('Posting closed', {
+    description: `${position} at ${company} — the job posting is no longer active.`,
+    duration: 6000,
+  });
+}
+
+/** Shown when salary data appears on a previously salary-less posting */
+export function notifySalaryAdded(company: string, min: number, max: number, currency: string): void {
+  const fmt = (n: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n);
+  toast.success('Salary disclosed', {
+    description: `${company} added compensation: ${fmt(min)} – ${fmt(max)}.`,
+    duration: 5000,
+  });
+}
+
 /** Store welcome name before hard navigation to dashboard */
 export function scheduleWelcomeAfterRedirect(displayName: string): void {
   setPendingWelcomeToast(firstNameFrom(displayName));

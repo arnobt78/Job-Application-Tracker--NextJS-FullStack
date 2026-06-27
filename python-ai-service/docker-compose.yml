@@ -1,0 +1,11 @@
+services:
+  ai-service:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # Ollama running on host — use host-gateway so container can reach it
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

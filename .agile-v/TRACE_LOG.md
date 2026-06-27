@@ -52,3 +52,20 @@
 | 2026-06-16T18:10:00Z | orchestrate | build-agent-js | REQ-0015 | onSettled → invalidateAllJobQueries broadcast:false | SUCCESS — `66bc670` |
 | 2026-06-16T18:30:00Z | prove | red-team-verifier | REQ-0014, REQ-0015 | EVAL-0005 lint/typecheck/test(49)/build @ `280e284` | SUCCESS |
 | 2026-06-16T18:30:00Z | checkpoint | agile-v-core | REQ-0024 | Sync `.agile-v/` for tomorrow resume @ `280e284` | PAUSED |
+| 2026-06-18T23:55:00Z | bootstrap | agile-v-core | REQ-0024 | Infinity Loop reactivate; sync to `1a1bec0`; 24 skills ACTIVE | ACTIVE |
+| 2026-06-18T23:55:00Z | prove | red-team-verifier | REQ-0024 | EVAL-0006 lint/typecheck/test(49)/build @ `1a1bec0` | SUCCESS |
+| 2026-06-19T10:00:00Z | specify | requirement-architect | REQ-0025…0027 | Phase C roadmap + Bluedoor REQs from Sam outreach | SUCCESS |
+| 2026-06-19T10:00:00Z | evolve | agile-v-product-owner | REQ-0025 | `docs/PROJECT_PLAN.md` + `JOBIFY_TECH_STACK_ANALYSIS.md` | SUCCESS |
+| 2026-06-19T16:00:00Z | orchestrate | build-agent-js | REQ-0025, REQ-0026 | Phase 1 Bluedoor implementation (schema, lib, discover, APIs) | SUCCESS |
+| 2026-06-19T16:55:00Z | prove | red-team-verifier | REQ-0025, REQ-0026 | lint/typecheck/test(49)/build post-Phase-1 | SUCCESS |
+| 2026-06-19T17:00:00Z | evolve | documentation-agent | REQ-0024, REQ-0025 | Sync CLAUDE.md, PROJECT_WALKTHROUGH, .agile-v STATE/BACKLOG/REQs | SUCCESS |
+| 2026-06-19T17:30:00Z | orchestrate | build-agent-js | REQ-0025, REQ-0026 | Fix Bluedoor 400 (status+active mutual exclusion) | SUCCESS |
+| 2026-06-19T18:00:00Z | orchestrate | build-agent-js | REQ-0025, REQ-0026 | Fix AbortError: raise timeout to 30s, drop include=description+include_total from list search | SUCCESS |
+| 2026-06-27T16:15:00Z | bootstrap | agile-v-core | REQ-0024 | Resume INT-0003; lint/typecheck/test 49/49 PASS | ACTIVE |
+| 2026-06-27T16:55:00Z | bootstrap | agile-v-core | REQ-0024 | Session start; /agile-v-core activated; lint/typecheck/test(49) PASS @ `1a1bec0`+Phase1 | ACTIVE |
+| 2026-06-27T17:48:00Z | prove | red-team-verifier | REQ-0025, REQ-0026 | EVAL-0008 deep audit; 5 fixes applied; lint/typecheck/test(49)/build PASS | SUCCESS |
+| 2026-06-27T18:20:00Z | orchestrate | build-agent-js | REQ-0025, REQ-0026, REQ-0027 | Phase 1 completion: SSE notification bus + bell + discover details modal + cursor pagination + Resend emails | SUCCESS |
+| 2026-06-27T18:20:00Z | orchestrate | build-agent-js | REQ-0027 | Phase 2 scaffold: FastAPI + 9-agent pipeline + LLM router + Next.js integration route + AiInsightsPanel | SUCCESS |
+| 2026-06-27T18:20:00Z | prove | red-team-verifier | REQ-0025, REQ-0026, REQ-0027 | EVAL-0009 lint/typecheck/test(49)/build PASS post Phase 1+2 | SUCCESS |
+| 2026-06-27T19:00:00Z | prove | red-team-verifier | REQ-0025, REQ-0026, REQ-0027 | EVAL-0010 full deep audit; fixed publishNotification missing in enrich.ts; lint/typecheck/test(49)/build PASS | SUCCESS |
+| 2026-06-27T19:00:00Z | evolve | documentation-agent | REQ-0024, REQ-0025, REQ-0026, REQ-0027 | Sync CLAUDE.md, PROJECT_WALKTHROUGH.md, .env.example, .agile-v STATE/BACKLOG/VALIDATION | SUCCESS |

@@ -365,11 +365,68 @@
 
 | REQ-ID   | Title                                                 | Priority | Status     |
 | -------- | ----------------------------------------------------- | -------- | ---------- |
-| REQ-0019 | Auth UI flicker-free enhancements (dashboard Navbar)  | MEDIUM   | `new [C2]` |
+| REQ-0019 | Auth UI flicker-free enhancements (dashboard Navbar)  | MEDIUM   | `done [C1]` `37f8525` |
 | REQ-0023 | Custom auth cards (SignIn/SignUp match, no Clerk UI)  | MEDIUM   | `done [C1]` `f660eb9` |
 | REQ-0020 | Prisma schema cleanup (remove unused Task/Tour/Token) | LOW      | `done [C1]` `998d3a5` |
 | REQ-0021 | Automated test suite (unit + e2e)                     | HIGH     | `new [C2]` |
 | REQ-0022 | Observability (logging, error tracking)               | MEDIUM   | `new [C2]` |
+| REQ-0027 | AI agent pipeline (Ollama + FastAPI + n8n)            | HIGH     | `new [C2]` — Phase 2 |
+
+---
+
+## REQ-0025: Bluedoor Live Posting Enrichment
+
+**Status:** `approved [C1]` — **implemented 2026-06-19** (uncommitted)  
+**Priority:** HIGH  
+**Category:** Integration / Core Feature
+
+**Description:** Tracked applications SHALL be enriched with live posting data from the Bluedoor Job Postings API when the user provides an apply URL or when a match is found.
+
+**Acceptance Criteria:**
+
+1. Job model stores `applyUrl` and Bluedoor enrichment fields (`bluedoorJobId`, status, salary, workplace, desc hash, sync timestamps)
+2. On create/update with `applyUrl`, enrichment runs post-response via `after()` without blocking the user
+3. Match priority: ATS key from URL → exact URL → fuzzy company+title
+4. Job cards show enrichment badge (LIVE / CLOSED / CHANGED / SALARY / Syncing)
+5. Webhook and nightly cron re-sync linked postings; cache invalidation updates UI without refresh
+
+**Verification:** TC-0026 (manual + automated gates)  
+**Artifacts:** ART-0067…ART-0076 (see BUILD_MANIFEST.md)
+
+---
+
+## REQ-0026: Job Discovery (Bluedoor Search)
+
+**Status:** `approved [C1]` — **implemented 2026-06-19** (uncommitted)  
+**Priority:** MEDIUM  
+**Category:** Discovery
+
+**Description:** Authenticated users SHALL search live job postings via Bluedoor and add results to their tracker in one action.
+
+**Acceptance Criteria:**
+
+1. `/discover` route with SSR prefetch, URL-driven filters (q, country, workplace, employment, salary)
+2. Results from `searchBluedoorJobsAction`; discover queries NOT persisted to localStorage
+3. "Track Application" pre-fills create job with title, location, apply URL and triggers enrichment
+4. Discover nav link in dashboard; route protected by Clerk proxy
+
+**Verification:** TC-0027  
+**Artifacts:** ART-0077…ART-0081
+
+---
+
+## REQ-0027: AI Agent Pipeline (Phase 2 — Planned)
+
+**Status:** `new [C2]`  
+**Priority:** HIGH  
+**Category:** AI / Automation
+
+**Description:** Phase 2 SHALL provide human-in-the-loop AI workflows (fit analysis, cover letter draft, interview prep, digests) via a 9-agent FastAPI pipeline on Coolify with Ollama primary and cloud LLM fallback.
+
+**Acceptance Criteria:** See `docs/PROJECT_PLAN.md` Phase 2 section.
+
+**Verification:** TC-0028 (Phase 2)  
+**Artifacts:** TBD — `python-ai-service/` on Coolify
 
 ---
 

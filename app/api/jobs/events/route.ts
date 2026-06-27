@@ -1,19 +1,20 @@
 /**
- * SSE stream for cross-tab / cross-instance invalidation after CRUD.
+ * SSE stream for cross-tab / cross-instance invalidation and enrichment notifications.
  * Same-instance: in-memory bus. Cross-instance: Redis Streams XREAD BLOCK (no polling).
+ * Multiplexes both 'invalidate' and 'notify' event types over the same stream.
  */
 import { auth } from '@clerk/nextjs/server';
 import {
-  awaitRemoteInvalidations,
-  subscribeInvalidations,
-  type JobsInvalidationEvent,
+  awaitRemoteJobsEvents,
+  subscribeJobsEvents,
+  type JobsEvent,
 } from '@/lib/jobs-events';
 
 export const dynamic = 'force-dynamic';
 
 const HEARTBEAT_MS = 30_000;
 
-function encodeSse(data: JobsInvalidationEvent): Uint8Array {
+function encodeSse(data: JobsEvent): Uint8Array {
   return new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`);
 }
 
@@ -29,7 +30,7 @@ export async function GET(request: Request): Promise<Response> {
 
   const stream = new ReadableStream({
     start(controller) {
-      const push = (event: JobsInvalidationEvent) => {
+      const push = (event: JobsEvent) => {
         if (closed) return;
         try {
           controller.enqueue(encodeSse(event));
@@ -38,7 +39,7 @@ export async function GET(request: Request): Promise<Response> {
         }
       };
 
-      const unsubscribe = subscribeInvalidations(userId, push);
+      const unsubscribe = subscribeJobsEvents(userId, push);
 
       const heartbeat = setInterval(() => {
         if (closed) return;
@@ -52,7 +53,7 @@ export async function GET(request: Request): Promise<Response> {
       /** Redis Stream blocking loop — replaces 2s key polling */
       const streamLoop = async () => {
         while (!closed && !request.signal.aborted) {
-          const { events, lastId } = await awaitRemoteInvalidations(
+          const { events, lastId } = await awaitRemoteJobsEvents(
             userId,
             lastStreamId,
             5_000

@@ -1,6 +1,7 @@
 import { DashboardNav } from '@/components/layout/dashboard-nav';
 import { PageContainer } from '@/components/layout/page-container';
 import { NavUserProvider } from '@/context/nav-user-context';
+import { NotificationsProvider } from '@/context/notifications-context';
 import { navUserSnapshotFromClerk } from '@/lib/auth/nav-user';
 import { currentUser } from '@clerk/nextjs/server';
 import type { PropsWithChildren } from 'react';
@@ -16,6 +17,7 @@ async function DashboardLayout({ children }: PropsWithChildren) {
 
   return (
     <NavUserProvider user={initialNavUser}>
+      <NotificationsProvider>
       <div className="app-shell">
         <div className="app-shell-overlay" aria-hidden />
         <div className="relative z-10 flex min-h-screen flex-col">
@@ -25,6 +27,7 @@ async function DashboardLayout({ children }: PropsWithChildren) {
           </PageContainer>
         </div>
       </div>
+      </NotificationsProvider>
     </NavUserProvider>
   );
 }

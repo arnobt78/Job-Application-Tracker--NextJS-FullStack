@@ -8,12 +8,21 @@ import {
   JOBS_CACHE_CHANNEL,
   type JobsCacheMessage,
 } from '@/lib/invalidate-jobs';
+import type { JobsNotificationEvent } from '@/lib/jobs-events';
 
 const SSE_URL = '/api/jobs/events';
 const SSE_RECONNECT_BASE_MS = 2_000;
 const SSE_RECONNECT_MAX_MS = 30_000;
 
-/** Listens for SSE + BroadcastChannel invalidation — refreshes React Query without page reload */
+/**
+ * BroadcastChannel name for relaying SSE 'notify' events to NotificationsProvider.
+ * useJobsCacheSync posts to this channel; NotificationsProvider subscribes to it.
+ * BroadcastChannel delivers to other instances in the same tab — no second SSE needed.
+ */
+export const NOTIFICATIONS_CHANNEL = 'jobify-notifications';
+
+/** Listens for SSE + BroadcastChannel invalidation — refreshes React Query without page reload.
+ *  Also relays enrichment notification events to NOTIFICATIONS_CHANNEL BroadcastChannel. */
 export function useJobsCacheSync(): void {
   const queryClient = useQueryClient();
   const { isSignedIn } = useAuth();
@@ -24,6 +33,17 @@ export function useJobsCacheSync(): void {
 
     const invalidateFromExternal = (jobId?: string) => {
       invalidateAllJobQueries(queryClient, jobId, { broadcast: false });
+    };
+
+    const relayNotification = (event: JobsNotificationEvent) => {
+      if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+      try {
+        const bc = new BroadcastChannel(NOTIFICATIONS_CHANNEL);
+        bc.postMessage(event);
+        bc.close();
+      } catch {
+        // BroadcastChannel unavailable — notification silently dropped
+      }
     };
 
     let bc: BroadcastChannel | null = null;
@@ -49,9 +69,12 @@ export function useJobsCacheSync(): void {
 
       eventSource.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data) as JobsCacheMessage;
+          const data = JSON.parse(event.data as string) as { type: string; jobId?: string };
           if (data.type === 'invalidate') {
             invalidateFromExternal(data.jobId);
+          } else if (data.type === 'notify') {
+            // Relay enrichment notifications to NotificationsProvider via BroadcastChannel
+            relayNotification(data as JobsNotificationEvent);
           }
         } catch {
           // ignore malformed SSE payloads

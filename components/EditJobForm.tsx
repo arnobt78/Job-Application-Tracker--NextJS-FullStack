@@ -56,6 +56,7 @@ function EditJobForm({
       location: '',
       status: JobStatus.Pending,
       mode: JobMode.FullTime,
+      applyUrl: '',
     },
   });
 
@@ -67,6 +68,8 @@ function EditJobForm({
         location: data.location,
         status: data.status as JobStatus,
         mode: data.mode as JobMode,
+        // applyUrl may be null in DB — fall back to empty string for controlled input
+        applyUrl: data.applyUrl ?? '',
       });
     }
   }, [data, form]);
@@ -94,6 +97,8 @@ function EditJobForm({
           <Skeleton className="h-10 w-full rounded-2xl" />
           <Skeleton className="h-10 w-full rounded-2xl" />
         </div>
+        {/* applyUrl skeleton */}
+        <Skeleton className="h-10 w-full rounded-2xl" />
         <Skeleton className="h-10 w-full rounded-2xl" />
       </div>
     </div>
@@ -124,6 +129,13 @@ function EditJobForm({
               required
             />
           </div>
+          {/* applyUrl — when changed, Bluedoor re-enrichment triggers automatically */}
+          <CustomFormField
+            name="applyUrl"
+            control={form.control}
+            labelText="apply URL (optional)"
+            placeholder="https://jobs.lever.co/company/…"
+          />
           <Button
             type="submit"
             className="w-full capitalize"

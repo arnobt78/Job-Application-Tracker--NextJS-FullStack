@@ -12,7 +12,7 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-14T12:56:00Z",
+    "reactivated": "2026-06-19T17:00:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
@@ -84,9 +84,15 @@
     "policy": ".agile-v/POLICY.yaml"
   },
   "git_baseline": {
-    "head": "fd6f20c",
+    "head": "1a1bec0",
     "branch": "main",
-    "last_commit": "feat(dashboard): glass filters, confirms, and filter-param consistency",
-    "working_tree": "clean"
+    "last_commit": "chore(agile-v): sync state for tomorrow resume @ 280e284",
+    "working_tree": "dirty — Phase 1 Bluedoor uncommitted"
+  },
+  "roadmap": {
+    "phase_1": "Bluedoor enrichment + /discover (implemented)",
+    "phase_2": "FastAPI + Ollama + n8n on Coolify",
+    "plan_doc": "docs/PROJECT_PLAN.md",
+    "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md"
   }
 }

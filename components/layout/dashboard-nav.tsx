@@ -13,7 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { AlignLeft, BarChart2, LayoutDashboard } from 'lucide-react';
+import { AlignLeft, BarChart2, Compass, LayoutDashboard } from 'lucide-react';
+import { NotificationBell } from '@/components/layout/notification-bell';
 import { cn } from '@/lib/utils';
 
 /** Dashboard nav links — logo links here, active state tracked by pathname */
@@ -27,6 +28,11 @@ const NAV_LINKS = [
     href: '/stats',
     label: 'Stats',
     icon: <BarChart2 className="h-4 w-4" />,
+  },
+  {
+    href: '/discover',
+    label: 'Discover',
+    icon: <Compass className="h-4 w-4" />,
   },
 ] as const;
 
@@ -100,6 +106,7 @@ export function DashboardNav() {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        <NotificationBell />
         <ThemeToggle />
         {/* Avatar with glow — UserProfileDropdown manages its own ring */}
         <div className="rounded-full shadow-sm shadow-primary/20 ring-1 ring-primary/10">
