@@ -7,7 +7,7 @@ Personal **job application tracker (CRM)** with live posting enrichment (Bluedoo
 Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (optional) · Bluedoor API · Resend · Sentry · Vitest (49 tests) · FastAPI (python-ai-service/)
 
 ## Auth
-- `proxy.ts` — Clerk gate; protect `/dashboard(.*)`, `/discover`, `/stats`, `/user-profile(.*)`; `/jobs/*` → `/dashboard`
+- `middleware.ts` — Clerk gate; protect `/dashboard(.*)`, `/discover`, `/stats`, `/user-profile(.*)`; `/jobs/*` → `/dashboard`
 - Navbar: `dashboard/layout` `currentUser()` → `NavUserProvider` · `useNavUserSession`
 
 ## Data flow

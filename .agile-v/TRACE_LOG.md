@@ -74,3 +74,6 @@
 | 2026-06-27T19:30:00Z | orchestrate | build-agent-js | REQ-0026 | Posting Activity tab: getJobEvents() client + getBluedoorJobEventsAction + PostingActivityTab + JobDetailPanels + discover.events query key | SUCCESS |
 | 2026-06-27T19:30:00Z | prove | red-team-verifier | REQ-0025, REQ-0026, REQ-0027 | EVAL-0011 lint/typecheck/test(49)/build PASS; no console.log; no dead imports | SUCCESS |
 | 2026-06-27T19:30:00Z | evolve | documentation-agent | REQ-0024 | Sync CLAUDE.md, PROJECT_WALKTHROUGH.md, .agile-v STATE/BACKLOG/VALIDATION/TRACE | SUCCESS |
+| 2026-06-27T20:00:00Z | prove | red-team-verifier | REQ-0001 | AUDIT-0001: middleware misnamed proxy.ts → renamed middleware.ts; Clerk edge gate now active | FIXED |
+| 2026-06-27T20:00:00Z | prove | red-team-verifier | REQ-0024 | EVAL-0012 full deep audit; lint/typecheck/test(49)/build PASS; proxy.ts→middleware.ts fix; dead JSDoc removed | SUCCESS |
+| 2026-06-27T20:00:00Z | evolve | documentation-agent | REQ-0024 | Sync CLAUDE.md proxy.ts→middleware.ts; .agile-v STATE/VALIDATION/TRACE updated | SUCCESS |

@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | **Cycle** | C1 |
-| **Stage** | 3 Synthesis — **Phase 1+2 complete + Posting Activity tab** (uncommitted) |
+| **Stage** | 3 Synthesis — **Phase 1+2 complete + full audit PASS** |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
-| **Pipeline** | Phase 1+2 + Posting Activity tab → audit PASS (EVAL-0011) → ready to commit |
-| **Last Updated** | 2026-06-27T19:30:00Z |
-| **Git HEAD** | `1a1bec0` (+ Phase 1+2 + Posting Activity **uncommitted**) |
+| **Pipeline** | Phase 1+2 + Posting Activity tab + EVAL-0012 audit → committed `58e8297` → manual QA pending |
+| **Last Updated** | 2026-06-27T20:00:00Z |
+| **Git HEAD** | `58e8297` (posted activity + docs sync, pushed to origin) |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -66,6 +66,8 @@
 | **Posting Activity tab** — `JobDetailPanels` tabbed AI+timeline; `getJobEvents()` client + server action | REQ-0026 |
 
 **Verify @ local (`2026-06-27`):** lint ✓ typecheck ✓ test **49/49** ✓ build ✓ (all 5 API routes)
+
+**AUDIT-0001 fix:** `proxy.ts` → `middleware.ts` (critical — Clerk edge gate was not running)
 
 ## Active Backlog
 

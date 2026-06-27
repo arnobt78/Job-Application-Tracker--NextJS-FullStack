@@ -2,8 +2,8 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
-**Last updated:** 2026-06-27  
-**Verification:** `npm run lint && npm run typecheck && npm run test && npm run build` — **49/49 tests passing**
+**Last updated:** 2026-06-27 (audit refresh)  
+**Verification:** `npm run lint && npm run typecheck && npm run test && npm run build` — **49/49 tests** · HEAD `58e8297`
 
 ---
 
@@ -14,7 +14,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | Layer | Status |
 | --- | --- |
 | **Core tracker** | ✅ Complete — CRUD, filters, pagination, export, optimistic UI, SSE sync |
-| **Phase 1 — Bluedoor** | ✅ Mostly complete — enrichment, discover, webhooks, cron, notifications, email |
+| **Phase 1 — Bluedoor** | ✅ ~92% — enrichment, discover, webhooks, cron, notifications, email, **Posting Activity tab** |
 | **Stats overhaul** | ✅ Complete — KPI row + 4 chart types + weekly velocity |
 | **Phase 2 — AI** | 🔄 Scaffolded — FastAPI + 9 agents + UI panel; needs deploy + persistence |
 | **Phase 2 — n8n / Coolify** | ⬜ Not started — planned in roadmap only |
@@ -30,7 +30,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 
 | Area | What exists |
 | --- | --- |
-| **Auth** | Clerk 6, custom sign-in/up, `proxy.ts` route protection |
+| **Auth** | Clerk 6, custom sign-in/up, `middleware.ts` route protection |
 | **Dashboard** | URL filters, glass filter bar, `JobCardShell` skeletons, pagination, download |
 | **CRUD** | Server Actions + `useJobsMutation` optimistic updates + cross-tab invalidation |
 | **Bluedoor enrich** | `lib/bluedoor/client.ts`, `enrich.ts`, ATS/URL/fuzzy match, `after()` on create/update |
@@ -54,7 +54,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Weekly digest email** | Per-change alerts only | No Sunday/weekly summary cron |
 | **Company display** | `formatOrgName(org_id)` helper | No Clearbit/logo.dev logos; org name is derived from slug |
 | **Discover layout** | Filter bar + grid (dashboard parity) | Not the two-panel facet sidebar from original vision doc |
-| **Dashboard timeline** | — | No merged application + Bluedoor event timeline view |
+| **Global dashboard timeline** | — | No merged all-jobs event feed on main grid (per-job Activity tab on `/dashboard/[id]` ✅) |
 | **PostHog** | Guide doc only | Not in `package.json` — deferred |
 
 ### ⬜ Phase 2+ not implemented
@@ -65,6 +65,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | n8n automation flows | Daily digest, stale alert, interview prep trigger |
 | `JobAIInsight` / `UserProfile` Prisma models | AI output not persisted to DB |
 | Cover letter **streaming** UI | Panel shows full response after pipeline completes |
+| 9-agent progress UI | Animated pipeline steps during run |
 | Internal API routes (`/api/internal/*`) | For n8n → Next.js integration |
 | ARQ / Celery job queue | Pipeline runs synchronously in FastAPI request |
 | Phase 3 features | Resume parser, salary intelligence, browser extension |
@@ -79,7 +80,7 @@ force-dynamic
   page.tsx → await prefetchQuery / prefetchInfiniteQuery → HydrationBoundary
   PersistQueryClient (localStorage jobify-query-cache, buster v1)
     persists: jobs · stats · charts · charts-weekly · job(id)
-    NOT persisted: discover · ai
+    NOT persisted: discover · discover.events · ai
   lib/jobs/queries.ts (unstable_cache + tags + optional Redis)
   utils/actions.ts (Clerk + Bluedoor search/enrich)
 
@@ -100,9 +101,9 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `app/(dashboard)/layout.tsx` | SSR Clerk user → NavUserProvider + NotificationsProvider |
 | `app/(dashboard)/dashboard/page.tsx` | prefetch list + filterOptions + stats |
 | `app/(dashboard)/stats/page.tsx` | prefetch stats + charts + chartsWeekly |
-| `app/(dashboard)/dashboard/[id]/page.tsx` | prefetch job detail + EditJobDialog |
+| `app/(dashboard)/dashboard/[id]/page.tsx` | prefetch job detail + `EditJobDialogPage` + `JobDetailPanels` |
 | `app/(dashboard)/discover/page.tsx` | `prefetchInfiniteQuery` via `buildDiscoverQueryOptions` |
-| `lib/bluedoor/client.ts` | Bluedoor API client + ATS URL parser + `normalizeSearchParams` |
+| `lib/bluedoor/client.ts` | Bluedoor API client + `getJobEvents` + ATS parser + `normalizeSearchParams` |
 | `lib/bluedoor/enrich.ts` | Match + enrich + resync; `publishNotification` + `sendPostingChangeEmail` |
 | `lib/jobs-events.ts` | SSE event bus: `invalidate` \| `notify` |
 | `lib/notifications/email.ts` | Resend wrapper — graceful no-op without `RESEND_API_KEY` |
@@ -116,14 +117,15 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + `invalidateAllJobQueries` |
 | `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist rules |
 | `lib/invalidate-jobs.ts` | jobs · stats · charts · chartsWeekly · filterOptions · job(id) |
-| `lib/query-keys.ts` | discover.search/detail · ai.pipeline · chartsWeekly |
+| `lib/query-keys.ts` | discover.search/detail/events · ai.pipeline · chartsWeekly |
 | `context/notifications-context.tsx` | BroadcastChannel subscriber; AppNotification[] state |
 | `components/layout/notification-bell.tsx` | Bell icon + unread badge + popover list |
 | `components/jobs/job-enrichment-badge.tsx` | LIVE / CLOSED / CHANGED / SALARY / Syncing |
 | `components/jobs/job-card-shell.tsx` | Stable chrome; text skeletons cold only |
 | `components/jobs/ai-insights-panel.tsx` | On-demand AI fit score + cover letter + interview angles |
-| `components/jobs/job-detail-panels.tsx` | Tab wrapper: AI Insights + Posting Activity — rendered in `/dashboard/[id]` |
-| `components/jobs/posting-activity-tab.tsx` | Bluedoor event timeline — status changes, JD edits, salary disclosures |
+| `components/jobs/posting-activity-tab.tsx` | Bluedoor event timeline — on-demand via `getBluedoorJobEventsAction` |
+| `components/jobs/job-detail-panels.tsx` | Tab wrapper: AI Insights + Posting Activity — `/dashboard/[id]` |
+| `components/pages/edit-job-dialog-page.tsx` | Client shell — passes `JobDetailPanels` as `aiPanel` to `EditJobDialog` |
 | `components/discover/discover-results.tsx` | `useInfiniteQuery` + `DiscoverCardShellGrid` + Load More |
 | `components/discover/discover-job-details-modal.tsx` | On-demand Bluedoor detail + AiInsightsPanel |
 | `components/discover/discover-page-header.tsx` | Static h1 (dashboard layout parity) |
@@ -134,6 +136,7 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `app/api/ai/pipeline/route.ts` | Clerk auth proxy → Python AI service |
 | `app/api/bluedoor/webhook/route.ts` | Lifecycle events → resync linked jobs |
 | `app/api/cron/enrich/route.ts` | Nightly batch resync (Vercel cron) |
+| `utils/actions.ts` | CRUD + Bluedoor search/detail/events + chart actions |
 | `python-ai-service/` | FastAPI + 9-agent pipeline + LLM router |
 
 ---
@@ -200,6 +203,27 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 
 ---
 
+## `/dashboard/[id]` — Edit dialog + detail panels
+
+1. `EditJobDialog` — edit form (position, company, status, apply URL, …)
+2. `JobDetailPanels` below form:
+   - **AI Insights** — `AiInsightsPanel` → `useAIPipeline` → `/api/ai/pipeline`
+   - **Posting Activity** — `PostingActivityTab` → `getBluedoorJobEventsAction` → `getJobEvents()` (disabled until `bluedoorJobId` set)
+
+---
+
+## Posting Activity flow
+
+1. User opens `/dashboard/[id]` for an enriched job (`bluedoorJobId` present).
+2. Clicks **Posting Activity** tab in `JobDetailPanels`.
+3. `PostingActivityTab` runs `useQuery` with `queryKeys.discover.events(bluedoorJobId)`.
+4. `getBluedoorJobEventsAction` → `getJobEvents()` → `GET /jobs/{id}/events?limit=20`.
+5. Timeline renders: published · updated · closed · reopened with icons and UTC timestamps.
+
+**Not persisted** — fetched on tab open; not in localStorage persist scope.
+
+---
+
 ## AI pipeline flow (Phase 2 — scaffolded)
 
 1. `AiInsightsPanel` "Generate Insights" → `useAIPipeline` mutation → `POST /api/ai/pipeline`.
@@ -209,7 +233,7 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 5. LLM fallback: Ollama → Groq → OpenRouter → Anthropic claude-haiku-4-5-20251001.
 6. `PipelineResponse` returned — fit score, cover letter, interview angles, summary.
 
-**Wired in:** `EditJobDialog` / `/dashboard/[id]` and `DiscoverJobDetailsModal`.  
+**Wired in:** `JobDetailPanels` on `/dashboard/[id]` + `DiscoverJobDetailsModal`.  
 **Not yet:** DB persistence, streaming, pipeline progress UI, production deploy.
 
 ---
@@ -231,7 +255,7 @@ Mutations: `onSuccess` broadcasts once; `onSettled` resyncs all keys without re-
 
 **Server** (`invalidateUserJobCaches`): `revalidatePath` dashboard/stats/discover + `revalidateTag` all user tags + Redis delete + SSE publish.
 
-Discover and AI queries are **not** in persist scope — always refetch on navigation/filter change.
+Discover, AI, and posting-events queries are **not** in persist scope — refetch on navigation/filter/tab open.
 
 ---
 

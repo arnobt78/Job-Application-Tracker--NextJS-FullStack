@@ -29,11 +29,6 @@ function toPipelineJobInput(job: JobType): PipelineJobInput {
   };
 }
 
-/**
- * Client shell for /dashboard/[id].
- * Renders JobDetailPanels (AI Insights + Posting Activity tabs) below the edit form.
- * Activity tab is disabled when job has no bluedoorJobId (not yet enriched).
- */
 export function EditJobDialogPage({ jobId }: EditJobDialogPageProps) {
   const router = useRouter();
   const { data: job, isLoading } = useQuery({
