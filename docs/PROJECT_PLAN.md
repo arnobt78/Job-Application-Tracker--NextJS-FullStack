@@ -1,8 +1,8 @@
 # Jobify v2 — Project Vision & Roadmap
 
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19  
-**Status:** Planning  
+**Date:** 2026-06-19 · **Last updated:** 2026-06-27  
+**Status:** Phase 1 COMPLETE · Phase 2 Scaffolded (needs Coolify deploy + LLM keys)  
 **Stack:** Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis · Python FastAPI · Ollama · n8n · Coolify VPS
 
 ---
@@ -44,9 +44,11 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 
 ---
 
-## Phase 1 — Bluedoor Enrichment Layer (Next.js only)
+## Phase 1 — Bluedoor Enrichment Layer (Next.js only) ✅ COMPLETE
 
 **Goal:** Enrich existing tracked applications + add thin job discovery. No new backend service. Ships inside current Next.js codebase.
+
+**Shipped:** `2155934` + `4f12503` — all items below implemented and passing lint/typecheck/test(49)/build.
 
 ### 1.1 Auto-Link Tracked Applications to Bluedoor
 
@@ -131,9 +133,18 @@ app/
 
 ---
 
-## Phase 2 — Python AI Agent Backend (Coolify VPS)
+## Phase 2 — Python AI Agent Backend (Coolify VPS) 🔄 SCAFFOLDED
 
 **Goal:** Deploy 9-agent Ollama pipeline as FastAPI service on Coolify. Next.js calls it. n8n orchestrates scheduled automations.
+
+**Scaffolded:** `python-ai-service/` — FastAPI + 9 agents + LLM fallback router + pytest (mocked). AiInsightsPanel wired into `/dashboard/[id]` and `/discover` Details modal.
+
+**Remaining (needs deploy):**
+- Pull Ollama models on Coolify VPS (`llama3.2`, `mistral`, `gemma2`, `phi3`)
+- Set `AI_SERVICE_URL` + `AI_SERVICE_SECRET` env vars in Next.js + python-ai-service/.env
+- n8n automation flows (daily digest, stale alert, enrichment sync, interview prep trigger)
+- Cover letter generator streaming UI
+- `/dashboard/[id]` "Posting Activity" tab (Bluedoor event timeline)
 
 ### 2.1 Infrastructure on Coolify VPS
 
@@ -401,26 +412,29 @@ n8n cron (8am daily)
 
 ### Phase 1 Order
 
-1. Prisma schema additions (bluedoor fields)
-2. Bluedoor API client utility (Next.js)
-3. Job enrichment API route + background job link
-4. Bluedoor webhook handler
-5. Dashboard job card status badges
-6. `/discover` search UI + filter sidebar
-7. Resend email alerts for posting changes
-8. Vercel cron / nightly enrichment sync
+1. ✅ Prisma schema additions (bluedoor fields)
+2. ✅ Bluedoor API client utility (Next.js)
+3. ✅ Job enrichment API route + background job link
+4. ✅ Bluedoor webhook handler
+5. ✅ Dashboard job card status badges
+6. ✅ `/discover` search UI + cursor pagination + Details modal
+7. ✅ Resend email alerts for posting changes
+8. ✅ Vercel cron / nightly enrichment sync
+9. ✅ SSE notification bell (BroadcastChannel relay, NotificationsProvider)
+10. ✅ publishNotification wired in enrich.ts resyncJob
 
 ### Phase 2 Order
 
-1. Coolify: set up Ollama container + pull models
-2. FastAPI scaffold + Docker on Coolify
-3. LLM router with fallback chain (test all providers)
-4. Individual agents (start with Preprocessor + Synthesizer)
-5. Full 9-agent orchestrator
-6. Next.js → FastAPI integration
-7. n8n flows (start with enrichment sync, then digest)
-8. AI Insights UI in `/jobs/[id]`
-9. Cover letter generator + interview prep UI
+1. ✅ FastAPI scaffold + Docker (`python-ai-service/`)
+2. ✅ LLM router with fallback chain (Ollama → Groq → OpenRouter → Anthropic)
+3. ✅ Individual agents (all 9 implemented as pure functions + Synthesizer LLM)
+4. ✅ Full 9-agent orchestrator
+5. ✅ Next.js → FastAPI integration (`/api/ai/pipeline`, `useAIPipeline`, `AiInsightsPanel`)
+6. ✅ AI Insights wired into `/dashboard/[id]` edit dialog + `/discover` Details modal
+7. ⬜ Coolify: deploy FastAPI + pull Ollama models (`llama3.2`, `mistral`, `gemma2`, `phi3`)
+8. ⬜ n8n flows (daily digest, stale alert, enrichment sync, interview prep trigger)
+9. ⬜ Cover letter generator streaming UI
+10. ⬜ `/dashboard/[id]` Posting Activity tab (Bluedoor event timeline)
 
 ---
 
