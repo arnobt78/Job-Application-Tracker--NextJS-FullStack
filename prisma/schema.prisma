@@ -37,10 +37,45 @@ model Job {
   bluedoorDescHash      String?   @map("bluedoor_desc_hash")   // SHA-256 of description — detects JD edits
   bluedoorSyncedAt      DateTime? @map("bluedoor_synced_at")   // last successful Bluedoor fetch
   bluedoorChangedAt     DateTime? @map("bluedoor_changed_at")  // when Bluedoor last reported a change
+  bluedoorWebhookSubId  String?   @map("bluedoor_webhook_sub_id") // Bluedoor webhook subscription ID for unsubscribe on delete
+
+  aiInsight    JobAIInsight?
 
   @@index([clerkId])
   @@index([clerkId, status])
   @@index([clerkId, createdAt(sort: Desc)])
   // Index for nightly cron: find all jobs with a Bluedoor link across all users
   @@index([bluedoorJobId])
+}
+
+/// AI pipeline insight — persisted after the first pipeline run to avoid redundant LLM calls.
+/// One-to-one with Job; regenerated on explicit user request.
+model JobAIInsight {
+  id              String   @id @default(cuid())
+  jobId           String   @unique
+  clerkId         String
+  fitScore        Int?                          // 0–100 fit score from AI
+  fitLabel        String?                       // strong_fit | good_fit | partial_fit | poor_fit
+  summary         String?                       // 2-3 sentence fit summary
+  coverLetter     String?                       // generated cover letter draft
+  interviewAngles String[] @default([])         // key talking points / angles for interviews
+  redFlags        String[] @default([])         // potential concerns flagged by AI
+  generatedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  job             Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([clerkId])
+}
+
+/// Optional user profile — used to personalise AI pipeline with skills + target roles.
+/// Created lazily when user saves preferences.
+model UserProfile {
+  id              String   @id @default(cuid())
+  clerkId         String   @unique
+  skills          String[] @default([])
+  targetRoles     String[] @default([])
+  experienceLevel String?                       // entry | mid | senior | staff | principal
+  resumeText      String?                       // plain-text resume pasted by user
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

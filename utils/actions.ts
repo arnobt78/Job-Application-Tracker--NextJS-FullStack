@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import prisma from "./db";
 import { auth } from "@clerk/nextjs/server";
-import { JobType, CreateAndEditJobType, createAndEditJobSchema } from "./types";
+import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType } from "./types";
 import { redirect } from "next/navigation";
 import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
 import {
@@ -17,9 +17,8 @@ import {
 } from "@/lib/jobs/queries";
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
 import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
-import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse } from "@/lib/bluedoor/types";
-import { getJobDetail, getJobEvents, searchJobs } from "@/lib/bluedoor/client";
-import type { DiscoverSearchParams } from "@/lib/bluedoor/types";
+import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse, DiscoverFacets, DiscoverSearchParams } from "@/lib/bluedoor/types";
+import { getDiscoverFacets, getJobDetail, getJobEvents, searchJobs, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
 
 async function authenticateAndRedirect(): Promise<string> {
   const { userId } = await auth();
@@ -121,10 +120,23 @@ export async function deleteJobAction(id: string): Promise<JobType | null> {
   const userId = await authenticateAndRedirect();
 
   try {
+    // Fetch webhook sub ID before delete so we can unsubscribe from Bluedoor (best-effort)
+    const meta = await prisma.job.findUnique({
+      where: { id, clerkId: userId },
+      select: { bluedoorWebhookSubId: true },
+    });
+
     const job = await prisma.job.delete({
       where: { id, clerkId: userId },
     });
+
     await invalidateUserJobCaches(userId, id);
+
+    // Unsubscribe Bluedoor webhook after job is deleted — non-blocking, never throws
+    if (meta?.bluedoorWebhookSubId) {
+      void unregisterBluedoorWebhook(meta.bluedoorWebhookSubId);
+    }
+
     return job as JobType;
   } catch {
     return null;
@@ -310,6 +322,117 @@ export async function getBluedoorJobEventsAction(
   } catch (error) {
     console.error('[getBluedoorJobEventsAction] error:', error);
     return [];
+  }
+}
+
+// ─────────────────────────────────────────────
+// Phase 2 — AI Insights
+// ─────────────────────────────────────────────
+
+/** Load persisted AI insight for a job — null if not yet generated. */
+export async function getAIInsightAction(jobId: string): Promise<AIInsightType | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const insight = await prisma.jobAIInsight.findUnique({
+      where: { jobId },
+    });
+    if (!insight || insight.clerkId !== userId) return null;
+    return insight as AIInsightType;
+  } catch {
+    return null;
+  }
+}
+
+/** Persist AI insight after pipeline run — upsert so regenerate replaces previous result. */
+export async function saveAIInsightAction(
+  jobId: string,
+  data: Partial<Omit<AIInsightType, 'id' | 'jobId' | 'clerkId' | 'generatedAt' | 'updatedAt'>>
+): Promise<AIInsightType | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const insight = await prisma.jobAIInsight.upsert({
+      where: { jobId },
+      create: {
+        jobId,
+        clerkId: userId,
+        fitScore: data.fitScore ?? null,
+        fitLabel: data.fitLabel ?? null,
+        summary: data.summary ?? null,
+        coverLetter: data.coverLetter ?? null,
+        interviewAngles: data.interviewAngles ?? [],
+        redFlags: data.redFlags ?? [],
+      },
+      update: {
+        fitScore: data.fitScore ?? null,
+        fitLabel: data.fitLabel ?? null,
+        summary: data.summary ?? null,
+        coverLetter: data.coverLetter ?? null,
+        interviewAngles: data.interviewAngles ?? [],
+        redFlags: data.redFlags ?? [],
+        generatedAt: new Date(),
+      },
+    });
+    return insight as AIInsightType;
+  } catch {
+    return null;
+  }
+}
+
+/** Load user profile for AI personalisation — null if not yet created. */
+export async function getUserProfileAction(): Promise<UserProfileType | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const profile = await prisma.userProfile.findUnique({
+      where: { clerkId: userId },
+    });
+    return profile as UserProfileType | null;
+  } catch {
+    return null;
+  }
+}
+
+/** Create or update user profile skills + target roles for AI personalisation. */
+export async function upsertUserProfileAction(
+  data: Partial<Omit<UserProfileType, 'id' | 'clerkId' | 'createdAt' | 'updatedAt'>>
+): Promise<UserProfileType | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const profile = await prisma.userProfile.upsert({
+      where: { clerkId: userId },
+      create: {
+        clerkId: userId,
+        skills: data.skills ?? [],
+        targetRoles: data.targetRoles ?? [],
+        experienceLevel: data.experienceLevel ?? null,
+        resumeText: data.resumeText ?? null,
+      },
+      update: {
+        skills: data.skills ?? [],
+        targetRoles: data.targetRoles ?? [],
+        experienceLevel: data.experienceLevel ?? null,
+        resumeText: data.resumeText ?? null,
+      },
+    });
+    return profile as UserProfileType;
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch workplace_type + employment_type facet counts for /discover filter dropdowns. */
+export async function getBluedoorFacetsAction(
+  params: { q?: string; country?: string }
+): Promise<DiscoverFacets> {
+  await authenticateAndRedirect();
+
+  try {
+    return await getDiscoverFacets(params);
+  } catch {
+    return { workplace_type: [], employment_type: [] };
   }
 }
 

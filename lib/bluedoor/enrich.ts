@@ -13,7 +13,7 @@
  */
 
 import prisma from '@/utils/db';
-import { parseAtsKey, searchJobs, getJobDetail } from '@/lib/bluedoor/client';
+import { parseAtsKey, searchJobs, getJobDetail, registerBluedoorWebhook } from '@/lib/bluedoor/client';
 import { invalidateUserJobCaches } from '@/lib/invalidate-jobs-server';
 import { publishNotification } from '@/lib/jobs-events';
 import { sendPostingChangeEmail } from '@/lib/notifications/email';
@@ -51,6 +51,15 @@ export async function enrichJob(
 
     // Invalidate Next.js + Redis + SSE so the badge appears immediately
     await invalidateUserJobCaches(userId, jobId);
+
+    // Register Bluedoor webhook subscription for future lifecycle events (best-effort)
+    const subId = await registerBluedoorWebhook(match.job_id);
+    if (subId) {
+      await prisma.job.update({
+        where: { id: jobId, clerkId: userId },
+        data: { bluedoorWebhookSubId: subId },
+      });
+    }
   } catch (err) {
     // Log but never surface to client — enrichment is best-effort
     console.error('[bluedoor:enrich] error enriching job', jobId, err);

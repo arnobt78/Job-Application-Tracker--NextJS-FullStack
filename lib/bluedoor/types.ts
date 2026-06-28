@@ -167,6 +167,12 @@ export type BluedoorFacetsResponse = {
   };
 };
 
+/** Combined facets for the /discover filter bar — fetched in parallel */
+export type DiscoverFacets = {
+  workplace_type: BluedoorFacetItem[];
+  employment_type: BluedoorFacetItem[];
+};
+
 // ─────────────────────────────────────────────
 // Job Events (lifecycle)
 // ─────────────────────────────────────────────

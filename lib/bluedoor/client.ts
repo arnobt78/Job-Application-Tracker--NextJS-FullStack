@@ -8,9 +8,11 @@
 
 import type {
   BluedoorJob,
+  BluedoorFacetsResponse,
   BluedoorJobEventsResponse,
   BluedoorSearchParams,
   BluedoorSearchResponse,
+  DiscoverFacets,
 } from '@/lib/bluedoor/types';
 
 const BLUEDOOR_BASE = 'https://api.bluedoor.sh/job-postings/v1';
@@ -130,6 +132,90 @@ export async function getJobEvents(
   return bluedoorFetch<BluedoorJobEventsResponse>(
     `/jobs/${encodeURIComponent(bluedoorJobId)}/events?limit=${limit}`
   );
+}
+
+// ─────────────────────────────────────────────
+// Facets
+// ─────────────────────────────────────────────
+
+/**
+ * GET /v1/jobs/facets?field={field} — live bucket counts for one facet field.
+ * Called in parallel for workplace_type + employment_type.
+ */
+async function getFacetField(
+  field: string,
+  params: { q?: string; country?: string }
+): Promise<BluedoorFacetsResponse> {
+  const qs = new URLSearchParams({ field, active: 'true' });
+  if (params.q) qs.set('q', params.q);
+  if (params.country) qs.set('country', params.country);
+  return bluedoorFetch<BluedoorFacetsResponse>(`/jobs/facets?${qs.toString()}`);
+}
+
+/** Fetch workplace_type + employment_type facet counts in parallel for /discover filters. */
+export async function getDiscoverFacets(
+  params: { q?: string; country?: string }
+): Promise<DiscoverFacets> {
+  const [workplaceRes, employmentRes] = await Promise.allSettled([
+    getFacetField('workplace_type', params),
+    getFacetField('employment_type', params),
+  ]);
+  return {
+    workplace_type: workplaceRes.status === 'fulfilled' ? workplaceRes.value.data : [],
+    employment_type: employmentRes.status === 'fulfilled' ? employmentRes.value.data : [],
+  };
+}
+
+// ─────────────────────────────────────────────
+// Webhook subscription
+// ─────────────────────────────────────────────
+
+/**
+ * POST /v1/webhook_endpoints/subscriptions — register to receive lifecycle events
+ * for a specific Bluedoor job (closed, JD updated, salary added).
+ * Returns the subscription ID to store in DB for later unsubscribe.
+ * Returns null on any failure — enrichment must not be blocked by webhook errors.
+ */
+export async function registerBluedoorWebhook(
+  bluedoorJobId: string
+): Promise<string | null> {
+  const webhookUrl = process.env.NEXT_PUBLIC_APP_URL
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/api/bluedoor/webhook`
+    : null;
+
+  if (!webhookUrl) return null;
+
+  try {
+    const res = await bluedoorFetch<{ subscription_id?: string }>(
+      '/webhook_endpoints/subscriptions',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          job_id: bluedoorJobId,
+          url: webhookUrl,
+          events: ['job.updated', 'job.closed', 'job.reopened'],
+        }),
+      }
+    );
+    return res.subscription_id ?? null;
+  } catch {
+    // Best-effort — webhook subscription failure must never break enrichment
+    return null;
+  }
+}
+
+/**
+ * DELETE /v1/webhook_endpoints/subscriptions/{id} — unsubscribe when job is deleted.
+ * Silent on any error — job is already being deleted.
+ */
+export async function unregisterBluedoorWebhook(subscriptionId: string): Promise<void> {
+  try {
+    await bluedoorFetch(`/webhook_endpoints/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+      method: 'DELETE',
+    });
+  } catch {
+    // Ignore — job is being deleted regardless
+  }
 }
 
 // ─────────────────────────────────────────────

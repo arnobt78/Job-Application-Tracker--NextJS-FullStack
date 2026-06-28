@@ -8,6 +8,7 @@
  */
 
 import prisma from '@/utils/db';
+import { createElement } from 'react';
 
 /** Enrichment-triggered change types for the email subject/body */
 export type PostingChangeType = 'posting_closed' | 'jd_changed' | 'salary_added';
@@ -22,19 +23,10 @@ type SendPostingChangeEmailParams = {
   detail?: string;
 };
 
-const CHANGE_COPY: Record<PostingChangeType, { subject: string; body: string }> = {
-  posting_closed: {
-    subject: '⚠️ Job posting closed',
-    body: 'The live posting for this job has been marked as expired or removed by the employer.',
-  },
-  jd_changed: {
-    subject: '📝 Job description changed',
-    body: 'The job description for this posting has been updated since you tracked it.',
-  },
-  salary_added: {
-    subject: '💰 Salary disclosed',
-    body: 'Salary information is now available for this posting.',
-  },
+const CHANGE_SUBJECTS: Record<PostingChangeType, string> = {
+  posting_closed: '⚠️ Job posting closed',
+  jd_changed: '📝 Job description changed',
+  salary_added: '💰 Salary disclosed',
 };
 
 /**
@@ -54,25 +46,44 @@ export async function sendPostingChangeEmail({
 
   const from = process.env.EMAIL_FROM ?? 'Jobify <noreply@jobify.app>';
 
-  // Fetch user email from Clerk via admin API
   const email = await fetchUserEmail(userId);
   if (!email) return;
 
-  const copy = CHANGE_COPY[changeType];
   const jobUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/dashboard/${jobId}`;
-  const bodyLines = [
-    `Hi,`,
-    ``,
-    `${copy.body}`,
-    detail ? `Details: ${detail}` : '',
-    ``,
-    `Job: ${position} at ${company}`,
-    `View application: ${jobUrl}`,
-    ``,
-    `— Jobify`,
-  ]
-    .filter((line) => line !== undefined)
-    .join('\n');
+  const subject = `${CHANGE_SUBJECTS[changeType]} — ${position} at ${company}`;
+
+  let html: string;
+  let text: string;
+
+  try {
+    const { render } = await import('@react-email/render');
+
+    if (changeType === 'posting_closed') {
+      const { PostingClosedEmail } = await import('./templates/PostingClosedEmail');
+      html = await render(createElement(PostingClosedEmail, { position, company, jobUrl }));
+    } else if (changeType === 'jd_changed') {
+      const { JdChangedEmail } = await import('./templates/JdChangedEmail');
+      html = await render(createElement(JdChangedEmail, { position, company, jobUrl }));
+    } else {
+      const { SalaryAddedEmail } = await import('./templates/SalaryAddedEmail');
+      html = await render(createElement(SalaryAddedEmail, { position, company, jobUrl, salaryRange: detail }));
+    }
+
+    // Plain-text fallback for email clients that block HTML
+    text = [
+      `${subject}`,
+      ``,
+      `Job: ${position} at ${company}`,
+      detail ? `Details: ${detail}` : '',
+      `View application: ${jobUrl}`,
+      ``,
+      `— Jobify`,
+    ].filter(Boolean).join('\n');
+  } catch {
+    // Template render failed — fall back to plain text only
+    html = '';
+    text = `${subject}\n\nJob: ${position} at ${company}\nView: ${jobUrl}\n\n— Jobify`;
+  }
 
   try {
     const { Resend } = await import('resend');
@@ -81,8 +92,9 @@ export async function sendPostingChangeEmail({
     await resend.emails.send({
       from,
       to: email,
-      subject: `${copy.subject} — ${position} at ${company}`,
-      text: bodyLines,
+      subject,
+      text,
+      ...(html ? { html } : {}),
     });
   } catch (err) {
     // Email failure must not surface to the user or break enrichment

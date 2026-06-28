@@ -15,6 +15,8 @@ import DeleteJobButton from "./DeleteJobButton";
 import { GlassCard } from "@/components/ui/glass-card";
 import { EditJobDialog } from "@/components/dialogs/edit-job-dialog";
 import { JobEnrichmentBadge } from "@/components/jobs/job-enrichment-badge";
+import { CompanyLogo } from "@/components/ui/company-logo";
+import { extractDomain } from "@/lib/ui/company-logo";
 
 /** Job card — UTC-stable date formatting avoids hydration mismatch (React #418) */
 function JobCard({ job }: { job: JobType }) {
@@ -32,7 +34,10 @@ function JobCard({ job }: { job: JobType }) {
           {/* Bluedoor live posting badge — null-safe, renders nothing when not enriched */}
           <JobEnrichmentBadge job={job} className="mt-0.5 shrink-0" />
         </div>
-        <p className="mt-0.5 text-sm text-muted-foreground">{job.company}</p>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <CompanyLogo domain={extractDomain(job.applyUrl)} size={14} className="opacity-80" />
+          <span className="text-sm text-muted-foreground">{job.company}</span>
+        </div>
       </div>
 
       <Separator />

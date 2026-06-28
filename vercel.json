@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/enrich",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-digest",
+      "schedule": "0 9 * * 0"
     }
   ],
   "headers": [

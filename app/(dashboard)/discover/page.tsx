@@ -12,6 +12,8 @@ import {
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import { SlidersHorizontal } from 'lucide-react';
 import { Suspense } from 'react';
+import { queryKeys } from '@/lib/query-keys';
+import { getBluedoorFacetsAction } from '@/utils/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,11 +46,17 @@ async function DiscoverPage({ searchParams }: DiscoverPageProps) {
 
   const queryClient = new QueryClient();
 
-  // SSR prefetch first page — hydrates infinite query so DiscoverResults renders immediately.
-  // buildDiscoverQueryOptions keeps page.tsx + DiscoverResults on the same query options.
-  await queryClient.prefetchInfiniteQuery(
-    buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
-  );
+  // SSR prefetch: infinite search results + facet counts in parallel.
+  // Facets hydrate the filter dropdowns with live counts immediately on render.
+  await Promise.all([
+    queryClient.prefetchInfiniteQuery(
+      buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
+    ),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.discover.facets(q || undefined, country !== 'United States' ? country : undefined),
+      queryFn: () => getBluedoorFacetsAction({ q: q || undefined, country }),
+    }),
+  ]);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

@@ -42,10 +42,16 @@ export const queryKeys = {
     detail: (jobId: string) => ['discover', 'detail', jobId] as const,
     // Posting lifecycle events — fetched on demand in Posting Activity tab
     events: (bluedoorJobId: string) => ['discover', 'events', bluedoorJobId] as const,
+    // Live filter counts from Bluedoor /jobs/facets — staleTime 5 min, not persisted
+    facets: (q?: string, country?: string) => ['discover', 'facets', q ?? '', country ?? ''] as const,
   },
   // AI pipeline — per-job insights (fit score, cover letter, interview angles).
   // NOT persisted: LLM output changes each run; user regenerates on demand.
   ai: {
     pipeline: (jobId: string) => ['ai', 'pipeline', jobId] as const,
+  },
+  // Persisted AI insights — loaded from DB, staleTime Infinity, NOT in localStorage persist scope.
+  aiInsight: {
+    job: (jobId: string) => ['ai', 'insight', jobId] as const,
   },
 } as const;

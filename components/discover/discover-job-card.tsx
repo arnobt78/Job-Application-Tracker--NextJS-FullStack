@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import {
   MapPin,
   Briefcase,
-  Building2,
   ExternalLink,
   PlusCircle,
   DollarSign,
@@ -28,6 +27,8 @@ import { JobStatus, JobMode } from '@/utils/types';
 import { cn } from '@/lib/utils';
 import { useCreateJobMutation } from '@/hooks/useJobsMutation';
 import { DiscoverJobDetailsModal } from '@/components/discover/discover-job-details-modal';
+import { CompanyLogo } from '@/components/ui/company-logo';
+import { extractDomain } from '@/lib/ui/company-logo';
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -159,9 +160,8 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
 
         {/* Company + location */}
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-          {/* Building2 shows the company (humanized org_id) */}
           <span className="flex items-center gap-1">
-            <Building2 className="h-3 w-3" />
+            <CompanyLogo domain={extractDomain(job.apply_url)} size={12} />
             {formatOrgName(job.org_id)}
           </span>
           {job.department && (

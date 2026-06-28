@@ -5,8 +5,12 @@
  *
  * Shows fit score, cover letter, and interview angles for a tracked job.
  * Triggered manually ("Generate Insights") to avoid auto-firing expensive LLM calls.
+ * Persists results to DB (JobAIInsight) so re-opening the panel doesn't re-run the pipeline.
  *
- * Consumes: useAIPipeline (mutation) — POST /api/ai/pipeline
+ * Consumes:
+ *   - useQuery → getAIInsightAction (load from DB)
+ *   - useAIPipeline (mutation) → POST /api/ai/pipeline
+ *   - saveAIInsightAction (persist result to DB after generation)
  */
 
 import { useState } from 'react';
@@ -14,7 +18,11 @@ import { Sparkles, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/glass-card';
 import { useAIPipeline } from '@/hooks/useAIPipeline';
-import type { PipelineJobInput, PipelineUserProfile, PipelineResponse } from '@/lib/ai/pipeline-client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/query-keys';
+import { getAIInsightAction, saveAIInsightAction } from '@/utils/actions';
+import type { PipelineJobInput, PipelineUserProfile, PipelineResponse, InterviewAngle } from '@/lib/ai/pipeline-client';
+import type { AIInsightType } from '@/utils/types';
 import { cn } from '@/lib/utils';
 
 type AiInsightsPanelProps = {
@@ -93,16 +101,84 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
   );
 }
 
+/** Convert DB insight to PipelineResponse shape for unified rendering. */
+function dbInsightToPipelineResponse(insight: AIInsightType): PipelineResponse {
+  const angles: InterviewAngle[] = insight.interviewAngles.map((raw) => {
+    const sep = raw.indexOf(': ');
+    return sep !== -1
+      ? { question: raw.slice(0, sep), angle: raw.slice(sep + 2) }
+      : { question: raw, angle: '' };
+  });
+
+  return {
+    job_id: insight.jobId,
+    fit_score: insight.fitScore != null ? { score: insight.fitScore, reasoning: insight.fitLabel ?? '' } : null,
+    cover_letter: insight.coverLetter ? { text: insight.coverLetter, word_count: 0 } : null,
+    interview_angles: angles,
+    summary: insight.summary,
+    meta: {},
+  };
+}
+
+/** Convert PipelineResponse to DB insight shape for saving. */
+function pipelineResponseToDbInsight(
+  data: PipelineResponse
+): Partial<Omit<AIInsightType, 'id' | 'jobId' | 'clerkId' | 'generatedAt' | 'updatedAt'>> {
+  return {
+    fitScore: data.fit_score?.score ?? null,
+    fitLabel: data.fit_score?.reasoning ?? null,
+    summary: data.summary ?? null,
+    coverLetter: data.cover_letter?.text ?? null,
+    interviewAngles: data.interview_angles.map(
+      (a) => a.angle ? `${a.question}: ${a.angle}` : a.question
+    ),
+    redFlags: [],
+  };
+}
+
 export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
-  const { mutate, data, isPending, isError, error, reset } = useAIPipeline();
+  const queryClient = useQueryClient();
+  const insightKey = queryKeys.aiInsight.job(job.job_id);
+
+  // Load persisted insight — staleTime Infinity since it only changes on explicit regenerate
+  const { data: dbInsight, isLoading: dbLoading } = useQuery({
+    queryKey: insightKey,
+    queryFn: () => getAIInsightAction(job.job_id),
+    staleTime: Infinity,
+    gcTime: 0, // not in localStorage persist scope — DB is source of truth
+  });
+
+  const { mutate, data: pipelineData, isPending, isError, error, reset } = useAIPipeline();
 
   function handleGenerate() {
-    mutate({
-      job,
-      user: user ?? {},
-      include: ['fit_score', 'cover_letter', 'interview_angles', 'summary'],
-    });
+    mutate(
+      {
+        job,
+        user: user ?? {},
+        include: ['fit_score', 'cover_letter', 'interview_angles', 'summary'],
+      },
+      {
+        onSuccess: async (result) => {
+          if (!result) return;
+          // Persist to DB so next panel open is instant
+          const saved = await saveAIInsightAction(job.job_id, pipelineResponseToDbInsight(result));
+          if (saved) {
+            queryClient.setQueryData(insightKey, saved);
+          }
+        },
+      }
+    );
   }
+
+  function handleRegenerate() {
+    reset();
+    queryClient.setQueryData(insightKey, null);
+  }
+
+  // Show pipeline result (just generated) or persisted DB result
+  const displayData = pipelineData ?? (dbInsight ? dbInsightToPipelineResponse(dbInsight) : null);
+  const hasResult = !!displayData;
+  const isFromDb = !pipelineData && !!dbInsight;
 
   return (
     <GlassCard variant="neutral" className="flex flex-col gap-3">
@@ -110,11 +186,16 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
         <div className="flex items-center gap-1.5 text-sm font-semibold">
           <Sparkles className="h-4 w-4 text-primary" />
           AI Insights
+          {isFromDb && (
+            <span className="ml-1 text-xs font-normal text-muted-foreground/60">
+              · saved {new Date(dbInsight!.generatedAt).toLocaleDateString()}
+            </span>
+          )}
         </div>
 
-        {data ? (
+        {hasResult ? (
           <button
-            onClick={() => { reset(); }}
+            onClick={handleRegenerate}
             className="text-xs text-muted-foreground hover:text-foreground"
           >
             Regenerate
@@ -124,7 +205,7 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
             size="sm"
             variant="outline"
             onClick={handleGenerate}
-            disabled={isPending}
+            disabled={isPending || dbLoading}
             className="h-7 gap-1.5 text-xs"
           >
             {isPending ? (
@@ -143,9 +224,9 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
         </p>
       )}
 
-      {data && <InsightsResult data={data} />}
+      {displayData && <InsightsResult data={displayData} />}
 
-      {!data && !isPending && !isError && (
+      {!displayData && !isPending && !isError && !dbLoading && (
         <p className="text-xs text-muted-foreground">
           Get AI-powered fit score, cover letter, and interview coaching for this role.
         </p>

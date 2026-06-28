@@ -37,6 +37,34 @@ export type JobType = {
   bluedoorDescHash?: string | null;
   bluedoorSyncedAt?: Date | null;
   bluedoorChangedAt?: Date | null;
+  bluedoorWebhookSubId?: string | null;
+};
+
+/** Persisted AI pipeline insight for a specific job. */
+export type AIInsightType = {
+  id: string;
+  jobId: string;
+  clerkId: string;
+  fitScore: number | null;
+  fitLabel: string | null;       // strong_fit | good_fit | partial_fit | poor_fit
+  summary: string | null;
+  coverLetter: string | null;
+  interviewAngles: string[];
+  redFlags: string[];
+  generatedAt: Date;
+  updatedAt: Date;
+};
+
+/** Optional user profile for AI personalisation. */
+export type UserProfileType = {
+  id: string;
+  clerkId: string;
+  skills: string[];
+  targetRoles: string[];
+  experienceLevel: string | null; // entry | mid | senior | staff | principal
+  resumeText: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 /** Application status values */

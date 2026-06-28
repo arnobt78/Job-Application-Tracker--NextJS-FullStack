@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | **Cycle** | C1 |
-| **Stage** | 3 Synthesis — **Phase 1 ~92% + Phase 2 scaffolded** |
+| **Stage** | 3 Synthesis — **Phase 1 COMPLETE + Phase 2 DB-persisted** |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
-| **Pipeline** | BL-0008 committed · docs audit sync · Gate 1 pending · manual QA pending |
-| **Last Updated** | 2026-06-28T00:00:00Z |
-| **Git HEAD** | `0f2ea55` fix(auth): middleware.ts rename — COMMITTED + PUSHED |
+| **Pipeline** | BL-0010 COMPLETE · BL-0009 partial · Gate 1 pending · manual QA pending |
+| **Last Updated** | 2026-06-28T12:00:00Z |
+| **Git HEAD** | pending commit — T1-T8 complete + papaparse removed |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -22,18 +22,18 @@
 
 ## Resume (current session)
 
-- Phase 1 Bluedoor **~92%** — enrichment, discover, notifications, stats overhaul, Posting Activity tab
-- Phase 2 **scaffolded** — FastAPI + 9 agents + `AiInsightsPanel` (not deployed)
-- Verify @ `2026-06-27`: lint ✓ · typecheck ✓ · test **49/49** ✓
-- Read `CLAUDE.md` · `docs/PROJECT_PLAN.md` · `docs/PROJECT_WALKTHROUGH.md` · `.agile-v/PLAYBOOK.md`
+- Phase 1 **COMPLETE** — all BL-0010 gaps closed (T1–T8)
+- Phase 2 **DB-persisted** — `JobAIInsight` + `UserProfile` models, `AiInsightsPanel` regenerate flow, internal API routes for n8n
+- `papaparse` + `@types/papaparse` removed (dead packages — zero imports)
+- Verify @ `2026-06-28`: lint ✓ · typecheck ✓ · test **49/49** ✓ · build ✓
 - INT-0003 active · Gate 1 still pending
 
 ## Vision (locked)
 
 | Phase | Scope | Status |
 |---|---|---|
-| **Phase 1** | Bluedoor enrich + `/discover` + stats + notifications | **~92%** (see BL-0010 gaps) |
-| **Phase 2** | FastAPI + Ollama 9-agent pipeline + n8n on Coolify | Scaffolded (`python-ai-service/`) |
+| **Phase 1** | Bluedoor enrich + `/discover` + stats + notifications + email + logos + facets + webhook-subscribe | **✅ COMPLETE** |
+| **Phase 2** | FastAPI + Ollama 9-agent pipeline + n8n on Coolify + DB persist | Scaffolded + persisted (`JobAIInsight`, internal API) |
 | **Principle** | Application CRM first — enrich + optional discovery, not full job board | — |
 
 ## Architecture Constraints (always)
@@ -69,15 +69,15 @@
 | `middleware.ts` fix (was `proxy.ts`) | REQ-0009 |
 | Docs audit sync | REQ-0024 |
 
-**Verify @ local (`2026-06-27`):** lint ✓ · typecheck ✓ · test **49/49** ✓ · build ✓
+**Verify @ local (`2026-06-28`):** lint ✓ · typecheck ✓ · test **49/49** ✓ · build ✓
 
 ## Active Backlog
 
 | BL | Status | Scope |
 |---|---|---|
 | **BL-0008** | ✅ COMMITTED | Phase 1+2 core + Posting Activity (`58e8297`+) |
-| **BL-0010** | OPEN | Phase 1 gaps: facets API, webhook subscribe, weekly digest, React Email, logos |
-| **BL-0009** | SCAFFOLDED | Phase 2 deploy: Coolify + Ollama + DB persist + n8n |
+| **BL-0010** | ✅ COMPLETE | T1-T8: logos, React Email, weekly digest, facets, webhook-subscribe, AI DB models, AI panel persist, internal API |
+| **BL-0009** | PARTIAL | Phase 2: DB models+persist done; Coolify deploy + n8n flows + UserProfile UI pending |
 | **BL-0003** | BACKLOG | E2E Playwright + Bluedoor unit tests |
 | Gate 1 | PENDING | Human approve baseline REQs |
 

@@ -9,10 +9,13 @@
  *
  * The clear button + subtitle row live in DiscoverFilterSection (parent), matching
  * the JobsFilterSection pattern.
+ *
+ * Facet counts from Bluedoor /jobs/facets are shown inline in each filter option.
  */
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassSearchInput } from '@/components/ui/glass-search-input';
 import {
@@ -27,7 +30,10 @@ import {
 } from '@/components/ui/glass-dropdown-menu';
 import { Globe2, MapPin, DollarSign, Briefcase } from 'lucide-react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { queryKeys } from '@/lib/query-keys';
+import { getBluedoorFacetsAction } from '@/utils/actions';
 import type { ReactNode } from 'react';
+import type { DiscoverFacets } from '@/lib/bluedoor/types';
 
 // ─────────────────────────────────────────────
 // Filter options
@@ -60,7 +66,7 @@ const COUNTRY_OPTIONS = [
 ] as const;
 
 // ─────────────────────────────────────────────
-// Shared filter dropdown — mirrors FilterDropdown in jobs-filter-bar.tsx
+// Shared filter dropdown
 // ─────────────────────────────────────────────
 
 type FilterOption = { value: string; label: string };
@@ -71,6 +77,8 @@ type FilterDropdownProps = {
   onChange: (value: string) => void;
   triggerIcon: ReactNode;
   triggerLabel: string;
+  /** Optional facet counts keyed by option value */
+  facetCounts?: Record<string, number>;
 };
 
 function FilterDropdown({
@@ -79,6 +87,7 @@ function FilterDropdown({
   onChange,
   triggerIcon,
   triggerLabel,
+  facetCounts,
 }: FilterDropdownProps) {
   return (
     <DropdownMenu>
@@ -97,13 +106,20 @@ function FilterDropdown({
         className="w-[var(--radix-dropdown-menu-trigger-width)]"
       >
         <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
-          {options.map((option) => (
-            <GlassDropdownRadioItem
-              key={option.value}
-              value={option.value}
-              label={option.label}
-            />
-          ))}
+          {options.map((option) => {
+            const count = facetCounts?.[option.value];
+            return (
+              <GlassDropdownRadioItem
+                key={option.value}
+                value={option.value}
+                label={
+                  count != null && option.value !== 'all'
+                    ? `${option.label} (${count.toLocaleString()})`
+                    : option.label
+                }
+              />
+            );
+          })}
         </DropdownMenuRadioGroup>
       </GlassDropdownContent>
     </DropdownMenu>
@@ -113,6 +129,10 @@ function FilterDropdown({
 // ─────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────
+
+function toFacetCounts(items: DiscoverFacets['workplace_type']): Record<string, number> {
+  return Object.fromEntries(items.map((f) => [f.value, f.count]));
+}
 
 export function DiscoverFilters() {
   const router = useRouter();
@@ -126,6 +146,17 @@ export function DiscoverFilters() {
   const workplaceType = searchParams.get('workplaceType') ?? 'all';
   const employmentType = searchParams.get('employmentType') ?? 'all';
   const salaryExists = searchParams.get('salaryExists') ?? 'all';
+
+  // Live facet counts — staleTime 5 min, NOT persisted, graceful empty on error
+  const { data: facets } = useQuery({
+    queryKey: queryKeys.discover.facets(q || undefined, country !== 'United States' ? country : undefined),
+    queryFn: () => getBluedoorFacetsAction({ q: q || undefined, country }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const workplaceCounts = facets ? toFacetCounts(facets.workplace_type) : undefined;
+  const employmentCounts = facets ? toFacetCounts(facets.employment_type) : undefined;
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -181,22 +212,24 @@ export function DiscoverFilters() {
           triggerLabel={countryLabel}
         />
 
-        {/* Workplace type */}
+        {/* Workplace type — shows live Bluedoor facet counts */}
         <FilterDropdown
           value={workplaceType}
           options={WORKPLACE_OPTIONS}
           onChange={(v) => updateParam('workplaceType', v)}
           triggerIcon={<MapPin className="h-4 w-4" />}
           triggerLabel={workplaceLabel}
+          facetCounts={workplaceCounts}
         />
 
-        {/* Employment type */}
+        {/* Employment type — shows live Bluedoor facet counts */}
         <FilterDropdown
           value={employmentType}
           options={EMPLOYMENT_OPTIONS}
           onChange={(v) => updateParam('employmentType', v)}
           triggerIcon={<Briefcase className="h-4 w-4" />}
           triggerLabel={employmentLabel}
+          facetCounts={employmentCounts}
         />
 
         {/* Salary filter */}
