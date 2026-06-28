@@ -1,8 +1,8 @@
-/** localStorage keys for auth toasts after full-page navigation (survives Clerk sign-out) */
+/** localStorage keys for auth toasts after full-page navigation (survives sign-out) */
 export const AUTH_TOAST_KEYS = {
   welcomeName: 'jobify_auth_welcome_name',
   goodbyeName: 'jobify_auth_goodbye_name',
-  /** Set before OAuth redirect — name resolved from Clerk on dashboard */
+  /** Set before OAuth redirect — name resolved from NextAuth session on dashboard */
   welcomePending: 'jobify_auth_welcome_pending',
 } as const;
 

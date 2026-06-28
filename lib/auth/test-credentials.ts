@@ -6,7 +6,7 @@ export interface TestAccount {
   name: string;
   email: string;
   password: string;
-  /** Optional Clerk img.clerk.com URL — robohash used when omitted */
+  /** Optional avatar URL — robohash used when omitted */
   imageUrl?: string;
 }
 
@@ -15,8 +15,6 @@ export const TEST_ACCOUNTS: Record<TestAccountRole, TestAccount> = {
     name: 'Test User',
     email: 'test@user.com',
     password: '12345678',
-    imageUrl:
-      'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvdXBsb2FkZWQvaW1nXzNGMm53QjBwOWpQdDBxSVQzVW9vOFJPMFF5RyJ9',
   },
 };
 

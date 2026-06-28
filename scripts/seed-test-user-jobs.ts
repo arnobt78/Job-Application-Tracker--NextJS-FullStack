@@ -1,11 +1,11 @@
 /**
  * Seed random jobs for test@user.com
- * Run: npx tsx scripts/seed-test-user-jobs.ts <CLERK_ID>
+ * Run: npx tsx scripts/seed-test-user-jobs.ts <USER_ID>
  *
  * Deletes existing jobs for the user, then creates new ones in the last 2–3 months
  * with multiple jobs per month (for realistic chart data).
  *
- * Get CLERK_ID from Clerk Dashboard → Users → test@user.com → User ID
+ * Get USER_ID from: SELECT id FROM "User" WHERE email = 'test@user.com';
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -69,16 +69,16 @@ function randomDateInMonth(year: number, month: number, maxDay?: number): Date {
 }
 
 async function main() {
-  const clerkId = process.argv[2];
+  const userId = process.argv[2];
 
-  if (!clerkId) {
-    console.error('\nUsage: npx tsx scripts/seed-test-user-jobs.ts <CLERK_ID>\n');
-    console.error('Get CLERK_ID from Clerk Dashboard → Users → test@user.com → User ID\n');
+  if (!userId) {
+    console.error('\nUsage: npx tsx scripts/seed-test-user-jobs.ts <USER_ID>\n');
+    console.error('Get USER_ID: SELECT id FROM "User" WHERE email = \'test@user.com\';\n');
     process.exit(1);
   }
 
   // 1. Delete all existing jobs for this user
-  const deleted = await prisma.job.deleteMany({ where: { clerkId } });
+  const deleted = await prisma.job.deleteMany({ where: { userId } });
   console.log(`\n🗑️  Deleted ${deleted.count} existing job(s) for test@user.com\n`);
 
   // 2. Generate jobs in last 3 months only, with multiple per month
@@ -87,7 +87,7 @@ async function main() {
   const currentMonth = now.getMonth() + 1; // 1-12
 
   const jobs: Array<{
-    clerkId: string;
+    userId: string;
     position: string;
     company: string;
     location: string;
@@ -115,7 +115,7 @@ async function main() {
     for (let j = 0; j < count; j++) {
       const date = randomDateInMonth(year, month, maxDay);
       jobs.push({
-        clerkId,
+        userId,
         position: random(POSITIONS),
         company: random(COMPANIES),
         location: random(LOCATIONS),

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { createPageMetadata } from '@/lib/site-metadata';
 import { DiscoverPageHeader } from '@/components/discover/discover-page-header';
 import { DiscoverFilterSection } from '@/components/discover/discover-filter-section';
+import { DiscoverSidebar } from '@/components/discover/discover-sidebar';
 import { DiscoverResultsToolbar } from '@/components/discover/discover-results-toolbar';
 import {
   DiscoverResults,
@@ -63,23 +64,33 @@ async function DiscoverPage({ searchParams }: DiscoverPageProps) {
       {/* h1 header — static, never inside Suspense */}
       <DiscoverPageHeader />
 
-      {/* Filter section header — static, never inside Suspense to avoid visual expansion */}
-      <PageSectionHeader
-        icon={SlidersHorizontal}
-        title="Search & Filter"
-        className="mb-2"
-      />
+      {/* Two-panel layout: sidebar (lg+) on left, results column on right */}
+      <div className="flex gap-6">
+        {/* Left sidebar — sticky, desktop only; uses useSearchParams so needs Suspense */}
+        <Suspense>
+          <DiscoverSidebar className="hidden w-60 shrink-0 lg:block xl:w-64" />
+        </Suspense>
 
-      {/* DiscoverFilterSection uses useSearchParams — needs Suspense */}
-      <Suspense>
-        <DiscoverFilterSection />
-      </Suspense>
+        {/* Results column — full width on mobile, flex-1 on desktop */}
+        <div className="min-w-0 flex-1">
+          {/* Mobile-only filter section — hidden on lg+ (sidebar handles it) */}
+          <PageSectionHeader
+            icon={SlidersHorizontal}
+            title="Search & Filter"
+            className="mb-2 lg:hidden"
+          />
+          {/* DiscoverFilterSection uses useSearchParams — needs Suspense */}
+          <Suspense>
+            <DiscoverFilterSection />
+          </Suspense>
 
-      {/* Results toolbar + grid — both use useSearchParams, share same Suspense boundary */}
-      <Suspense fallback={<DiscoverCardShellGrid />}>
-        <DiscoverResultsToolbar />
-        <DiscoverResults />
-      </Suspense>
+          {/* Results toolbar + grid — both use useSearchParams, share Suspense boundary */}
+          <Suspense fallback={<DiscoverCardShellGrid />}>
+            <DiscoverResultsToolbar />
+            <DiscoverResults />
+          </Suspense>
+        </div>
+      </div>
     </HydrationBoundary>
   );
 }

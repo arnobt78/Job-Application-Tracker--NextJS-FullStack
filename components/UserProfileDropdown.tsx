@@ -1,6 +1,6 @@
 'use client';
 
-import { useClerk } from '@clerk/nextjs';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 import {
@@ -20,11 +20,10 @@ import { scheduleGoodbyeAfterRedirect } from '@/lib/notifications/app-toast';
 import { cn } from '@/lib/utils';
 
 /**
- * Navbar profile menu — SSR snapshot + Clerk useUser merge via useNavUserSession.
+ * Navbar profile menu — SSR snapshot + NextAuth useSession merge via useNavUserSession.
  * Avatar button always mounted (stable DOM); pulse overlay only on true cold load.
  */
 export default function UserProfileDropdown() {
-  const { signOut } = useClerk();
   const { effectiveUser, displayName, email, avatarLoading } =
     useNavUserSession();
   const [avatarError, setAvatarError] = useState(false);
@@ -42,7 +41,7 @@ export default function UserProfileDropdown() {
   const handleSignOut = async () => {
     scheduleGoodbyeAfterRedirect(displayName);
     try {
-      await signOut({ redirectUrl: '/' });
+      await signOut({ callbackUrl: '/' });
     } catch {
       window.location.assign('/');
     }
@@ -92,7 +91,7 @@ export default function UserProfileDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/user-profile" className="flex cursor-pointer items-center">
+          <Link href="/profile" className="flex cursor-pointer items-center">
             <Settings className="mr-2 h-4 w-4" />
             Manage account
           </Link>
@@ -103,7 +102,7 @@ export default function UserProfileDropdown() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="px-2 py-1.5 text-xs text-muted-foreground">
-          Secured by Clerk
+          Secured by NextAuth
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

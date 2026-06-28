@@ -123,7 +123,7 @@ export function scheduleWelcomeAfterRedirect(displayName: string): void {
   setPendingWelcomeToast(firstNameFrom(displayName));
 }
 
-/** Store goodbye name before Clerk sign-out redirect */
+/** Store goodbye name before sign-out redirect */
 export function scheduleGoodbyeAfterRedirect(displayName: string): void {
   setPendingGoodbyeToast(firstNameFrom(displayName));
 }

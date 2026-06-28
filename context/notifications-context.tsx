@@ -20,7 +20,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { NOTIFICATIONS_CHANNEL } from '@/hooks/useJobsCacheSync';
 import type { JobsNotificationEvent } from '@/lib/jobs-events';
 
@@ -42,7 +42,8 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(nul
 const MAX_NOTIFICATIONS = 50;
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
-  const { isSignedIn } = useAuth();
+  const { status } = useSession();
+  const isSignedIn = status === 'authenticated';
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const idRef = useRef(0);
 

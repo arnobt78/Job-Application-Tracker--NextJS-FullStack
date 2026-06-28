@@ -68,14 +68,12 @@ Specify → Constrain → Orchestrate → Prove → Evolve → Verify
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Checkpoint | **INT-0003** `c1-dev-20260612` (Dev-Active) |
-| Phase 1 | **~92%** — BL-0008 committed; BL-0010 gaps open |
-| Phase 2 | **BL-0009** — AI pipeline scaffolded; Coolify deploy pending |
-| Gate 1 | PENDING (`c1-gate1-baseline-20260611`) |
-| Gate 2 | NOT_REACHED |
-| Governance | REQ-0024 (always-on traceability) |
-| Git HEAD | `0f2ea55` |
-| Verify | lint ✓ · typecheck ✓ · test 49/49 ✓ |
+| Checkpoint | INT-0003 |
+| Phase 1 | **✅ COMPLETE** |
+| Phase 2 | **~90%** — code in repo; VPS deploy pending |
+| Auth | NextAuth v5 (Clerk removed) |
+| Gate 1 | PENDING |
+| Verify | lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ |
 
 ---
 
@@ -127,7 +125,7 @@ Archives: `cycles/C1/` (frozen after Gate 2)
 | Prefetch | `await prefetchQuery` before `dehydrate` (dashboard/stats/[id]) |
 | Cold skeletons | `useQueryBodyLoading` — skip when SSR/persist warm |
 | Persist | `PersistQueryClient` localStorage `jobify-query-cache` — **not** discover/ai/events |
-| Auth middleware | `middleware.ts` — Clerk gate (never `proxy.ts`) |
+| Auth middleware | `middleware.ts` — NextAuth JWT gate |
 | No route `loading.tsx` | Inline skeletons on data slots only |
 | CRUD cache | onSuccess `invalidateAll`+broadcast · onSettled same `broadcast:false` |
 | Server bust | `invalidateUserJobCaches` + tags + Redis + SSE |

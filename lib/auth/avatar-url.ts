@@ -1,10 +1,10 @@
-/** Avatar URL resolver — Clerk image or deterministic robohash fallback */
+/** Avatar URL resolver — OAuth image or deterministic robohash fallback */
 
 export type ResolveAvatarUrlInput = {
   imageUrl?: string | null;
   name?: string | null;
   email?: string | null;
-  /** When true and imageUrl empty, skip robohash until error (Clerk loading) */
+  /** When true and imageUrl empty, skip robohash until error (OAuth image loading) */
   hasImage?: boolean;
   avatarError?: boolean;
 };
@@ -14,7 +14,7 @@ export function robohashUrl(seed: string, size = 80): string {
   return `https://robohash.org/${encodeURIComponent(seed)}.png?size=${size}x${size}`;
 }
 
-/** Clerk profile image when present; otherwise robohash from name/email */
+/** OAuth profile image when present; otherwise robohash from name/email */
 export function resolveAvatarUrl({
   imageUrl,
   name,

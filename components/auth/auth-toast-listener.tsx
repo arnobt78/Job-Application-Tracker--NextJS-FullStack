@@ -13,15 +13,14 @@ import {
   hasPendingWelcomeName,
   hasWelcomePending,
 } from '@/lib/notifications/auth-toast-storage';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
-function displayNameFromUser(user: NonNullable<ReturnType<typeof useUser>['user']>): string {
+function displayNameFromUser(user: { name?: string | null; email?: string | null }): string {
   return (
-    [user.firstName, user.lastName].filter(Boolean).join(' ') ||
-    user.username ||
-    user.primaryEmailAddress?.emailAddress ||
+    user.name ||
+    user.email?.split('@')[0] ||
     'there'
   );
 }
@@ -36,7 +35,10 @@ function afterDestinationPaint(callback: () => void): void {
 /** Route-gated welcome/goodbye Sonner toasts after auth redirects */
 export function AuthToastListener(): null {
   const pathname = usePathname();
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { data: session, status } = useSession();
+  const isLoaded = status !== 'loading';
+  const isSignedIn = status === 'authenticated';
+  const user = session?.user;
   const welcomeShown = useRef(false);
   const goodbyeShown = useRef(false);
 
@@ -49,7 +51,7 @@ export function AuthToastListener(): null {
 
     if (!credentialPending && !oauthPending) return;
 
-    // OAuth welcome needs Clerk user loaded for display name
+    // OAuth welcome needs session loaded for display name
     if (oauthPending && !credentialPending && (!isLoaded || !isSignedIn || !user)) {
       return;
     }
@@ -77,7 +79,7 @@ export function AuthToastListener(): null {
     if (!hasPendingGoodbyeName()) return;
 
     let cancelled = false;
-    // Brief delay so Clerk redirect + landing paint finish before toast (avoids flash/reload swallowing it)
+    // Brief delay so redirect + landing paint finish before toast (avoids flash/reload swallowing it)
     const timer = window.setTimeout(() => {
       afterDestinationPaint(() => {
         if (cancelled || goodbyeShown.current) return;

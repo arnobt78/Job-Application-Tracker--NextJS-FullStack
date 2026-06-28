@@ -4,7 +4,7 @@ import type { Query } from '@tanstack/react-query';
 import { PERSIST_CACHE_KEY } from '@/lib/query-client';
 
 /**
- * Persist only job/stats/chart queries — not Clerk auth or ephemeral keys.
+ * Persist only job/stats/chart queries — not auth or ephemeral keys.
  * Restored cache + useQueryBodyLoading skips skeleton on hard refresh.
  */
 export function shouldPersistQuery(query: Query): boolean {

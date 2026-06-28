@@ -5,10 +5,10 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Last Updated | 2026-06-19T17:00:00Z |
+| Last Updated | 2026-06-27T12:00:00Z |
 | **eval_gate_status** | **NOT_RUN** |
-| **ui_slice_status** | **PASS** (Phase 1 Bluedoor @ local) |
-| Red Team | EVAL-0007 PASS |
+| **ui_slice_status** | **PASS** (Phase 1 ~92% @ local) |
+| Red Team | EVAL-0013 PASS |
 | Compliance Auditor | Pending |
 
 ## Eval Flywheel Record
@@ -22,6 +22,12 @@
 | EVAL-0005 | 2026-06-16 | Cache/SSR track 280e284 | lint/typecheck/test(49)/build | PASS | SSR hydrate, persist, body loading, nav avatar, invalidation |
 | EVAL-0006 | 2026-06-18 | Infinity Loop reactivation 1a1bec0 | lint/typecheck/test(49)/build | PASS | Governance sync; baseline verified before dev continuation |
 | EVAL-0007 | 2026-06-19 | Phase 1 Bluedoor (local uncommitted) | lint/typecheck/test(49)/build | PASS | enrich, discover, webhook, cron routes |
+| EVAL-0008 | 2026-06-27 | Phase 1 deep audit | lint/typecheck/test(49)/build + 5 fixes | PASS | REQ-0025, REQ-0026 |
+| EVAL-0009 | 2026-06-27 | Phase 1+2 completion | lint/typecheck/test(49)/build | PASS | SSE, bell, discover modal, AI scaffold |
+| EVAL-0010 | 2026-06-27 | Full deep audit | lint/typecheck/test(49)/build | PASS | publishNotification fix |
+| EVAL-0011 | 2026-06-27 | AiInsightsPanel + Posting Activity | lint/typecheck/test(49)/build | PASS | JobDetailPanels, getJobEvents |
+| EVAL-0012 | 2026-06-27 | AUDIT-0001 middleware fix | lint/typecheck/test(49)/build | PASS | proxy.ts→middleware.ts |
+| EVAL-0013 | 2026-06-27 | Agile V full sync reactivation | lint/typecheck/test(49) | PASS | REQ-0024 governance sync @ `0f2ea55` |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 
 ## Quality Gates Evidence (Planned)

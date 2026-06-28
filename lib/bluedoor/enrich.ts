@@ -13,7 +13,7 @@
  */
 
 import prisma from '@/utils/db';
-import { parseAtsKey, searchJobs, getJobDetail, registerBluedoorWebhook } from '@/lib/bluedoor/client';
+import { parseAtsKey, searchJobs, getJobDetail, getBluedoorOrg, registerBluedoorWebhook } from '@/lib/bluedoor/client';
 import { invalidateUserJobCaches } from '@/lib/invalidate-jobs-server';
 import { publishNotification } from '@/lib/jobs-events';
 import { sendPostingChangeEmail } from '@/lib/notifications/email';
@@ -35,7 +35,7 @@ export async function enrichJob(
 ): Promise<void> {
   try {
     const job = await prisma.job.findUnique({
-      where: { id: jobId, clerkId: userId },
+      where: { id: jobId, userId },
     });
 
     if (!job) return;
@@ -45,9 +45,24 @@ export async function enrichJob(
 
     const patch = buildEnrichmentPatch(match);
     await prisma.job.update({
-      where: { id: jobId, clerkId: userId },
+      where: { id: jobId, userId },
       data: patch,
     });
+
+    // Org enrichment — best-effort, never blocks main enrich flow
+    if (match.org_id) {
+      const org = await getBluedoorOrg(match.org_id);
+      if (org) {
+        await prisma.job.update({
+          where: { id: jobId, userId },
+          data: {
+            companySize: org.size ?? null,
+            companyIndustry: org.industry ?? null,
+            companyHq: org.hq_location ?? null,
+          },
+        });
+      }
+    }
 
     // Invalidate Next.js + Redis + SSE so the badge appears immediately
     await invalidateUserJobCaches(userId, jobId);
@@ -56,7 +71,7 @@ export async function enrichJob(
     const subId = await registerBluedoorWebhook(match.job_id);
     if (subId) {
       await prisma.job.update({
-        where: { id: jobId, clerkId: userId },
+        where: { id: jobId, userId },
         data: { bluedoorWebhookSubId: subId },
       });
     }
@@ -82,7 +97,7 @@ export async function resyncJob(
     const patch = buildEnrichmentPatch(fresh);
 
     const current = await prisma.job.findUnique({
-      where: { id: jobId, clerkId: userId },
+      where: { id: jobId, userId },
       select: {
         bluedoorStatus: true,
         bluedoorDescHash: true,
@@ -103,13 +118,13 @@ export async function resyncJob(
     // Need job metadata for email — only fetch if something changed
     const jobMeta = changed
       ? await prisma.job.findUnique({
-          where: { id: jobId, clerkId: userId },
+          where: { id: jobId, userId },
           select: { position: true, company: true },
         })
       : null;
 
     await prisma.job.update({
-      where: { id: jobId, clerkId: userId },
+      where: { id: jobId, userId },
       data: {
         ...patch,
         // Record when we last detected a change (not just synced)

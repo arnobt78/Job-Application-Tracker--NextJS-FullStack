@@ -7,7 +7,7 @@
  * Auth: X-Internal-Secret header must match AI_SERVICE_SECRET env var.
  *
  * Body:
- *   userId       — Clerk user ID (clerkId)
+ *   userId       — NextAuth user ID (cuid)
  *   type         — JobsNotificationEvent['notificationType']
  *   jobId        — ID of the related job
  *   message      — Human-readable message shown in the notification bell

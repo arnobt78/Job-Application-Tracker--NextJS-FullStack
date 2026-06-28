@@ -18,8 +18,14 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
+        // OAuth provider avatars (Google, GitHub profile images)
         protocol: 'https',
-        hostname: 'img.clerk.com',
+        hostname: '*.googleusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
         pathname: '/**',
       },
     ],

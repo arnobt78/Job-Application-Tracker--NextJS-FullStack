@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   invalidateAllJobQueries,
@@ -25,7 +25,8 @@ export const NOTIFICATIONS_CHANNEL = 'jobify-notifications';
  *  Also relays enrichment notification events to NOTIFICATIONS_CHANNEL BroadcastChannel. */
 export function useJobsCacheSync(): void {
   const queryClient = useQueryClient();
-  const { isSignedIn } = useAuth();
+  const { status } = useSession();
+  const isSignedIn = status === 'authenticated';
   const reconnectAttempt = useRef(0);
 
   useEffect(() => {

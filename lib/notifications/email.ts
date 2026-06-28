@@ -2,7 +2,7 @@
  * Resend email wrapper — sends enrichment change alerts to the job owner.
  *
  * Graceful no-op when RESEND_API_KEY is absent (local dev without email).
- * Fetches user email from Clerk API via clerkId stored on the Job record.
+ * Fetches user email from the DB users table via userId stored on the Job record.
  *
  * Called from: lib/bluedoor/enrich.ts resyncJob when changed === true
  */
@@ -14,7 +14,7 @@ import { createElement } from 'react';
 export type PostingChangeType = 'posting_closed' | 'jd_changed' | 'salary_added';
 
 type SendPostingChangeEmailParams = {
-  userId: string;    // Clerk userId (clerkId on Job record)
+  userId: string;    // NextAuth user ID (userId on Job record)
   jobId: string;
   position: string;
   company: string;
@@ -102,30 +102,27 @@ export async function sendPostingChangeEmail({
   }
 }
 
-/** Fetch user email from Clerk via server-side Clerk API */
+/** Fetch user email from DB by userId */
 async function fetchUserEmail(userId: string): Promise<string | null> {
   try {
-    const { clerkClient } = await import('@clerk/nextjs/server');
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const primary = user.emailAddresses.find(
-      (e) => e.id === user.primaryEmailAddressId
-    );
-    return primary?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? null;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    return user?.email ?? null;
   } catch {
-    // Clerk API unavailable — no email to send
     return null;
   }
 }
 
-/** Resolve job owner's clerkId from DB (for webhook/cron callers that only have jobId) */
+/** Resolve job owner's userId from DB (for webhook/cron callers that only have jobId) */
 export async function getJobOwnerUserId(jobId: string): Promise<string | null> {
   try {
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { clerkId: true },
+      select: { userId: true },
     });
-    return job?.clerkId ?? null;
+    return job?.userId ?? null;
   } catch {
     return null;
   }

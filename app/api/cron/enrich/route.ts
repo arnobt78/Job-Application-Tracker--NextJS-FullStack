@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   // Fetch all jobs that have been linked to Bluedoor
   const jobs = await prisma.job.findMany({
     where: { bluedoorJobId: { not: null } },
-    select: { id: true, clerkId: true, bluedoorJobId: true },
+    select: { id: true, userId: true, bluedoorJobId: true },
     orderBy: { bluedoorSyncedAt: 'asc' }, // oldest synced first
   });
 
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     const batch = jobs.slice(i, i + BATCH_SIZE);
 
     const results = await Promise.allSettled(
-      batch.map((j) => resyncJob(j.id, j.clerkId, j.bluedoorJobId!))
+      batch.map((j) => resyncJob(j.id, j.userId, j.bluedoorJobId!))
     );
 
     for (const r of results) {

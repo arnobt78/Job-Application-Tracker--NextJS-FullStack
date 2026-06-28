@@ -1,14 +1,14 @@
 /**
  * POST /api/ai/pipeline — proxy to Python AI service.
  *
- * Adds auth (Clerk) before forwarding to Python, so the AI service
- * only needs to verify X-Internal-Secret — not Clerk tokens directly.
+ * Adds auth (NextAuth) before forwarding to Python, so the AI service
+ * only needs to verify X-Internal-Secret — not session tokens directly.
  *
  * Request body: PipelineRequest (typed in lib/ai/pipeline-client.ts)
  * Response: PipelineResponse
  */
 
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { runAiPipeline, AiServiceError } from '@/lib/ai/pipeline-client';
 import type { PipelineRequest } from '@/lib/ai/pipeline-client';
@@ -16,8 +16,8 @@ import type { PipelineRequest } from '@/lib/ai/pipeline-client';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const { userId } = await auth();
-  if (!userId) {
+  const session = await auth();
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,0 +1,91 @@
+{
+  "name": "Jobify — Weekly Stale App Alert",
+  "nodes": [
+    {
+      "id": "schedule-trigger",
+      "name": "Every Monday at 09:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * 1" }]
+        }
+      }
+    },
+    {
+      "id": "fetch-jobs",
+      "name": "GET /api/internal/jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.JOBIFY_APP_URL }}/api/internal/jobs",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{ "name": "userId", "value": "={{ $vars.JOBIFY_USER_ID }}" }]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "x-internal-secret", "value": "={{ $vars.AI_SERVICE_SECRET }}" }]
+        }
+      }
+    },
+    {
+      "id": "filter-stale-7d",
+      "name": "Filter pending > 7 days no update",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [640, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "combineConditions": "AND" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "operator": { "type": "string", "operation": "equals" },
+              "rightValue": "pending"
+            },
+            {
+              "leftValue": "={{ (Date.now() - new Date($json.updatedAt).getTime()) / 86400000 }}",
+              "operator": { "type": "number", "operation": "gt" },
+              "rightValue": 7
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notify-weekly",
+      "name": "POST /api/internal/notify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.JOBIFY_APP_URL }}/api/internal/notify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-internal-secret", "value": "={{ $vars.AI_SERVICE_SECRET }}" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ userId: $vars.JOBIFY_USER_ID, type: 'posting_closed', jobId: $json.id, message: 'Weekly check-in: ' + $json.position + ' at ' + $json.company + ' has been silent for 7+ days. Time to follow up?' }) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Every Monday at 09:00 UTC": { "main": [[{ "node": "GET /api/internal/jobs", "type": "main", "index": 0 }]] },
+    "GET /api/internal/jobs": { "main": [[{ "node": "Filter pending > 7 days no update", "type": "main", "index": 0 }]] },
+    "Filter pending > 7 days no update": { "main": [[{ "node": "POST /api/internal/notify", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Runs every Monday at 09:00 UTC. Finds pending jobs with no update in 7+ days and fires a weekly follow-up notification.",
+    "requiredVars": ["JOBIFY_APP_URL", "AI_SERVICE_SECRET", "JOBIFY_USER_ID"]
+  }
+}

@@ -4,7 +4,7 @@ import { createContext, useContext } from 'react';
 import type { NavUserSnapshot } from '@/lib/auth/nav-user';
 
 /**
- * SSR-seeded Clerk user for navbar — set in dashboard layout from currentUser()
+ * SSR-seeded NextAuth user for navbar — set in dashboard layout from auth()
  * so server HTML matches first client paint (no avatar skeleton flash on refresh).
  */
 const NavUserContext = createContext<NavUserSnapshot | null>(null);

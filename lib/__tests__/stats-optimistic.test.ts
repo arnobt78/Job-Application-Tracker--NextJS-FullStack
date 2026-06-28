@@ -138,7 +138,7 @@ describe('applyStatsDelete', () => {
       id: '1',
       createdAt: new Date(),
       updatedAt: new Date(),
-      clerkId: 'u1',
+      userId: 'u1',
       position: 'Dev',
       company: 'Co',
       location: 'Remote',

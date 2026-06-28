@@ -4,25 +4,27 @@
  * AiInsightsPanel — per-job AI analysis card.
  *
  * Shows fit score, cover letter, and interview angles for a tracked job.
- * Triggered manually ("Generate Insights") to avoid auto-firing expensive LLM calls.
- * Persists results to DB (JobAIInsight) so re-opening the panel doesn't re-run the pipeline.
+ * Uses SSE streaming for per-agent progress (useStreamPipeline).
+ * Persists results to DB (JobAIInsight) so re-opening is instant.
  *
  * Consumes:
- *   - useQuery → getAIInsightAction (load from DB)
- *   - useAIPipeline (mutation) → POST /api/ai/pipeline
- *   - saveAIInsightAction (persist result to DB after generation)
+ *   - useQuery → getAIInsightAction (load from DB, staleTime Infinity)
+ *   - useStreamPipeline → POST /api/ai/pipeline/stream (SSE)
+ *   - saveAIInsightAction (persist result after generation)
  */
 
 import { useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlassCard } from '@/components/ui/glass-card';
-import { useAIPipeline } from '@/hooks/useAIPipeline';
+import { useStreamPipeline } from '@/hooks/useAIPipeline';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { getAIInsightAction, saveAIInsightAction } from '@/utils/actions';
 import type { PipelineJobInput, PipelineUserProfile, PipelineResponse, InterviewAngle } from '@/lib/ai/pipeline-client';
 import type { AIInsightType } from '@/utils/types';
+import { PipelineProgress } from '@/components/jobs/pipeline-progress';
+import { trackEvent } from '@/lib/analytics/posthog';
 import { cn } from '@/lib/utils';
 
 type AiInsightsPanelProps = {
@@ -88,7 +90,7 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
         <div className="flex flex-col gap-1.5">
           <p className="text-xs font-semibold text-muted-foreground">Interview Angles</p>
           <ul className="flex flex-col gap-2">
-            {data.interview_angles.map((a, i) => (
+            {data.interview_angles.map((a: InterviewAngle, i: number) => (
               <li key={i} className="rounded-lg border border-border bg-black/10 p-2.5 text-xs">
                 <p className="font-medium">{a.question}</p>
                 <p className="mt-0.5 text-muted-foreground">{a.angle}</p>
@@ -123,7 +125,7 @@ function dbInsightToPipelineResponse(insight: AIInsightType): PipelineResponse {
 /** Convert PipelineResponse to DB insight shape for saving. */
 function pipelineResponseToDbInsight(
   data: PipelineResponse
-): Partial<Omit<AIInsightType, 'id' | 'jobId' | 'clerkId' | 'generatedAt' | 'updatedAt'>> {
+): Partial<Omit<AIInsightType, 'id' | 'jobId' | 'userId' | 'generatedAt' | 'updatedAt'>> {
   return {
     fitScore: data.fit_score?.score ?? null,
     fitLabel: data.fit_score?.reasoning ?? null,
@@ -140,6 +142,9 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
   const queryClient = useQueryClient();
   const insightKey = queryKeys.aiInsight.job(job.job_id);
 
+  const [streamResult, setStreamResult] = useState<PipelineResponse | null>(null);
+  const [streamError, setStreamError] = useState<string | null>(null);
+
   // Load persisted insight — staleTime Infinity since it only changes on explicit regenerate
   const { data: dbInsight, isLoading: dbLoading } = useQuery({
     queryKey: insightKey,
@@ -148,10 +153,13 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
     gcTime: 0, // not in localStorage persist scope — DB is source of truth
   });
 
-  const { mutate, data: pipelineData, isPending, isError, error, reset } = useAIPipeline();
+  const { stream, isPending, progress, abort } = useStreamPipeline();
 
-  function handleGenerate() {
-    mutate(
+  async function handleGenerate() {
+    setStreamResult(null);
+    setStreamError(null);
+
+    await stream(
       {
         job,
         user: user ?? {},
@@ -159,26 +167,33 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
       },
       {
         onSuccess: async (result) => {
-          if (!result) return;
+          setStreamResult(result);
+          trackEvent('ai_insights_generated', { job_id: job.job_id, fit_score: result.fit_score?.score });
           // Persist to DB so next panel open is instant
           const saved = await saveAIInsightAction(job.job_id, pipelineResponseToDbInsight(result));
           if (saved) {
             queryClient.setQueryData(insightKey, saved);
           }
         },
+        onError: (message) => {
+          setStreamError(message);
+        },
       }
     );
   }
 
   function handleRegenerate() {
-    reset();
+    abort();
+    setStreamResult(null);
+    setStreamError(null);
     queryClient.setQueryData(insightKey, null);
+    trackEvent('ai_insights_regenerated', { job_id: job.job_id });
   }
 
-  // Show pipeline result (just generated) or persisted DB result
-  const displayData = pipelineData ?? (dbInsight ? dbInsightToPipelineResponse(dbInsight) : null);
+  // Show streaming result (just generated) or persisted DB result
+  const displayData = streamResult ?? (dbInsight ? dbInsightToPipelineResponse(dbInsight) : null);
   const hasResult = !!displayData;
-  const isFromDb = !pipelineData && !!dbInsight;
+  const isFromDb = !streamResult && !!dbInsight;
 
   return (
     <GlassCard variant="neutral" className="flex flex-col gap-3">
@@ -200,33 +215,44 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
           >
             Regenerate
           </button>
+        ) : isPending ? (
+          <button
+            onClick={handleRegenerate}
+            className="text-xs text-muted-foreground hover:text-destructive"
+          >
+            Cancel
+          </button>
         ) : (
           <Button
             size="sm"
             variant="outline"
             onClick={handleGenerate}
-            disabled={isPending || dbLoading}
+            disabled={dbLoading}
             className="h-7 gap-1.5 text-xs"
           >
-            {isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="h-3.5 w-3.5" />
-            )}
-            {isPending ? 'Analysing…' : 'Generate Insights'}
+            <Sparkles className="h-3.5 w-3.5" />
+            Generate Insights
           </Button>
         )}
       </div>
 
-      {isError && (
+      {/* Per-agent progress — visible during streaming */}
+      {isPending && (
+        <PipelineProgress
+          currentStep={progress.currentStep}
+          completedSteps={progress.completedSteps}
+        />
+      )}
+
+      {streamError && (
         <p className="text-xs text-destructive">
-          {error?.message ?? 'AI service unavailable. Try again later.'}
+          {streamError}
         </p>
       )}
 
       {displayData && <InsightsResult data={displayData} />}
 
-      {!displayData && !isPending && !isError && !dbLoading && (
+      {!displayData && !isPending && !streamError && !dbLoading && (
         <p className="text-xs text-muted-foreground">
           Get AI-powered fit score, cover letter, and interview coaching for this role.
         </p>

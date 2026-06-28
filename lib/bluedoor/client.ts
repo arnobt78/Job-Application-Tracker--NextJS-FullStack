@@ -10,6 +10,7 @@ import type {
   BluedoorJob,
   BluedoorFacetsResponse,
   BluedoorJobEventsResponse,
+  BluedoorOrg,
   BluedoorSearchParams,
   BluedoorSearchResponse,
   DiscoverFacets,
@@ -215,6 +216,26 @@ export async function unregisterBluedoorWebhook(subscriptionId: string): Promise
     });
   } catch {
     // Ignore — job is being deleted regardless
+  }
+}
+
+// ─────────────────────────────────────────────
+// Org enrichment
+// ─────────────────────────────────────────────
+
+/**
+ * GET /v1/orgs/{org_id} — fetch company-level data (size, industry, HQ).
+ * Called after a successful job match if org_id is present on the job record.
+ * Returns null on any error so enrichment is never blocked by org fetch failures.
+ */
+export async function getBluedoorOrg(orgId: string): Promise<BluedoorOrg | null> {
+  try {
+    const res = await bluedoorFetch<{ data: BluedoorOrg }>(
+      `/orgs/${encodeURIComponent(orgId)}`
+    );
+    return res.data ?? null;
+  } catch {
+    return null;
   }
 }
 

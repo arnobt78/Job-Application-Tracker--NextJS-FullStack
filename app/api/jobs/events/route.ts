@@ -3,7 +3,7 @@
  * Same-instance: in-memory bus. Cross-instance: Redis Streams XREAD BLOCK (no polling).
  * Multiplexes both 'invalidate' and 'notify' event types over the same stream.
  */
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/auth';
 import {
   awaitRemoteJobsEvents,
   subscribeJobsEvents,
@@ -19,10 +19,11 @@ function encodeSse(data: JobsEvent): Uint8Array {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const { userId } = await auth();
-  if (!userId) {
+  const session = await auth();
+  if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
+  const userId = session.user.id;
 
   let closed = false;
   /** '$' = only new stream entries after connect */

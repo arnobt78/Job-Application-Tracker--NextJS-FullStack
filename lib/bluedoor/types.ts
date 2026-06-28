@@ -245,6 +245,24 @@ export type JobEnrichmentPatch = {
 };
 
 // ─────────────────────────────────────────────
+// Org enrichment — GET /v1/orgs/{org_id}
+// ─────────────────────────────────────────────
+
+/**
+ * Organisation record from Bluedoor /v1/orgs/{org_id}.
+ * We store: size, industry, hq_location for display in JobCard.
+ */
+export type BluedoorOrg = {
+  id: string;
+  name: string;
+  size?: string | null;            // e.g. "51-200", "1001-5000"
+  industry?: string | null;
+  hq_location?: string | null;
+  linkedin_url?: string | null;
+  website?: string | null;
+};
+
+// ─────────────────────────────────────────────
 // Discover page — search params parsed from URL
 // ─────────────────────────────────────────────
 

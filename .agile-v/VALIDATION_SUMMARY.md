@@ -4,9 +4,9 @@
 |---|---|
 | Cycle | C1 |
 | Stage | 3 Synthesis — Phase 1+2 + Posting Activity tab + EVAL-0012 audit |
-| Status | `COMMITTED` — pushed `58e8297`; manual QA pending |
-| Last Updated | 2026-06-27T20:00:00Z |
-| Red Team | EVAL-0012 @ local — PASS (includes proxy.ts→middleware.ts fix) |
+| Status | `ACTIVE` — Agile V sync @ `0f2ea55`; manual QA pending |
+| Last Updated | 2026-06-27T12:00:00Z |
+| Red Team | EVAL-0013 @ local — PASS (governance reactivation) |
 
 ## Findings Summary
 

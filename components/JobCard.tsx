@@ -34,9 +34,15 @@ function JobCard({ job }: { job: JobType }) {
           {/* Bluedoor live posting badge — null-safe, renders nothing when not enriched */}
           <JobEnrichmentBadge job={job} className="mt-0.5 shrink-0" />
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5">
+        <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
           <CompanyLogo domain={extractDomain(job.applyUrl)} size={14} className="opacity-80" />
           <span className="text-sm text-muted-foreground">{job.company}</span>
+          {/* Company size from Bluedoor /v1/orgs — shown when enriched */}
+          {job.companySize && (
+            <span className="rounded-full border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/70">
+              {job.companySize}
+            </span>
+          )}
         </div>
       </div>
 

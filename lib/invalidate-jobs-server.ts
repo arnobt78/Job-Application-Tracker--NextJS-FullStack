@@ -17,6 +17,7 @@ export async function invalidateUserJobCaches(
   // Discover page shows live Bluedoor data — invalidate so enrichment badge
   // reflects updated status on next visit without stale SSR data
   revalidatePath('/discover');
+  revalidatePath('/timeline');
 
   for (const tag of allUserTags(userId)) {
     revalidateTag(tag, 'max');

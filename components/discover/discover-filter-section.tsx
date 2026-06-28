@@ -39,8 +39,8 @@ export function DiscoverFilterSection() {
 
   return (
     <>
-      {/* Subtitle + clear button row — mirrors JobsFilterSection */}
-      <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-x-4">
+      {/* Mobile-only subtitle + clear row — desktop sidebar has its own clear button */}
+      <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-x-4 lg:hidden">
         <p className="min-w-0 text-sm leading-snug text-muted-foreground">
           Filter by location, workplace type, employment type, or salary
         </p>

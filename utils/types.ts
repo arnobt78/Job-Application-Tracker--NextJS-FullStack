@@ -15,7 +15,7 @@ export type JobType = {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-  clerkId: string;
+  userId: string;
   position: string;
   company: string;
   location: string;
@@ -38,13 +38,18 @@ export type JobType = {
   bluedoorSyncedAt?: Date | null;
   bluedoorChangedAt?: Date | null;
   bluedoorWebhookSubId?: string | null;
+
+  // Company/org-level data from Bluedoor /v1/orgs — optional, populated after job match
+  companySize?: string | null;
+  companyIndustry?: string | null;
+  companyHq?: string | null;
 };
 
 /** Persisted AI pipeline insight for a specific job. */
 export type AIInsightType = {
   id: string;
   jobId: string;
-  clerkId: string;
+  userId: string;
   fitScore: number | null;
   fitLabel: string | null;       // strong_fit | good_fit | partial_fit | poor_fit
   summary: string | null;
@@ -58,13 +63,39 @@ export type AIInsightType = {
 /** Optional user profile for AI personalisation. */
 export type UserProfileType = {
   id: string;
-  clerkId: string;
+  userId: string;
   skills: string[];
   targetRoles: string[];
   experienceLevel: string | null; // entry | mid | senior | staff | principal
   resumeText: string | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+/**
+ * Timeline event types — derived from Job fields.
+ * status_changed requires a history table (not yet present); omitted for now.
+ */
+export type TimelineEventType =
+  | 'job_created'
+  | 'enriched'
+  | 'posting_changed'
+  | 'ai_generated';
+
+/**
+ * A single activity event on the global timeline.
+ * Built by lib/jobs/timeline.ts from Job rows + aiInsight.
+ */
+export type TimelineEvent = {
+  /** Stable unique ID: `${jobId}:${type}` */
+  id: string;
+  type: TimelineEventType;
+  jobId: string;
+  position: string;
+  company: string;
+  /** Human-readable context (e.g. status, bluedoorStatus) */
+  detail: string | null;
+  timestamp: Date;
 };
 
 /** Application status values */

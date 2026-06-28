@@ -16,28 +16,28 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
   const weekOf = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://jobify.app';
 
-  // Distinct users who have any jobs
-  const userGroups = await prisma.job.groupBy({ by: ['clerkId'] });
+  // Distinct users who have any jobs — group by userId (NextAuth user ID)
+  const userGroups = await prisma.job.groupBy({ by: ['userId'] });
 
   let sent = 0;
   let skipped = 0;
 
-  for (const { clerkId } of userGroups) {
+  for (const { userId } of userGroups) {
     try {
       const [newApps, changedJobs, totalCount] = await Promise.all([
         // New applications this week
         prisma.job.findMany({
-          where: { clerkId, createdAt: { gte: sevenDaysAgo } },
+          where: { userId, createdAt: { gte: sevenDaysAgo } },
           select: { id: true, position: true, company: true, status: true },
           orderBy: { createdAt: 'desc' },
         }),
         // Jobs with Bluedoor posting changes this week
         prisma.job.findMany({
-          where: { clerkId, bluedoorChangedAt: { gte: sevenDaysAgo } },
+          where: { userId, bluedoorChangedAt: { gte: sevenDaysAgo } },
           select: { id: true, position: true, company: true, bluedoorStatus: true },
         }),
         // Total tracked
-        prisma.job.count({ where: { clerkId } }),
+        prisma.job.count({ where: { userId } }),
       ]);
 
       // Skip users with no activity this week
@@ -46,7 +46,8 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
         continue;
       }
 
-      const email = await fetchUserEmail(clerkId);
+      // Fetch email from users table (NextAuth User model)
+      const email = await fetchUserEmail(userId);
       if (!email) { skipped++; continue; }
 
       const postingChanges: DigestChange[] = changedJobs.map((j) => ({
@@ -97,7 +98,7 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
 
       sent++;
     } catch (err) {
-      console.error(`[weekly-digest] failed for clerkId ${clerkId}:`, err);
+      console.error(`[weekly-digest] failed for userId ${userId}:`, err);
       skipped++;
     }
   }
@@ -105,13 +106,14 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
   return { sent, skipped };
 }
 
+/** Fetch user email from DB by userId */
 async function fetchUserEmail(userId: string): Promise<string | null> {
   try {
-    const { clerkClient } = await import('@clerk/nextjs/server');
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const primary = user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId);
-    return primary?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? null;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    return user?.email ?? null;
   } catch {
     return null;
   }

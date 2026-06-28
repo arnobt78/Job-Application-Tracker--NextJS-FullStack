@@ -1,0 +1,112 @@
+{
+  "name": "Jobify — Daily Digest",
+  "nodes": [
+    {
+      "id": "schedule-trigger",
+      "name": "Daily at 08:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 8 * * *" }]
+        }
+      }
+    },
+    {
+      "id": "set-target-user",
+      "name": "Set userId",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [440, 300],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "userId",
+              "value": "={{ $vars.JOBIFY_USER_ID }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "notes": "Set JOBIFY_USER_ID in n8n Variables (Settings → Variables). One workflow instance per user."
+    },
+    {
+      "id": "fetch-jobs",
+      "name": "GET /api/internal/jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $vars.JOBIFY_APP_URL }}/api/internal/jobs",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{ "name": "userId", "value": "={{ $json.userId }}" }]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "x-internal-secret", "value": "={{ $vars.AI_SERVICE_SECRET }}" }]
+        }
+      },
+      "notes": "Requires JOBIFY_APP_URL and AI_SERVICE_SECRET in n8n Variables."
+    },
+    {
+      "id": "filter-stale",
+      "name": "Filter stale > 14 days",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [840, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "combineConditions": "AND" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "operator": { "type": "string", "operation": "equals" },
+              "rightValue": "pending"
+            },
+            {
+              "leftValue": "={{ (Date.now() - new Date($json.updatedAt).getTime()) / 86400000 }}",
+              "operator": { "type": "number", "operation": "gt" },
+              "rightValue": 14
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "notify-stale",
+      "name": "POST /api/internal/notify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.JOBIFY_APP_URL }}/api/internal/notify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-internal-secret", "value": "={{ $vars.AI_SERVICE_SECRET }}" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ userId: $vars.JOBIFY_USER_ID, type: 'posting_closed', jobId: $json.id, message: 'No updates on ' + $json.position + ' at ' + $json.company + ' in 14+ days. Consider following up or marking as declined.' }) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Daily at 08:00 UTC": { "main": [[{ "node": "Set userId", "type": "main", "index": 0 }]] },
+    "Set userId": { "main": [[{ "node": "GET /api/internal/jobs", "type": "main", "index": 0 }]] },
+    "GET /api/internal/jobs": { "main": [[{ "node": "Filter stale > 14 days", "type": "main", "index": 0 }]] },
+    "Filter stale > 14 days": { "main": [[{ "node": "POST /api/internal/notify", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Runs daily at 08:00 UTC. Fetches all jobs via /api/internal/jobs, filters pending applications not updated in >14 days, and fires an in-app bell notification per stale job via /api/internal/notify.",
+    "requiredVars": ["JOBIFY_APP_URL", "AI_SERVICE_SECRET", "JOBIFY_USER_ID"]
+  }
+}

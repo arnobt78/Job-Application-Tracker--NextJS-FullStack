@@ -2,8 +2,8 @@
  * Database inspection script
  * Run: npx tsx scripts/db-inspect.ts
  *
- * Inspects jobs and clerkIds to diagnose why jobs may appear empty
- * after switching Clerk applications (new API keys = new user IDs).
+ * Inspects jobs and userIds to diagnose why jobs may appear empty
+ * after resetting the database or switching NextAuth configurations.
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -24,15 +24,15 @@ async function main() {
     return;
   }
 
-  const clerkIdCounts = jobs.reduce<Record<string, number>>((acc, job) => {
-    acc[job.clerkId] = (acc[job.clerkId] || 0) + 1;
+  const userIdCounts = jobs.reduce<Record<string, number>>((acc, job) => {
+    acc[job.userId] = (acc[job.userId] || 0) + 1;
     return acc;
   }, {});
 
-  console.log('Jobs per Clerk user (clerkId):');
+  console.log('Jobs per user (userId):');
   console.log('─'.repeat(60));
-  for (const [clerkId, count] of Object.entries(clerkIdCounts)) {
-    console.log(`  ${clerkId}: ${count} job(s)`);
+  for (const [userId, count] of Object.entries(userIdCounts)) {
+    console.log(`  ${userId}: ${count} job(s)`);
   }
 
   // Status breakdown (helps debug stats mismatch)
@@ -55,18 +55,16 @@ async function main() {
   }
 
   console.log('\n' + '─'.repeat(60));
-  console.log('\nWhy jobs appear empty after switching Clerk apps:');
-  console.log('  • Jobs are stored with clerkId (Clerk user ID)');
-  console.log('  • Each Clerk application has its own user IDs');
-  console.log('  • New Clerk app = new user ID = no matching jobs\n');
-  console.log('To see your current Clerk user ID:');
-  console.log('  1. Log in, open DevTools → Application → Cookies');
-  console.log('  2. Or check Clerk Dashboard → Users\n');
+  console.log('\nWhy jobs appear empty:');
+  console.log('  • Jobs are stored with userId (NextAuth user ID — cuid format)');
+  console.log('  • Each NextAuth user has a unique cuid generated at account creation');
+  console.log('  • DB reset = new user IDs = no matching jobs\n');
+  console.log('To see your current user ID:');
+  console.log('  1. Log in, open DevTools → Application → Cookies → next-auth.session-token');
+  console.log('  2. Or query: SELECT id, email FROM "User";\n');
   console.log('Options:');
-  console.log('  A) Use old Clerk API keys to see old jobs');
-  console.log('  B) Migrate jobs to new user:');
-  console.log('     npm run db:migrate-clerkid -- <OLD_CLERK_ID> <NEW_CLERK_ID>');
-  console.log('     (OLD = from list above, NEW = from Clerk Dashboard → Users)\n');
+  console.log('  A) Reset DB and create a fresh account via /sign-up or OAuth');
+  console.log('  B) Re-seed test data: npx tsx prisma/seed.ts\n');
 }
 
 main()

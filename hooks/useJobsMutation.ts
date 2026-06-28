@@ -17,6 +17,7 @@ import {
   notifyJobUpdated,
   notifyJobUpdateError,
 } from '@/lib/notifications/app-toast';
+import { trackEvent } from '@/lib/analytics/posthog';
 import type { JobsListResult } from '@/lib/jobs/queries';
 import {
   bumpChartMonth,
@@ -69,7 +70,7 @@ export function useCreateJobMutation() {
         id: `optimistic-${Date.now()}`,
         createdAt: now,
         updatedAt: now,
-        clerkId: '',
+        userId: '',
         ...values,
       };
 
@@ -111,6 +112,7 @@ export function useCreateJobMutation() {
       if (!data) return;
       notifyJobCreated(data);
       invalidateAfterMutation(data.id);
+      trackEvent('job_created', { status: data.status, mode: data.mode });
       // No navigation — Add Job is a dialog on /dashboard; caller handles close via mutate() onSuccess callback
     },
     onSettled: (data) => {
@@ -205,6 +207,7 @@ export function useUpdateJobMutation(jobId: string) {
       if (!result) return;
       notifyJobUpdated(result);
       invalidateAfterMutation(jobId);
+      trackEvent('job_updated', { status: result.status, mode: result.mode });
     },
     onSettled: () => {
       invalidateAllJobQueries(queryClient, jobId, { broadcast: false });
@@ -288,6 +291,7 @@ export function useDeleteJobMutation(jobId: string) {
       if (!data) return;
       invalidateAfterMutation(jobId);
       notifyJobDeleted(data);
+      trackEvent('job_deleted', { status: data.status });
     },
     onSettled: () => {
       invalidateAllJobQueries(queryClient, jobId, { broadcast: false });

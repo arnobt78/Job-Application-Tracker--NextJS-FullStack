@@ -1,24 +1,24 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import * as Sentry from '@sentry/nextjs';
 import { isSentryEnabled } from '@/lib/sentry/config';
 
-/** Syncs Clerk user context to Sentry for error attribution */
+/** Syncs NextAuth session user context to Sentry for error attribution */
 export function useSentryUser(): void {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (!isSentryEnabled() || !isLoaded) return;
+    if (!isSentryEnabled() || status === 'loading') return;
 
-    if (isSignedIn && user) {
+    if (status === 'authenticated' && session?.user) {
       Sentry.setUser({
-        id: user.id,
-        email: user.primaryEmailAddress?.emailAddress,
+        id: session.user.id,
+        email: session.user.email ?? undefined,
       });
     } else {
       Sentry.setUser(null);
     }
-  }, [isLoaded, isSignedIn, user]);
+  }, [status, session]);
 }

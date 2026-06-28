@@ -1,22 +1,28 @@
 /**
- * Next.js Proxy — route protection via Clerk (Next.js 16+)
- * Lightweight auth gate before page render; authoritative checks live in server actions.
+ * Next.js middleware — route protection via NextAuth v5 (Next.js 16+).
+ * Uses the edge-safe authConfig (no PrismaAdapter, no bcrypt) so the JWT
+ * cookie is verified without a Node.js DB call on every request.
  *
  * Redirects:
  *   /add-job → /dashboard  (legacy route removed; Add Job is now a dialog)
  *   /jobs/*  → /dashboard  (route renamed to /dashboard)
  */
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/lib/auth/config';
 import { NextResponse } from 'next/server';
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/discover(.*)',
-  '/stats',
-  '/user-profile(.*)',
-]);
+// Lightweight NextAuth instance — no PrismaAdapter, edge-safe
+const { auth } = NextAuth(authConfig);
 
-export default clerkMiddleware(async (auth, req) => {
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/discover',
+  '/stats',
+  '/timeline',
+  '/profile',
+];
+
+export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Redirect legacy /add-job to /dashboard
@@ -29,11 +35,17 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+  const isProtected = PROTECTED_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + '/')
+  );
+
+  // req.auth is the NextAuth session object — null when unauthenticated
+  if (isProtected && !req.auth) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
   }
 });
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  // Exclude static files, _next internals, and the NextAuth API routes themselves
+  matcher: ['/((?!.*\\..*|_next|api/auth).*)', '/', '/(api|trpc)(.*)'],
 };

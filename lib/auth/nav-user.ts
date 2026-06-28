@@ -1,7 +1,8 @@
 /**
- * SSR-safe navbar user snapshot — maps Clerk User to a stable shape for first paint.
- * Used in dashboard layout (currentUser) and merged with useUser() on the client.
+ * SSR-safe navbar user snapshot — maps NextAuth Session to a stable shape for first paint.
+ * Used in dashboard layout (auth()) and merged with useSession() on the client.
  */
+import type { Session } from 'next-auth';
 
 /** Minimal user fields needed for navbar avatar + dropdown label */
 export type NavUserSnapshot = {
@@ -14,37 +15,29 @@ export type NavUserSnapshot = {
   primaryEmail: string;
 };
 
-/** Clerk User / currentUser() shape — only fields we read */
-type ClerkUserLike = {
-  id: string;
-  imageUrl: string;
-  hasImage?: boolean;
-  firstName?: string | null;
-  lastName?: string | null;
-  username?: string | null;
-  primaryEmailAddress?: { emailAddress: string } | null;
-  emailAddresses?: Array<{ emailAddress: string }>;
-} | null | undefined;
-
-/** Map Clerk user to navbar snapshot — returns null when unauthenticated */
-export function navUserSnapshotFromClerk(
-  user: ClerkUserLike
+/**
+ * Map NextAuth session to navbar snapshot — returns null when unauthenticated.
+ * firstName/lastName are parsed from session.user.name (NextAuth does not split names).
+ */
+export function navUserSnapshotFromSession(
+  session: Session | null
 ): NavUserSnapshot | null {
-  if (!user?.id) return null;
+  if (!session?.user?.id) return null;
 
-  const primaryEmail =
-    user.primaryEmailAddress?.emailAddress ??
-    user.emailAddresses?.[0]?.emailAddress ??
-    '';
+  const name = session.user.name ?? '';
+  const parts = name.trim().split(' ');
+  const firstName = parts[0] || null;
+  const lastName = parts.slice(1).join(' ') || null;
 
   return {
-    id: user.id,
-    imageUrl: user.imageUrl ?? '',
-    hasImage: user.hasImage ?? false,
-    firstName: user.firstName ?? null,
-    lastName: user.lastName ?? null,
-    username: user.username ?? null,
-    primaryEmail,
+    id: session.user.id,
+    imageUrl: session.user.image ?? '',
+    hasImage: !!session.user.image,
+    firstName,
+    lastName,
+    // NextAuth has no username concept — set null for compatibility
+    username: null,
+    primaryEmail: session.user.email ?? '',
   };
 }
 

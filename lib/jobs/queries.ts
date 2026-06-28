@@ -54,7 +54,7 @@ export async function getCachedJobs(
       const cached = await getCache<JobsListResult>(redisKey);
       if (cached) return cached;
 
-      let whereClause: Prisma.JobWhereInput = { clerkId: userId };
+      let whereClause: Prisma.JobWhereInput = { userId };
 
       if (search) {
         whereClause = {
@@ -124,7 +124,7 @@ export async function getCachedJobFilterOptions(
       if (cached) return cached;
 
       const jobs = await prisma.job.findMany({
-        where: { clerkId: userId },
+        where: { userId },
         select: { createdAt: true },
         orderBy: { createdAt: 'desc' },
       });
@@ -162,7 +162,7 @@ export async function getCachedJob(
       if (cached) return cached;
 
       const job = await prisma.job.findUnique({
-        where: { id, clerkId: userId },
+        where: { id, userId },
       });
 
       if (job) {
@@ -187,14 +187,14 @@ export async function getCachedStats(userId: string): Promise<StatsResult> {
         prisma.job.groupBy({
           by: ['status'],
           _count: { status: true },
-          where: { clerkId: userId },
+          where: { userId },
         }),
         prisma.job.groupBy({
           by: ['mode'],
           _count: { mode: true },
-          where: { clerkId: userId },
+          where: { userId },
         }),
-        prisma.job.count({ where: { clerkId: userId } }),
+        prisma.job.count({ where: { userId: userId } }),
       ]);
 
       const statsObject = statusGroups.reduce(
@@ -256,7 +256,7 @@ export async function getCachedCharts(userId: string): Promise<ChartPoint[]> {
 
       const jobs = await prisma.job.findMany({
         where: {
-          clerkId: userId,
+          userId: userId,
           createdAt: { gte: sixMonthsAgo, lte: now },
         },
         orderBy: { createdAt: 'asc' },
@@ -301,7 +301,7 @@ export async function getCachedWeeklyCharts(
 
       const jobs = await prisma.job.findMany({
         where: {
-          clerkId: userId,
+          userId: userId,
           createdAt: { gte: twelveWeeksAgo, lte: now.toDate() },
         },
         select: { createdAt: true },

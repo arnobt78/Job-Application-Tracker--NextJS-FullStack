@@ -2,9 +2,9 @@
 
 <!-- Load agile-v-core FIRST on every session | Apply SCOPE-V on every task -->
 
-## Activation Status: **ACTIVE** (Infinity Loop · 2026-06-19T17:00:00Z)
+## Activation Status: **ACTIVE** (Infinity Loop · 2026-06-27T12:00:00Z)
 
-Cycle C1 · Git `1a1bec0` + Phase 1 Bluedoor (uncommitted) · Checkpoint INT-0003 · **24 skills registered**
+Cycle C1 · Git `0f2ea55` · Phase 1 ~92% · Checkpoint INT-0003 · **24 skills registered**
 
 All skills below are registered for this project. Orchestrator loads framework skills + role-appropriate agent skills per task.
 
@@ -14,7 +14,7 @@ All skills below are registered for this project. Orchestrator loads framework s
 
 | # | Skill | Path | V-Position | Load When |
 |---|---|---|---|---|
-| 1 | **agile-v-core** | `~/.cursor/skills/agile-v-core/SKILL.md` | All | **Every session — FIRST** |
+| 1 | **agile-v-core** | `~/.claude/skills/agile-v-core/SKILL.md` | All | **Every session — FIRST** |
 | 2 | **agile-v-pipeline** | `~/.cursor/skills/agile-v-pipeline/SKILL.md` | Orchestrator | Stage transitions, waves, handoffs |
 | 3 | **agile-v-lifecycle** | `~/.cursor/skills/agile-v-lifecycle/SKILL.md` | Orchestrator | C2+, CRs, archival, re-entry |
 | 4 | **agile-v-compliance** | `~/.cursor/skills/agile-v-compliance/SKILL.md` | Right + Observe | Gates, CAPA, risk, approvals |
@@ -41,12 +41,12 @@ All skills below are registered for this project. Orchestrator loads framework s
 |---|---|---|---|---|
 | 12 | **build-agent** | `~/.cursor/skills/build-agent/SKILL.md` | Orchestrate, Prove | Generic artifact synthesis |
 | 13 | **build-agent-js** ⭐ | `~/.cursor/skills/build-agent-js/SKILL.md` | Orchestrate, Prove | **Primary for this project** |
-| 14 | **build-agent-python** | `~/.cursor/skills/build-agent-python/SKILL.md` | Orchestrate | Python backends/scripts |
-| 15 | **build-agent-nestjs** | `~/.cursor/skills/build-agent-nestjs/SKILL.md` | Orchestrate | NestJS APIs |
-| 16 | **build-agent-embedded** | `~/.cursor/skills/build-agent-embedded/SKILL.md` | Orchestrate | Firmware/C++ |
-| 17 | **build-agent-dart** | `~/.cursor/skills/build-agent-dart/SKILL.md` | Orchestrate | Flutter/Dart |
+| 14 | **build-agent-python** | `~/.cursor/skills/build-agent-python/SKILL.md` | Orchestrate | `python-ai-service/` Phase 2 |
+| 15 | **build-agent-nestjs** | `~/.cursor/skills/build-agent-nestjs/SKILL.md` | Orchestrate | NestJS APIs (N/A) |
+| 16 | **build-agent-embedded** | `~/.cursor/skills/build-agent-embedded/SKILL.md` | Orchestrate | Firmware (N/A) |
+| 17 | **build-agent-dart** | `~/.cursor/skills/build-agent-dart/SKILL.md` | Orchestrate | Flutter (N/A) |
 | 18 | **test-designer** | `~/.cursor/skills/test-designer/SKILL.md` | Orchestrate, Prove | TEST_SPEC.md, TC-XXXX |
-| 19 | **schematic-generator** | `~/.cursor/skills/schematic-generator/SKILL.md` | Orchestrate | Hardware/HDL (N/A this project) |
+| 19 | **schematic-generator** | `~/.cursor/skills/schematic-generator/SKILL.md` | Orchestrate | Hardware (N/A) |
 
 ---
 
@@ -85,14 +85,15 @@ All skills below are registered for this project. Orchestrator loads framework s
 | Error/issue | core → systematic-debugging → build-agent-js → red-team-verifier |
 | Gate review | core → compliance → validation summary |
 | C2 planning | core → lifecycle → product-owner |
+| Phase 2 AI | core → build-agent-python → build-agent-js → red-team-verifier |
 
 ⭐ = Primary domain skill for Jobify
 
 ## This Chat Binding
 
-- User instruction `/agile-v-core` applied for this session (2026-06-18).
-- Process scope linked to `REQ-0024` for governance traceability.
-- Continue from INT-0003 unless user requests Human Gate flow.
-- EVAL-0007 PASS — Phase 1 Bluedoor @ local (REQ-0025, REQ-0026)
+- User instruction `/agile-v-core` applied — **2026-06-27 reactivation**
+- Process scope: `REQ-0024` governance traceability
+- Continue from **INT-0003** unless user requests Human Gate flow
+- EVAL-0013 PASS — full sync @ `0f2ea55` (lint/typecheck/test 49/49)
 - **Roadmap:** `docs/PROJECT_PLAN.md` · **Stack:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
-- **Startup guide:** `.agile-v/PLAYBOOK.md` — paste one-command block in any new chat.
+- **Startup:** `.agile-v/PLAYBOOK.md`

@@ -1,7 +1,7 @@
 /**
- * GET /api/internal/jobs?clerkId=...
+ * GET /api/internal/jobs?userId=...
  *
- * Internal route for n8n automation — returns all jobs for a given Clerk user.
+ * Internal route for n8n automation — returns all jobs for a given user.
  * Auth: X-Internal-Secret header must match AI_SERVICE_SECRET env var.
  *
  * Not exposed to users — used by n8n for digest/stale-app automation workflows.
@@ -19,15 +19,15 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const { searchParams } = new URL(req.url);
-  const clerkId = searchParams.get('clerkId');
+  const userId = searchParams.get('userId');
 
-  if (!clerkId) {
-    return Response.json({ error: 'clerkId required' }, { status: 400 });
+  if (!userId) {
+    return Response.json({ error: 'userId required' }, { status: 400 });
   }
 
   try {
     const jobs = await prisma.job.findMany({
-      where: { clerkId },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,

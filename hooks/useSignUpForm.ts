@@ -1,12 +1,13 @@
 'use client';
 
-import { useSignUp } from '@clerk/nextjs';
+import { signIn } from 'next-auth/react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import {
   notifySignUpError,
   scheduleWelcomeAfterRedirect,
 } from '@/lib/notifications/app-toast';
+import { createUserAction } from '@/utils/actions';
 
 type SignUpFields = {
   firstName: string;
@@ -15,46 +16,45 @@ type SignUpFields = {
   password: string;
 };
 
-/** Clerk credential sign-up + optional email verification step */
+/**
+ * NextAuth credential sign-up:
+ *   1. createUserAction() — creates User row in DB with bcrypt-hashed password
+ *   2. signIn('credentials') — issues NextAuth JWT session immediately
+ *   3. Redirect to /dashboard
+ *
+ * No email verification step (pendingVerification always false for API compatibility).
+ */
 export function useSignUpForm() {
-  const { isLoaded, signUp, setActive } = useSignUp();
   const [isLoading, setIsLoading] = useState(false);
-  const [pendingVerification, setPendingVerification] = useState(false);
-
-  const completeSession = useCallback(
-    async (sessionId: string | null, displayName: string) => {
-      if (!sessionId || !setActive) return false;
-      await setActive({ session: sessionId });
-      scheduleWelcomeAfterRedirect(displayName);
-      window.location.href = '/dashboard';
-      return true;
-    },
-    [setActive]
-  );
 
   const register = useCallback(
     async ({ firstName, lastName, email, password }: SignUpFields) => {
-      if (!isLoaded || !signUp) return false;
-
       setIsLoading(true);
       const displayName = `${firstName.trim()} ${lastName.trim()}`.trim();
       try {
-        const result = await signUp.create({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          emailAddress: email.trim(),
-          password,
-        });
-
-        if (result.status === 'complete') {
-          return completeSession(result.createdSessionId, displayName);
+        // Create user in DB
+        const result = await createUserAction(displayName, email.trim(), password);
+        if (!result.success) {
+          notifySignUpError(result.error ?? 'Registration failed. Please try again.');
+          return false;
         }
 
-        await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-        setPendingVerification(true);
-        toast.info('Check your email', {
-          description: 'Enter the verification code we sent you.',
+        // Sign in immediately after account creation
+        const signInResult = await signIn('credentials', {
+          email: email.trim(),
+          password,
+          redirect: false,
         });
+
+        if (signInResult?.error) {
+          toast.error('Account created', {
+            description: 'Sign-in failed — please sign in manually.',
+          });
+          return false;
+        }
+
+        scheduleWelcomeAfterRedirect(firstName.trim() || displayName);
+        window.location.href = '/dashboard';
         return true;
       } catch {
         notifySignUpError('Please check your details and try again.');
@@ -63,38 +63,19 @@ export function useSignUpForm() {
         setIsLoading(false);
       }
     },
-    [completeSession, isLoaded, signUp]
+    []
   );
 
-  const verifyEmail = useCallback(
-    async (code: string, displayName: string) => {
-      if (!isLoaded || !signUp) return false;
-
-      setIsLoading(true);
-      try {
-        const result = await signUp.attemptEmailAddressVerification({ code });
-
-        if (result.status === 'complete') {
-          return completeSession(result.createdSessionId, displayName);
-        }
-
-        notifySignUpError('Invalid verification code.');
-        return false;
-      } catch {
-        notifySignUpError('Check the code and try again.');
-        return false;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [completeSession, isLoaded, signUp]
-  );
+  // Email verification not required with NextAuth credentials — kept for interface compatibility
+  const verifyEmail = useCallback(async (_code: string, _displayName: string) => {
+    return false;
+  }, []);
 
   return {
     register,
     verifyEmail,
     isLoading,
-    isReady: isLoaded,
-    pendingVerification,
+    isReady: true,
+    pendingVerification: false,
   };
 }

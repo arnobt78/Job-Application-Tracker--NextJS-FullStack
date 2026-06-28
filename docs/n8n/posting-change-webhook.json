@@ -1,0 +1,73 @@
+{
+  "name": "Jobify — Bluedoor Posting Change Webhook",
+  "nodes": [
+    {
+      "id": "webhook-trigger",
+      "name": "Bluedoor Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bluedoor-posting-change",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Configure Bluedoor to POST to: https://your-n8n.domain/webhook/bluedoor-posting-change"
+    },
+    {
+      "id": "map-event-type",
+      "name": "Map event → notificationType",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [440, 300],
+      "parameters": {
+        "functionCode": "const eventMap = {\n  'job.closed': 'posting_closed',\n  'job.updated': 'jd_changed',\n  'job.reopened': 'posting_reopened',\n  'job.salary_added': 'salary_added'\n};\nconst body = $input.first().json.body ?? $input.first().json;\nconst notificationType = eventMap[body.event] ?? 'jd_changed';\nconst messageMap = {\n  posting_closed: `The job posting for ${body.job_title ?? 'your application'} at ${body.company ?? 'the company'} has closed.`,\n  jd_changed: `The job description for ${body.job_title ?? 'your application'} at ${body.company ?? 'the company'} was updated.`,\n  posting_reopened: `${body.job_title ?? 'A tracked posting'} at ${body.company ?? 'the company'} is hiring again.`,\n  salary_added: `Salary information was added to ${body.job_title ?? 'your application'} at ${body.company ?? 'the company'}.`\n};\nreturn [{\n  json: {\n    jobId: body.internal_job_id ?? body.job_id,\n    userId: body.subscriber_metadata?.user_id ?? body.subscriber_metadata?.userId ?? '',\n    notificationType,\n    message: messageMap[notificationType]\n  }\n}];"
+      }
+    },
+    {
+      "id": "notify-user",
+      "name": "POST /api/internal/notify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.JOBIFY_APP_URL }}/api/internal/notify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-internal-secret", "value": "={{ $vars.AI_SERVICE_SECRET }}" },
+            { "name": "content-type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ userId: $json.userId, type: $json.notificationType, jobId: $json.jobId, message: $json.message }) }}"
+      }
+    },
+    {
+      "id": "respond-ok",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [840, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": { "responseCode": 200 }
+      }
+    }
+  ],
+  "connections": {
+    "Bluedoor Webhook": { "main": [[{ "node": "Map event → notificationType", "type": "main", "index": 0 }]] },
+    "Map event → notificationType": { "main": [[{ "node": "POST /api/internal/notify", "type": "main", "index": 0 }]] },
+    "POST /api/internal/notify": { "main": [[{ "node": "Respond 200", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Receives Bluedoor webhook POST events (job.closed, job.updated, job.reopened, job.salary_added), maps to Jobify notificationType, and triggers in-app bell notification via /api/internal/notify.",
+    "requiredVars": ["JOBIFY_APP_URL", "AI_SERVICE_SECRET"],
+    "webhookEvents": ["job.closed", "job.updated", "job.reopened", "job.salary_added"]
+  }
+}

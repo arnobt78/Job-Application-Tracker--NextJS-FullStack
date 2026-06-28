@@ -2,8 +2,9 @@
 
 import { after } from "next/server";
 import prisma from "./db";
-import { auth } from "@clerk/nextjs/server";
-import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType } from "./types";
+import { auth } from "@/auth";
+import bcrypt from "bcryptjs";
+import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent } from "./types";
 import { redirect } from "next/navigation";
 import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
 import {
@@ -20,12 +21,42 @@ import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
 import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse, DiscoverFacets, DiscoverSearchParams } from "@/lib/bluedoor/types";
 import { getDiscoverFacets, getJobDetail, getJobEvents, searchJobs, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
 
+/** Get authenticated user ID or redirect to /sign-in */
 async function authenticateAndRedirect(): Promise<string> {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/");
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/sign-in");
   }
-  return userId;
+  return session.user.id;
+}
+
+// ─────────────────────────────────────────────
+// Auth — Registration
+// ─────────────────────────────────────────────
+
+/**
+ * Create a new user account with hashed password.
+ * Called from useSignUpForm before signIn('credentials', ...).
+ */
+export async function createUserAction(
+  name: string,
+  email: string,
+  password: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const hashed = await bcrypt.hash(password, 12);
+    await prisma.user.create({
+      data: { name: name.trim(), email: email.trim().toLowerCase(), password: hashed },
+    });
+    return { success: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : '';
+    if (msg.includes('Unique constraint') || msg.includes('unique')) {
+      return { success: false, error: 'Email already in use.' };
+    }
+    console.error('[createUserAction] error:', err);
+    return { success: false, error: 'Could not create account. Please try again.' };
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -44,7 +75,7 @@ export async function createJobAction(
         ...values,
         // Zod transform returns undefined for empty string — coerce to null for DB
         applyUrl: values.applyUrl ?? null,
-        clerkId: userId,
+        userId,
       },
     });
 
@@ -122,12 +153,12 @@ export async function deleteJobAction(id: string): Promise<JobType | null> {
   try {
     // Fetch webhook sub ID before delete so we can unsubscribe from Bluedoor (best-effort)
     const meta = await prisma.job.findUnique({
-      where: { id, clerkId: userId },
+      where: { id, userId },
       select: { bluedoorWebhookSubId: true },
     });
 
     const job = await prisma.job.delete({
-      where: { id, clerkId: userId },
+      where: { id, userId },
     });
 
     await invalidateUserJobCaches(userId, id);
@@ -170,12 +201,12 @@ export async function updateJobAction(
 
     // Capture previous applyUrl to detect change
     const previous = await prisma.job.findUnique({
-      where: { id, clerkId: userId },
+      where: { id, userId },
       select: { applyUrl: true, bluedoorJobId: true },
     });
 
     const job = await prisma.job.update({
-      where: { id, clerkId: userId },
+      where: { id, userId },
       data: {
         ...values,
         applyUrl: values.applyUrl ?? null,
@@ -240,7 +271,7 @@ export async function getAllJobsForDownloadAction(): Promise<JobType[]> {
 
   try {
     const jobs = await prisma.job.findMany({
-      where: { clerkId: userId },
+      where: { userId },
       orderBy: { createdAt: "desc" },
     });
     return jobs as JobType[];
@@ -263,7 +294,7 @@ export async function enrichJobAction(jobId: string): Promise<boolean> {
 
   try {
     const job = await prisma.job.findUnique({
-      where: { id: jobId, clerkId: userId },
+      where: { id: jobId, userId },
       select: { bluedoorJobId: true, applyUrl: true },
     });
 
@@ -337,7 +368,7 @@ export async function getAIInsightAction(jobId: string): Promise<AIInsightType |
     const insight = await prisma.jobAIInsight.findUnique({
       where: { jobId },
     });
-    if (!insight || insight.clerkId !== userId) return null;
+    if (!insight || insight.userId !== userId) return null;
     return insight as AIInsightType;
   } catch {
     return null;
@@ -347,7 +378,7 @@ export async function getAIInsightAction(jobId: string): Promise<AIInsightType |
 /** Persist AI insight after pipeline run — upsert so regenerate replaces previous result. */
 export async function saveAIInsightAction(
   jobId: string,
-  data: Partial<Omit<AIInsightType, 'id' | 'jobId' | 'clerkId' | 'generatedAt' | 'updatedAt'>>
+  data: Partial<Omit<AIInsightType, 'id' | 'jobId' | 'userId' | 'generatedAt' | 'updatedAt'>>
 ): Promise<AIInsightType | null> {
   const userId = await authenticateAndRedirect();
 
@@ -356,7 +387,7 @@ export async function saveAIInsightAction(
       where: { jobId },
       create: {
         jobId,
-        clerkId: userId,
+        userId,
         fitScore: data.fitScore ?? null,
         fitLabel: data.fitLabel ?? null,
         summary: data.summary ?? null,
@@ -374,6 +405,7 @@ export async function saveAIInsightAction(
         generatedAt: new Date(),
       },
     });
+    await invalidateUserJobCaches(userId, jobId);
     return insight as AIInsightType;
   } catch {
     return null;
@@ -386,7 +418,7 @@ export async function getUserProfileAction(): Promise<UserProfileType | null> {
 
   try {
     const profile = await prisma.userProfile.findUnique({
-      where: { clerkId: userId },
+      where: { userId },
     });
     return profile as UserProfileType | null;
   } catch {
@@ -396,15 +428,15 @@ export async function getUserProfileAction(): Promise<UserProfileType | null> {
 
 /** Create or update user profile skills + target roles for AI personalisation. */
 export async function upsertUserProfileAction(
-  data: Partial<Omit<UserProfileType, 'id' | 'clerkId' | 'createdAt' | 'updatedAt'>>
+  data: Partial<Omit<UserProfileType, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>
 ): Promise<UserProfileType | null> {
   const userId = await authenticateAndRedirect();
 
   try {
     const profile = await prisma.userProfile.upsert({
-      where: { clerkId: userId },
+      where: { userId },
       create: {
-        clerkId: userId,
+        userId,
         skills: data.skills ?? [],
         targetRoles: data.targetRoles ?? [],
         experienceLevel: data.experienceLevel ?? null,
@@ -473,5 +505,17 @@ export async function searchBluedoorJobsAction(
       console.error('[searchBluedoorJobsAction] error:', error);
     }
     return { data: [], meta: { limit: 20, order: '', total_matching_unavailable: true } };
+  }
+}
+
+/** Chronological activity feed for /timeline — built from Job rows, cached by jobsTag. */
+export async function getTimelineAction(): Promise<TimelineEvent[]> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const { getTimelineEvents } = await import('@/lib/jobs/timeline');
+    return await getTimelineEvents(userId);
+  } catch {
+    return [];
   }
 }

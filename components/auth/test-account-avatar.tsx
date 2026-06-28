@@ -17,7 +17,7 @@ type TestAccountAvatarProps = {
 
 const SIZE_PX = { xs: 24, sm: 32, md: 48, lg: 80 } as const;
 
-/** Circle avatar for test accounts — Clerk URL or robohash fallback */
+/** Circle avatar for test accounts — optional imageUrl or robohash fallback */
 export function TestAccountAvatar({
   name,
   email,

@@ -12,7 +12,7 @@ import Link from "next/link";
 import { Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 
-/** Custom sign-up card — same sky GlassCard + layout as SignInForm (no Clerk footer) */
+/** Custom sign-up card — same sky GlassCard + layout as SignInForm */
 export default function SignUpForm() {
   const { register, verifyEmail, isLoading, isReady, pendingVerification } =
     useSignUpForm();

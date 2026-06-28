@@ -19,7 +19,7 @@
   "stack": {
     "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5", "Sonner"],
     "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL", "FastAPI (scaffolded)"],
-    "auth": ["Clerk 6"],
+    "auth": ["NextAuth v5"],
     "integrations": ["Bluedoor API", "Resend"],
     "observability": ["Sentry (optional)"],
     "cache": ["unstable_cache", "Redis optional", "React Query", "SSE", "BroadcastChannel"],
@@ -92,9 +92,9 @@
     "working_tree": "dirty — docs audit + middleware.ts rename uncommitted"
   },
   "roadmap": {
-    "phase_1": "~92% — Bluedoor enrichment + discover + stats + notifications + Posting Activity",
-    "phase_1_remaining": "facets API, webhook subscribe, weekly digest, React Email, logos",
-    "phase_2": "FastAPI scaffolded — needs Coolify deploy + DB persist + n8n",
+    "phase_1": "COMPLETE — Bluedoor + discover + stats + notifications + timeline + org enrich",
+    "phase_1_remaining": "—",
+    "phase_2": "~90% code — Coolify/Ollama/n8n deploy pending",
     "plan_doc": "docs/PROJECT_PLAN.md",
     "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md",
     "walkthrough_doc": "docs/PROJECT_WALKTHROUGH.md"

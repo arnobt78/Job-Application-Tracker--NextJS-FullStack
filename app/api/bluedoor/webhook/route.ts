@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   // Find all tracked jobs linked to this Bluedoor job_id
   const trackedJobs = await prisma.job.findMany({
     where: { bluedoorJobId: job_id },
-    select: { id: true, clerkId: true, bluedoorJobId: true },
+    select: { id: true, userId: true, bluedoorJobId: true },
   });
 
   if (trackedJobs.length === 0) {
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   // Re-sync all affected tracked jobs
   const results = await Promise.allSettled(
     trackedJobs.map((j) =>
-      resyncJob(j.id, j.clerkId, j.bluedoorJobId!)
+      resyncJob(j.id, j.userId, j.bluedoorJobId!)
     )
   );
 

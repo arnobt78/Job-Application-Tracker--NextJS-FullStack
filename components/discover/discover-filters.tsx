@@ -36,17 +36,17 @@ import type { ReactNode } from 'react';
 import type { DiscoverFacets } from '@/lib/bluedoor/types';
 
 // ─────────────────────────────────────────────
-// Filter options
+// Filter options — exported for DiscoverSidebar reuse
 // ─────────────────────────────────────────────
 
-const WORKPLACE_OPTIONS = [
+export const WORKPLACE_OPTIONS = [
   { value: 'all', label: 'All locations' },
   { value: 'remote', label: 'Remote' },
   { value: 'hybrid', label: 'Hybrid' },
   { value: 'on_site', label: 'On-site' },
 ] as const;
 
-const EMPLOYMENT_OPTIONS = [
+export const EMPLOYMENT_OPTIONS = [
   { value: 'all', label: 'All types' },
   { value: 'full_time', label: 'Full-time' },
   { value: 'part_time', label: 'Part-time' },
@@ -55,12 +55,12 @@ const EMPLOYMENT_OPTIONS = [
   { value: 'temporary', label: 'Temporary' },
 ] as const;
 
-const SALARY_OPTIONS = [
+export const SALARY_OPTIONS = [
   { value: 'all', label: 'Any salary' },
   { value: 'yes', label: 'Salary disclosed' },
 ] as const;
 
-const COUNTRY_OPTIONS = [
+export const COUNTRY_OPTIONS = [
   { value: 'United States', label: 'United States' },
   { value: 'Canada', label: 'Canada' },
 ] as const;
@@ -193,7 +193,8 @@ export function DiscoverFilters() {
     SALARY_OPTIONS.find((o) => o.value === salaryExists)?.label ?? 'Any salary';
 
   return (
-    <GlassCard variant="sky" className="mb-6">
+    /* lg:hidden — desktop uses DiscoverSidebar instead */
+    <GlassCard variant="sky" className="mb-6 lg:hidden">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Search input — spans 2 cols on sm to balance the 4-col grid */}
         <GlassSearchInput

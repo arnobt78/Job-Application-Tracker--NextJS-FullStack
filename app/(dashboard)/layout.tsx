@@ -2,21 +2,24 @@ import { DashboardNav } from '@/components/layout/dashboard-nav';
 import { PageContainer } from '@/components/layout/page-container';
 import { NavUserProvider } from '@/context/nav-user-context';
 import { NotificationsProvider } from '@/context/notifications-context';
-import { navUserSnapshotFromClerk } from '@/lib/auth/nav-user';
-import { currentUser } from '@clerk/nextjs/server';
+import { PostHogProvider } from '@/components/providers/posthog-provider';
+import { navUserSnapshotFromSession } from '@/lib/auth/nav-user';
+import { auth } from '@/auth';
 import type { PropsWithChildren } from 'react';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Dashboard layout — full-width top-nav only.
- * SSR-seeds Clerk user for navbar avatar (no skeleton flash on refresh).
+ * SSR-seeds NextAuth session user for navbar avatar (no skeleton flash on refresh).
  */
 async function DashboardLayout({ children }: PropsWithChildren) {
-  const initialNavUser = navUserSnapshotFromClerk(await currentUser());
+  const session = await auth();
+  const initialNavUser = navUserSnapshotFromSession(session);
 
   return (
     <NavUserProvider user={initialNavUser}>
+      <PostHogProvider>
       <NotificationsProvider>
       <div className="app-shell">
         <div className="app-shell-overlay" aria-hidden />
@@ -28,6 +31,7 @@ async function DashboardLayout({ children }: PropsWithChildren) {
         </div>
       </div>
       </NotificationsProvider>
+      </PostHogProvider>
     </NavUserProvider>
   );
 }

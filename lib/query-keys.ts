@@ -54,4 +54,8 @@ export const queryKeys = {
   aiInsight: {
     job: (jobId: string) => ['ai', 'insight', jobId] as const,
   },
+  // User profile for AI personalisation — loaded from DB, not persisted to localStorage.
+  userProfile: () => ['user-profile'] as const,
+  // Global activity timeline — built from Job rows, not persisted.
+  timeline: () => ['timeline'] as const,
 } as const;

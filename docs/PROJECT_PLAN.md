@@ -1,11 +1,11 @@
 # Jobify v2 — Project Vision & Roadmap
 
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19 · **Last updated:** 2026-06-27 (audit refresh)  
-**Status:** Phase 1 **~92% complete** · Phase 2 **scaffolded** (code in repo, not deployed) · Phase 3 **planned**  
-**Stack:** Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (optional) · Bluedoor API · Python FastAPI · Ollama · n8n · Coolify VPS (planned)
+**Date:** 2026-06-19 · **Last updated:** 2026-06-27 (NextAuth migration + audit)  
+**Status:** Phase 1 **✅ complete** · Phase 2 **~90%** (code in repo; VPS not deployed) · Phase 3 **planned**  
+**Stack:** Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (optional) · Bluedoor API · React Email · PostHog · Python FastAPI · Ollama · n8n · Coolify VPS (planned)
 
-**Verification (2026-06-27):** lint ✓ · typecheck ✓ · test 49/49 ✓ · build ✓ · HEAD `58e8297`
+**Verification (2026-06-27):** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓
 
 ---
 
@@ -21,11 +21,12 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 
 | Phase | Overall | Shipped in codebase | Remaining |
 | --- | --- | --- | --- |
-| **Core tracker** | ✅ Done | CRUD, filters, stats, export, auth, optimistic UI, SSE | — |
-| **Phase 1 — Bluedoor** | ✅ ~92% | Enrichment, discover, webhook handler, cron, bell, email, badges, **Posting Activity tab** | Facets API, auto webhook subscribe, weekly digest, React Email |
+| **Core tracker** | ✅ Done | CRUD, filters, stats, export, auth, optimistic UI, SSE, **global timeline** | — |
+| **Phase 1 — Bluedoor** | ✅ Done | Enrichment, discover, facets, webhook, cron, bell, React Email, weekly digest, logos, Posting Activity, **org enrich** | AI fit chip (optional) |
 | **Stats overhaul** | ✅ Done | KPI row, 4 charts, weekly velocity query | — |
-| **Phase 2 — AI** | 🔄 Scaffolded | FastAPI, 9 agents, LLM router, proxy route, AiInsightsPanel | Deploy, DB persist, streaming UI, n8n |
-| **Phase 2 — Infra** | ⬜ Planned | `docker-compose.yml` in python-ai-service | Coolify, Ollama on VPS, n8n flows |
+| **Phase 2 — AI** | 🔄 ~90% | FastAPI + 9 agents + LLM router, DB persist, SSE streaming, profile UI, internal API | Coolify deploy, prod LLM keys |
+| **Phase 2 — Infra** | ⚠️ Partial | `docker-compose.yml`, internal API, n8n JSON templates | Coolify, Ollama VPS, n8n instance |
+| **Testing / analytics** | ⚠️ Partial | Vitest **51**, Playwright E2E, PostHog (optional) | E2E CI wiring |
 | **Phase 3** | ⬜ Future | — | Resume parser, extension, team mode, etc. |
 
 ---
@@ -35,14 +36,15 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 ```bash
 ┌─────────────────────────────────────────────┐
 │              Next.js Frontend               │
-│  App Router · TanStack Query · Clerk · UI   │
+│  App Router · TanStack Query · NextAuth · UI   │
 └────────────────────┬────────────────────────┘
-                     │ Server Actions (+ 5 API routes)
+                     │ Server Actions (+ 9 API routes)
         ┌────────────┼────────────────┐
         │            │                │
         ▼            ▼                ▼
   PostgreSQL     Bluedoor API     Python AI API
   (Prisma 6)   (free, no auth)   (FastAPI · not deployed)
+  JobAIInsight · UserProfile
                      │                │
                Enrichment       Ollama pipeline (9 agents)
                Discover         n8n automation (planned)
@@ -56,7 +58,7 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 
 ---
 
-## Phase 1 — Bluedoor Enrichment Layer ✅ MOSTLY COMPLETE
+## Phase 1 — Bluedoor Enrichment Layer ✅ COMPLETE
 
 **Goal:** Enrich tracked applications + add job discovery. No separate backend service. Ships inside current Next.js codebase.
 
@@ -77,22 +79,22 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 2. `apply_url` / `source_url` search match
 3. Fuzzy: company + title + location
 
-### 1.2 Posting Status Monitoring ✅ (with gaps)
+### 1.2 Posting Status Monitoring ✅
 
 | Item | Status | Implementation |
 | --- | --- | --- |
 | Detect status / JD / salary changes | ✅ | `resyncJob` in `enrich.ts` |
 | Nightly batch poll | ✅ | `GET /api/cron/enrich` + `vercel.json` cron 03:00 UTC |
 | Inbound webhook handler | ✅ | `POST /api/bluedoor/webhook` (HMAC `BLUEDOOR_WEBHOOK_SECRET`) |
-| Auto-register Bluedoor subscriptions | ⬜ | Handler exists; no `POST /webhook_endpoints` + `subscriptions` on enrich |
+| Auto-register Bluedoor subscriptions | ✅ | `registerBluedoorWebhook` on enrich → `bluedoorWebhookSubId`; `unregisterBluedoorWebhook` on delete |
 | In-app notification bell | ✅ | SSE + `NotificationsProvider` + `NotificationBell` |
-| Per-change email (Resend) | ✅ | `lib/notifications/email.ts` — plain HTML |
-| Weekly email digest | ⬜ | Not implemented |
-| React Email JSX templates | ⬜ | Plain HTML strings only |
+| Per-change email (Resend) | ✅ | `lib/notifications/email.ts` — React Email JSX templates |
+| Weekly email digest | ✅ | `GET /api/cron/weekly-digest` — Sunday 09:00 UTC + `WeeklyDigestEmail` |
+| React Email JSX templates | ✅ | `lib/notifications/templates/*` — PostingClosed, JdChanged, SalaryAdded, WeeklyDigest |
 
 **UI badges:** `JobEnrichmentBadge` — LIVE · CLOSED · JD CHANGED · SALARY · Syncing
 
-### 1.3 Job Discovery Mode ✅ (with gaps)
+### 1.3 Job Discovery Mode ✅
 
 | Item | Status | Implementation |
 | --- | --- | --- |
@@ -103,9 +105,9 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | Track Application | ✅ | `useCreateJobMutation` → instant dashboard invalidation |
 | View Details modal | ✅ | `DiscoverJobDetailsModal` + `getBluedoorJobDetailsAction` |
 | Static card shell skeletons | ✅ | `DiscoverCardShellGrid` |
-| Live facet counts | ⬜ | `GET /jobs/facets` not wired |
-| Two-panel facet sidebar | ⬜ | Current: top filter bar + grid (matches `/dashboard` pattern) |
-| Company logos | ⬜ | `formatOrgName` only — no logo.dev integration |
+| Live facet counts | ✅ | `getDiscoverFacets` + `queryKeys.discover.facets` — sidebar + mobile filters |
+| Two-panel facet sidebar | ✅ | `DiscoverSidebar` sticky left rail on `lg+`; mobile uses top filter bar |
+| Company logos | ✅ | `CompanyLogo` — Clearbit `logo.clearbit.com` + Building2 fallback on `JobCard` + discover cards |
 
 ### 1.4 Stats & Analytics Overhaul ✅
 
@@ -132,7 +134,17 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 
 Events shown: `job.created` · `job.updated` · `job.closed` · `job.reopened` with icons and timestamps.
 
-### 1.6 Actual Routes & Files (as built)
+### 1.6 Global Activity Timeline ✅
+
+| Item | Status | Implementation |
+| --- | --- | --- |
+| `/timeline` route | ✅ | `app/(dashboard)/timeline/page.tsx` |
+| Event derivation | ✅ | `lib/jobs/timeline.ts` — job_created, enriched, posting_changed, ai_generated |
+| SSR prefetch | ✅ | `getTimelineEventsAction` + `queryKeys.timeline()` |
+| Nav link | ✅ | `dashboard-nav.tsx` — Timeline tab |
+| UI | ✅ | `TimelineView` + `TimelineItem` — chronological feed, capped 100 events |
+
+### 1.7 Actual Routes & Files (as built)
 
 ```bash
 app/
@@ -140,40 +152,41 @@ app/
     discover/page.tsx, loading.tsx
     stats/page.tsx
     dashboard/page.tsx, [id]/page.tsx
+    profile/page.tsx              # UserProfile settings
+    timeline/page.tsx             # global activity feed
   api/
-    bluedoor/webhook/route.ts     # inbound lifecycle events
-    cron/enrich/route.ts          # nightly batch resync
-    jobs/events/route.ts          # SSE invalidate + notify
-    ai/pipeline/route.ts          # Phase 2 proxy
-    monitoring/route.ts           # Sentry tunnel
+    bluedoor/webhook/route.ts
+    cron/enrich/route.ts
+    cron/weekly-digest/route.ts
+    jobs/events/route.ts
+    ai/pipeline/route.ts
+    ai/pipeline/stream/route.ts   # SSE streaming proxy
+    internal/jobs/route.ts
+    internal/notify/route.ts
+    monitoring/route.ts
 
-lib/bluedoor/                     # client, enrich, types
-components/discover/              # filters, cards, results, modals, layout wrappers
-components/stats/                 # 4 charts + KPI row
-components/jobs/job-enrichment-badge.tsx
-components/jobs/job-detail-panels.tsx
-components/jobs/posting-activity-tab.tsx
-components/pages/edit-job-dialog-page.tsx
-context/notifications-context.tsx
-lib/notifications/email.ts
+components/discover/discover-sidebar.tsx   # lg+ two-panel layout
+components/timeline/                       # timeline-view, timeline-item
+components/user-profile/user-profile-form.tsx
+components/jobs/pipeline-progress.tsx
+components/providers/posthog-provider.tsx
+lib/jobs/timeline.ts
+lib/analytics/posthog.ts
+docs/n8n/                                  # workflow JSON templates (not deployed)
+tests/e2e/                                 # Playwright specs
 ```
 
 > **Note:** Original plan listed `app/api/bluedoor/search` and `enrich` routes. **Actual architecture** uses Server Actions in `utils/actions.ts` — simpler, type-safe, consistent with the rest of the app.
 
-### 1.7 Phase 1 Remaining Work
+### 1.8 Phase 1 Optional / Deferred
 
-| Priority | Task | Effort |
-| --- | --- | --- |
-| Medium | Wire `GET /jobs/facets` for live filter counts on `/discover` | 1–2 days |
-| Medium | Auto-register Bluedoor webhook subscriptions on successful enrich | 1 day |
-| Low | React Email templates for posting alerts + weekly digest | 1–2 days |
-| Low | Weekly analytics email cron | 1 day |
-| Low | Company logos on discover cards (`logo.dev`) | 0.5 day |
-| Low | Global dashboard timeline (all jobs' events on main grid — per-job tab exists on `/dashboard/[id]`) | 2–3 days |
+| Priority | Task | Effort | Notes |
+| --- | --- | --- | --- |
+| Low | AI fit chip on dashboard `JobCard` | 0.5 day | Fit score in AI panel only today |
 
 ---
 
-## Phase 2 — Python AI Agent Backend 🔄 SCAFFOLDED
+## Phase 2 — Python AI Agent Backend 🔄 ~85% COMPLETE
 
 **Goal:** Deploy 9-agent Ollama pipeline as FastAPI on Coolify. Next.js calls it. n8n orchestrates scheduled automations.
 
@@ -188,7 +201,16 @@ lib/notifications/email.ts
 | Next.js proxy route | ✅ | `app/api/ai/pipeline/route.ts` |
 | TypeScript client + types | ✅ | `lib/ai/pipeline-client.ts` |
 | `useAIPipeline` hook | ✅ | `hooks/useAIPipeline.ts` |
-| `AiInsightsPanel` UI | ✅ | `JobDetailPanels` on `/dashboard/[id]` + Discover Details modal |
+| `AiInsightsPanel` UI | ✅ | `JobDetailPanels` + Discover Details modal — DB load + Regenerate |
+| `JobAIInsight` Prisma model | ✅ | `prisma/schema.prisma` — fit score, cover letter, angles, red flags |
+| `UserProfile` Prisma model | ✅ | Schema + `upsertUserProfileAction` |
+| **UserProfile settings UI** | ✅ | `/profile` — skills, target roles, experience, resume text |
+| **SSE streaming proxy** | ✅ | `POST /api/ai/pipeline/stream` → Python `/pipeline/run/stream` |
+| **`useStreamPipeline` hook** | ✅ | Per-agent SSE progress events |
+| **`PipelineProgress` UI** | ✅ | Animated 9-step indicator in `AiInsightsPanel` |
+| `saveAIInsightAction` / `getAIInsightAction` | ✅ | `utils/actions.ts` — persist after pipeline run |
+| Internal API routes | ✅ | `GET /api/internal/jobs`, `POST /api/internal/notify` |
+| **n8n workflow templates** | ⚠️ | `docs/n8n/*.json` — daily digest, stale alert, posting webhook |
 | Docker + docker-compose | ✅ | `python-ai-service/Dockerfile`, `docker-compose.yml` |
 | pytest (mocked LLM) | ✅ | `python-ai-service/tests/` |
 
@@ -199,13 +221,9 @@ lib/notifications/email.ts
 | Coolify VPS deploy | Next.js + FastAPI + Ollama + n8n + Redis on Hetzner |
 | Pull Ollama models on VPS | `llama3.2`, `mistral`, `gemma2`, `phi3` |
 | Set prod env vars | `AI_SERVICE_URL`, `AI_SERVICE_SECRET` on Vercel + Coolify |
-| `JobAIInsight` Prisma model | AI output not persisted — regenerated each run |
-| `UserProfile` Prisma model | No skills/target roles for personalized matching |
-| Cover letter **streaming** UI | Full response after ~5–15s blocking request |
-| 9-agent progress indicator | Animated step UI during pipeline run |
-| n8n automation flows | See §2.4 |
-| Internal API routes (`/api/internal/*`) | For n8n → Next.js triggers |
+| n8n instance + import flows | JSON templates exist; no running n8n server |
 | ARQ async job queue | Pipeline is synchronous in request handler |
+| AI fit chip on `JobCard` | Score visible in AI panel only |
 
 ### 2.3 Infrastructure on Coolify VPS (planned)
 
@@ -240,17 +258,16 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
   → Anthropic (claude-haiku-4-5-20251001)
 ```
 
-### 2.6 n8n Automation Flows (planned — none deployed)
+### 2.6 n8n Automation Flows (templates authored — not deployed)
 
-| Flow | Trigger | What it does |
+| Flow | Trigger | Status |
 | --- | --- | --- |
-| Daily Job Digest | Cron 8am | Bluedoor search → Analyzer → email top 5 via Resend |
-| Stale App Alert | Cron weekly | Apps unchanged 30+ days → follow-up draft |
-| Enrichment Sync | Cron nightly | *(Partially covered by Vercel cron today)* |
-| Interview Prep Trigger | DB event | status → interview → full pipeline → email |
-| Posting Closed Alert | Bluedoor webhook | *(Partially covered by in-app + Resend today)* |
-| Weekly Analytics Digest | Cron Sunday | AI summary of week's applications |
-| Cover Letter Generator | User trigger | *(Partially covered by AiInsightsPanel today)* |
+| Daily Job Digest | Cron 8am | ⚠️ `docs/n8n/daily-digest.json` |
+| Stale App Alert | Cron weekly | ⚠️ `docs/n8n/stale-app-alert.json` |
+| Posting Change Webhook | Bluedoor event | ⚠️ `docs/n8n/posting-change-webhook.json` |
+| Enrichment Sync | Cron nightly | ✅ Vercel cron `/api/cron/enrich` |
+| Weekly Analytics Digest | Cron Sunday | ✅ Vercel cron `/api/cron/weekly-digest` |
+| Cover Letter Generator | User trigger | ✅ AiInsightsPanel + streaming + DB persist |
 
 ### 2.7 Phase 2 Development Sequence
 
@@ -260,11 +277,15 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 4. ✅ Full orchestrator
 5. ✅ Next.js → FastAPI integration (`/api/ai/pipeline`, `useAIPipeline`, `AiInsightsPanel`)
 6. ✅ AI Insights + Posting Activity wired into `/dashboard/[id]` (`JobDetailPanels`) + discover Details modal
-7. ⬜ Coolify: deploy FastAPI + pull Ollama models
-8. ⬜ Prisma: `JobAIInsight` + `UserProfile` models + persist pipeline output
-9. ⬜ n8n flows (daily digest, stale alert, interview prep)
-10. ⬜ Cover letter streaming UI + pipeline progress indicator
-11. ⬜ Internal API routes for n8n integration
+7. ✅ `JobAIInsight` + `UserProfile` Prisma models + `saveAIInsightAction` + Regenerate flow
+8. ✅ Internal API routes (`/api/internal/jobs`, `/api/internal/notify`)
+9. ✅ UserProfile settings UI (`/profile` + `UserProfileForm`)
+10. ✅ SSE streaming (`/api/ai/pipeline/stream` + `useStreamPipeline` + `PipelineProgress`)
+11. ✅ Global timeline (`/timeline` + `lib/jobs/timeline.ts`)
+12. ✅ Discover two-panel sidebar (`DiscoverSidebar` on lg+)
+13. ⚠️ n8n workflow JSON templates (`docs/n8n/`)
+14. ⬜ Coolify: deploy FastAPI + pull Ollama models + import n8n flows
+15. ⬜ AI fit chip on dashboard cards
 
 ---
 
@@ -286,12 +307,14 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 
 | Screen / Feature | Vision | Current |
 | --- | --- | --- |
-| `/discover` | Two-panel + facet sidebar + infinite scroll | ✅ Infinite scroll · ⬜ facet sidebar · ✅ filter bar + grid |
-| `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge · ⬜ AI chip on card (panel in edit dialog only) |
-| `/dashboard/[id]` | AI Insights tab + Posting Activity tab | ✅ `JobDetailPanels` — both tabs; Activity requires `bluedoorJobId` |
+| `/discover` | Two-panel + facet sidebar + infinite scroll | ✅ Sidebar lg+ · ✅ facet counts · ✅ infinite scroll |
+| `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge + CompanyLogo · ⬜ AI chip on card |
+| `/dashboard/[id]` | AI Insights tab + Posting Activity tab | ✅ `JobDetailPanels` — DB load + SSE streaming |
+| `/profile` | Skills + resume for AI personalisation | ✅ `UserProfileForm` |
+| `/timeline` | Global activity feed | ✅ job_created · enriched · posting_changed · ai_generated |
 | Notification center | Bell + SSE | ✅ Complete |
 | `/stats` | Rich analytics | ✅ 4 charts + KPI row |
-| AI streaming | Pipeline progress + streamed output | ⬜ Blocking request + static panel |
+| AI streaming | Pipeline progress + streamed output | ✅ `PipelineProgress` + SSE; cover letter shown after complete |
 
 ---
 
@@ -299,24 +322,32 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 
 ```bash
 User adds job with applyUrl
-  → after() enrichJob → store bluedoorJobId
+  → after() enrichJob → store bluedoorJobId + bluedoorWebhookSubId
+  → registerBluedoorWebhook (when NEXT_PUBLIC_APP_URL set)
   → invalidateUserJobCaches → SSE → badge on card
-  → (planned) subscribe Bluedoor webhook for that job_id
 
 Bluedoor webhook OR nightly cron
   → resyncJob → detect changes
-  → publishNotification (bell) + sendPostingChangeEmail (Resend)
+  → publishNotification (bell) + sendPostingChangeEmail (React Email via Resend)
   → invalidateAllJobQueries
 
-User clicks "Generate Insights" (Phase 2)
-  → POST /api/ai/pipeline → FastAPI 9-agent pipeline
-  → LLM fallback chain → PipelineResponse
-  → (planned) store in JobAIInsight table
-  → render in AiInsightsPanel
+User opens AI Insights (or clicks Regenerate)
+  → getAIInsightAction loads JobAIInsight (instant if exists)
+  → POST /api/ai/pipeline/stream → SSE per-agent progress (PipelineProgress)
+  → FastAPI run_streaming → saveAIInsightAction → render in AiInsightsPanel
 
-n8n cron (planned)
-  → Fetch profiles → Bluedoor search → FastAPI Analyzer
-  → Email digest via Resend
+User saves /profile
+  → upsertUserProfileAction → UserProfile (skills, roles, resume)
+  → passed to AI pipeline as PipelineUserProfile context
+
+/timeline
+  → getTimelineEventsAction → derive events from Job + aiInsight rows
+
+Sunday 09:00 UTC cron
+  → sendAllWeeklyDigests → WeeklyDigestEmail per active user
+
+n8n (planned)
+  → GET /api/internal/jobs?userId=… → POST /api/internal/notify
 ```
 
 ---
@@ -331,25 +362,30 @@ n8n cron (planned)
 4. ✅ Bluedoor webhook handler (inbound)
 5. ✅ Dashboard job card status badges
 6. ✅ `/discover` — search, infinite scroll, Details modal, Track Application
-7. ✅ Resend email alerts for posting changes (plain HTML)
+7. ✅ Resend email alerts — React Email templates (PostingClosed, JdChanged, SalaryAdded, WeeklyDigest)
 8. ✅ Vercel cron nightly enrichment sync
 9. ✅ SSE notification bell (BroadcastChannel relay, NotificationsProvider)
 10. ✅ `publishNotification` wired in `resyncJob`
 11. ✅ Discover + Stats UI overhaul (glass filters, card shells, 4 charts, KPIs)
 12. ✅ Posting Activity tab (`getJobEvents` + `PostingActivityTab` + `JobDetailPanels`)
-13. ⬜ Bluedoor facet API integration
-14. ⬜ Auto webhook subscription registration
-15. ⬜ Weekly email digest
+13. ✅ Bluedoor facet API — live counts in `DiscoverFilters`
+14. ✅ Auto webhook subscription registration + unsubscribe on delete
+15. ✅ Weekly email digest cron (`/api/cron/weekly-digest`)
+16. ✅ Company logos (`CompanyLogo` — Clearbit)
 
 ### Phase 2
 
 1. ✅ FastAPI scaffold + Docker
 2. ✅ LLM router + all 9 agents + orchestrator
 3. ✅ Next.js proxy + `AiInsightsPanel` + `useAIPipeline`
-4. ⬜ Coolify deploy + Ollama models
-5. ⬜ AI output DB persistence
-6. ⬜ n8n flows
-7. ⬜ Streaming UI + pipeline progress indicator
+4. ✅ `JobAIInsight` + `UserProfile` Prisma + persist + Regenerate
+5. ✅ Internal API routes for n8n
+6. ✅ UserProfile settings UI (`/profile`)
+7. ✅ Streaming UI + pipeline progress indicator
+8. ✅ Global timeline + discover sidebar
+9. ⚠️ n8n JSON templates (deploy pending)
+10. ⬜ Coolify deploy + Ollama models
+11. ⬜ AI fit chip on dashboard cards
 
 ---
 
@@ -372,4 +408,4 @@ n8n cron (planned)
 
 ---
 
-_Last updated: 2026-06-27 (audit — Posting Activity tab shipped in `58e8297`)_
+_Last updated: 2026-06-27 (NextAuth migration, org enrich, timeline invalidation, 51 tests)_

@@ -1,10 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CLERK_OAUTH_REDIRECT } from '@/lib/auth/clerk-oauth';
 import { setWelcomePending } from '@/lib/notifications/auth-toast-storage';
-import { OAuthStrategy } from '@clerk/types';
-import { useSignIn, useSignUp } from '@clerk/nextjs';
+import { signIn } from 'next-auth/react';
 
 type AuthOAuthButtonsProps = {
   mode: 'sign-in' | 'sign-up';
@@ -12,19 +10,11 @@ type AuthOAuthButtonsProps = {
 };
 
 /** Google + GitHub OAuth — shared by sign-in and sign-up forms */
-export function AuthOAuthButtons({ mode, disabled }: AuthOAuthButtonsProps) {
-  const { isLoaded: signInReady, signIn } = useSignIn();
-  const { isLoaded: signUpReady, signUp } = useSignUp();
-  const isReady = mode === 'sign-in' ? signInReady : signUpReady;
-
-  const handleOAuth = (strategy: OAuthStrategy) => {
-    const auth = mode === 'sign-in' ? signIn : signUp;
-    if (!auth) return;
+export function AuthOAuthButtons({ mode: _mode, disabled }: AuthOAuthButtonsProps) {
+  const handleOAuth = (provider: 'google' | 'github') => {
+    // Flag that welcome toast should fire after OAuth redirect
     setWelcomePending();
-    auth.authenticateWithRedirect({
-      strategy,
-      ...CLERK_OAUTH_REDIRECT,
-    });
+    void signIn(provider, { callbackUrl: '/dashboard' });
   };
 
   return (
@@ -33,8 +23,8 @@ export function AuthOAuthButtons({ mode, disabled }: AuthOAuthButtonsProps) {
         type="button"
         variant="outline"
         className="w-full"
-        onClick={() => handleOAuth('oauth_google')}
-        disabled={disabled || !isReady}
+        onClick={() => handleOAuth('google')}
+        disabled={disabled}
       >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
           <path
@@ -60,8 +50,8 @@ export function AuthOAuthButtons({ mode, disabled }: AuthOAuthButtonsProps) {
         type="button"
         variant="outline"
         className="w-full"
-        onClick={() => handleOAuth('oauth_github')}
-        disabled={disabled || !isReady}
+        onClick={() => handleOAuth('github')}
+        disabled={disabled}
       >
         <svg
           className="mr-2 h-4 w-4"

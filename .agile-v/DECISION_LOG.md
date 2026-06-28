@@ -42,3 +42,7 @@
 | 2026-06-19T10:00:00Z | Requirement Architect | C1 | Add REQ-0025 enrichment, REQ-0026 discover, REQ-0027 Phase 2 AI | Sam Crombie Bluedoor outreach + v2 vision | REQ-0025…0027 |
 | 2026-06-19T10:00:00Z | Build Agent (JS) | C1 | Phase 1 Bluedoor: schema, lib, discover UI, webhook, cron | Enrichment not job-board pivot; human-in-the-loop tracker | REQ-0025, REQ-0026 |
 | 2026-06-19T17:00:00Z | Documentation Agent | C1 | Sync CLAUDE.md, PROJECT_WALKTHROUGH, .agile-v for Phase 1 | Agent memory + Agile V traceability | REQ-0024, REQ-0025 |
+| 2026-06-27T12:00:00Z | AQMS Orchestrator | C1 | Infinity Loop reactivated; full `.agile-v/` sync from codebase audit | User `/agile-v-core`; continue INT-0003; Phase 1 ~92% + Phase 2 scaffold | REQ-0024 |
+| 2026-06-27T12:00:00Z | Requirement Architect | C1 | Add REQ-0028 stats overhaul, REQ-0029 notifications; update REQ-0027 to scaffolded [C1] | Retroactive capture from shipped work + docs audit | REQ-0028, REQ-0029, REQ-0027 |
+| 2026-06-27T12:00:00Z | Product Owner | C1 | BL-0008 → COMMITTED; add BL-0010 Phase 1 gaps | Facets, webhook subscribe, digest, logos remain | BL-0010 |
+| 2026-06-27T12:00:00Z | Red Team Verifier | C1 | EVAL-0013 PASS — lint/typecheck/test(49) @ `0f2ea55` | Governance reactivation verification | REQ-0024 |

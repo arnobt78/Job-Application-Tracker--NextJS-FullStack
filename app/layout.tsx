@@ -4,7 +4,7 @@
  * This is the root layout for the entire Next.js application.
  * It wraps all pages and provides:
  * - Global metadata (SEO, Open Graph, Twitter cards)
- * - Clerk authentication provider
+ * - NextAuth SessionProvider (via Providers component)
  * - Global providers (React Query, Theme, Toast)
  * - Global styles and fonts
  *
@@ -16,7 +16,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import JsonLd from "@/components/JsonLd";
 import { siteMetadata } from "@/lib/site-metadata";
 import Providers from "./providers";
@@ -65,32 +64,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    /**
-     * ClerkProvider - Authentication Context
-     *
-     * Wraps the entire app to provide Clerk authentication functionality.
-     * Makes auth() and other Clerk hooks available in all components.
-     * Must be a Server Component (no 'use client' directive).
-     */
-    <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
-      <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-        {/* 
-          suppressHydrationWarning: Prevents React hydration warnings
-          This is needed when using theme providers that modify the <html> element
-          (e.g., adding "dark" class). The warning occurs because server and client
-          may have different initial HTML due to theme detection.
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+      {/*
+        suppressHydrationWarning: Prevents React hydration warnings
+        This is needed when using theme providers that modify the <html> element
+        (e.g., adding "dark" class). The warning occurs because server and client
+        may have different initial HTML due to theme detection.
+      */}
+      <body className={inter.className} suppressHydrationWarning>
+        <JsonLd />
+        {/*
+          Providers Component
+          - SessionProvider: NextAuth session context
+          - ThemeProvider: Dark/light mode
+          - QueryClientProvider: React Query
+          - Toaster: Toast notifications
         */}
-        <body className={inter.className} suppressHydrationWarning>
-          <JsonLd />
-          {/* 
-            Providers Component
-            - ThemeProvider: Dark/light mode
-            - QueryClientProvider: React Query
-            - Toaster: Toast notifications
-          */}
-          <Providers>{children}</Providers>
-        </body>
-      </html>
-    </ClerkProvider>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }

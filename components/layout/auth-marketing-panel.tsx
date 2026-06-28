@@ -10,7 +10,7 @@ const AUTH_FEATURES: { icon: LucideIcon; label: string }[] = [
   { icon: RefreshCw, label: "Real-time sync" },
   { icon: Filter, label: "Smart filters" },
   { icon: BarChart3, label: "Analytics charts" },
-  { icon: ShieldCheck, label: "Secure Clerk auth" },
+  { icon: ShieldCheck, label: "Secure NextAuth" },
 ];
 
 type AuthMarketingPanelProps = {

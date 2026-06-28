@@ -25,7 +25,7 @@ const CSV_DIR = "/Users/arnob_t78/Papers/Project Doc/db-migration/jobify";
 
 interface JobRow {
   id: string;
-  clerkId: string;
+  userId: string;
   createdAt: string;
   updatedAt: string;
   position: string;
@@ -69,7 +69,7 @@ async function seedJobs() {
       await prisma.job.upsert({
         where: { id: job.id },
         update: {
-          clerkId: job.clerkId,
+          userId: job.userId,
           position: job.position,
           company: job.company,
           location: job.location,
@@ -80,7 +80,7 @@ async function seedJobs() {
         },
         create: {
           id: job.id,
-          clerkId: job.clerkId,
+          userId: job.userId,
           position: job.position,
           company: job.company,
           location: job.location,

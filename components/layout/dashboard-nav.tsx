@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { AlignLeft, BarChart2, Compass, LayoutDashboard } from 'lucide-react';
+import { AlignLeft, BarChart2, Compass, LayoutDashboard, User, Clock } from 'lucide-react';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +33,16 @@ const NAV_LINKS = [
     href: '/discover',
     label: 'Discover',
     icon: <Compass className="h-4 w-4" />,
+  },
+  {
+    href: '/timeline',
+    label: 'Timeline',
+    icon: <Clock className="h-4 w-4" />,
+  },
+  {
+    href: '/profile',
+    label: 'Profile',
+    icon: <User className="h-4 w-4" />,
   },
 ] as const;
 
