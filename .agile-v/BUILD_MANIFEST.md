@@ -103,6 +103,21 @@
 | ART-0097 | C1 | Component | `components/discover/discover-job-details-modal.tsx` | REQ-0026, REQ-0027 | Phase 1 |
 | ART-0098 | C1 | Component | `components/discover/discover-results.tsx` (infinite scroll) | REQ-0026 | Phase 1 |
 | ART-0099 | C1 | Docs | `docs/PROJECT_WALKTHROUGH.md`, `README.md` | REQ-0024 | Docs audit |
+| ART-0100 | C1 | Component | `components/jobs/ai-fit-chip.tsx` | REQ-0027 | Phase 3 — fit chip on JobCard |
+| ART-0101 | C1 | Lib | `lib/jobs/queries.ts` (aiInsight include) | REQ-0027 | fit chip embedded in getCachedJobs |
+| ART-0102 | C1 | Types | `utils/types.ts` (aiInsight on JobType, SalaryIntelResult) | REQ-0027, REQ-0028 | Phase 3 types |
+| ART-0103 | C1 | Lib | `lib/pdf/extract-text.ts` | REQ-0031 | Phase 3 — resume PDF parser |
+| ART-0104 | C1 | Component | `components/user-profile/resume-upload.tsx` | REQ-0031 | drag-drop PDF upload on /profile |
+| ART-0105 | C1 | Actions | `utils/actions.ts` (uploadResumeAction) | REQ-0031 | pdfjs-dist server-side extraction |
+| ART-0106 | C1 | Lib | `lib/jobs/skill-gap.ts` | REQ-0032 | Phase 3 — keyword-based skill gap |
+| ART-0107 | C1 | Actions | `utils/actions.ts` (getSkillGapAction) | REQ-0032 | Bluedoor desc + user profile diff |
+| ART-0108 | C1 | Component | `components/jobs/skill-gap-tab.tsx` | REQ-0032 | matched/missing/bonus UI |
+| ART-0109 | C1 | Component | `components/jobs/job-detail-panels.tsx` (Skill Gap tab) | REQ-0032 | 3rd tab wired |
+| ART-0110 | C1 | Actions | `utils/actions.ts` (getSalaryIntelligenceAction) | REQ-0028 | Phase 3 — salary aggregation |
+| ART-0111 | C1 | Component | `components/stats/salary-intelligence.tsx` | REQ-0028 | KPI + role bar chart on /stats |
+| ART-0112 | C1 | Page | `app/(dashboard)/stats/page.tsx` (salaryIntel prefetch) | REQ-0028 | SSR + invalidation on CRUD |
+| ART-0113 | C1 | Lib | `lib/invalidate-jobs.ts` (salaryIntel added) | REQ-0028 | client-side bust on CRUD |
+| ART-0114 | C1 | Query | `lib/query-keys.ts` (skillGap, salaryIntel) | REQ-0032, REQ-0028 | new keys |
 
 ## Deprecated / removed
 

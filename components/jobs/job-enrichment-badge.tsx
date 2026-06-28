@@ -17,6 +17,7 @@
 import { cn } from '@/lib/utils';
 import type { JobType } from '@/utils/types';
 import { Wifi, WifiOff, RefreshCw, DollarSign, AlertTriangle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type JobEnrichmentBadgeProps = {
   job: JobType;
@@ -98,20 +99,28 @@ function resolveBadge(job: JobType): BadgeConfig | null {
 
 export function JobEnrichmentBadge({ job, className }: JobEnrichmentBadgeProps) {
   const badge = resolveBadge(job);
-  if (!badge) return null;
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5',
-        'text-[10px] font-semibold uppercase tracking-wide',
-        badge.classes,
-        className
+    <AnimatePresence mode="wait">
+      {badge && (
+        <motion.span
+          key={badge.label}
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.85 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          className={cn(
+            'inline-flex items-center gap-1 rounded-full border px-2 py-0.5',
+            'text-[10px] font-semibold uppercase tracking-wide',
+            badge.classes,
+            className
+          )}
+          title={`Bluedoor live posting status: ${badge.label}`}
+        >
+          {badge.icon}
+          {badge.label}
+        </motion.span>
       )}
-      title={`Bluedoor live posting status: ${badge.label}`}
-    >
-      {badge.icon}
-      {badge.label}
-    </span>
+    </AnimatePresence>
   );
 }

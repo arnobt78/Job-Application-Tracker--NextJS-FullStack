@@ -43,6 +43,9 @@ export type JobType = {
   companySize?: string | null;
   companyIndustry?: string | null;
   companyHq?: string | null;
+
+  // AI fit score — present when JobAIInsight exists for this job (included via getCachedJobs)
+  aiInsight?: { fitScore: number | null; fitLabel: string | null } | null;
 };
 
 /** Persisted AI pipeline insight for a specific job. */
@@ -96,6 +99,27 @@ export type TimelineEvent = {
   /** Human-readable context (e.g. status, bluedoorStatus) */
   detail: string | null;
   timestamp: Date;
+};
+
+/** Salary intelligence — aggregated from the user's enriched jobs. */
+export type SalaryIntelResult = {
+  /** Jobs with salary data */
+  count: number;
+  /** Total tracked jobs (for coverage ratio) */
+  total: number;
+  /** Average of bluedoorSalaryMin across jobs with salary data (annualised, in currency below) */
+  avgMin: number;
+  /** Average of bluedoorSalaryMax across jobs with salary data */
+  avgMax: number;
+  /** Most common salary currency among enriched jobs */
+  currency: string;
+  /** Top roles by salary, descending by avgMax, max 5 */
+  byRole: Array<{
+    position: string;
+    avgMin: number;
+    avgMax: number;
+    count: number;
+  }>;
 };
 
 /** Application status values */

@@ -4,6 +4,7 @@ import { createPageMetadata } from '@/lib/site-metadata';
 import { queryKeys } from '@/lib/query-keys';
 import { getUserProfileAction } from '@/utils/actions';
 import { UserProfileForm } from '@/components/user-profile/user-profile-form';
+import { ResumeUpload } from '@/components/user-profile/resume-upload';
 import { GlassCard } from '@/components/ui/glass-card';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import { User } from 'lucide-react';
@@ -64,6 +65,11 @@ async function UserProfilePage() {
               <li>• Roles: include seniority (Senior, Staff, Principal)</li>
               <li>• Resume: paste plain text — no formatting needed</li>
             </ul>
+          </GlassCard>
+
+          {/* PDF upload — extracts text and auto-fills resumeText in the form below */}
+          <GlassCard variant="neutral">
+            <ResumeUpload />
           </GlassCard>
         </div>
       </div>

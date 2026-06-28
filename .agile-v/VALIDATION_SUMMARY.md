@@ -3,23 +3,49 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 3 Synthesis — Phase 1+2 + Posting Activity tab + EVAL-0012 audit |
-| Status | `ACTIVE` — Agile V sync @ `0f2ea55`; manual QA pending |
-| Last Updated | 2026-06-27T12:00:00Z |
-| Red Team | EVAL-0013 @ local — PASS (governance reactivation) |
+| Stage | 3 Synthesis — Phase 1+2+3-partial + EVAL-0014 audit |
+| Status | `ACTIVE` — Agile V sync @ 2026-06-28; manual QA pending |
+| Last Updated | 2026-06-28T00:00:00Z |
+| Red Team | EVAL-0014 @ local — PASS (Phase 3 partial + full audit) |
 
 ## Findings Summary
 
 ```
-Scope: Phase 1+2 + Posting Activity tab + full audit | Traceability: REQ-0025, REQ-0026, REQ-0027, REQ-0024, REQ-0001
-Findings: PASS: 18 / FAIL: 0 / FLAG: 2 (manual QA; Python deploy)
+Scope: Phase 1+2+3-partial | Traceability: REQ-0025–0028, REQ-0031, REQ-0032, REQ-0024, REQ-0001
+Findings: PASS: 22 / FAIL: 0 / FLAG: 2 (manual QA; Python deploy)
 ```
 
 | Severity | Count | REQ-IDs | Notes |
 |---|---|---|---|
-| PASS | 18 | REQ-0001, REQ-0024…0027 | lint/typecheck/test(49)/build · middleware.ts fix · AiInsightsPanel · Posting Activity tab |
+| PASS | 22 | REQ-0001, REQ-0024…0028, REQ-0031, REQ-0032 | lint/typecheck/test(51)/build · AI fit chip · react-markdown · Framer Motion badge · PDF parser · Skill Gap · Salary Intel |
 | FLAG | 2 | REQ-0025, REQ-0027 | Manual: real ATS URL enrich · Python LLM keys + Coolify deploy |
 | FAIL | 0 | — | — |
+
+## EVAL-0014 Evidence (Phase 3 partial — 2026-06-28)
+
+| Check | Result | Notes |
+|---|---|---|
+| lint | PASS | 0 warnings |
+| typecheck | PASS | 0 errors |
+| test | PASS 51/51 | Vitest |
+| build | PASS | all routes ƒ dynamic |
+| AIFitChip on JobCard | PASS | getCachedJobs include aiInsight · no extra query · auto-busts via saveAIInsightAction |
+| react-markdown in AiInsightsPanel | PASS | cover letter + summary rendered with remark-gfm |
+| Framer Motion badge | PASS | AnimatePresence mode=wait on JobEnrichmentBadge |
+| README Clerk→NextAuth | PASS | title/badge/auth/env/checklist all updated |
+| resume PDF parser | PASS | pdfjs-dist legacy/build · Node.js no-worker · 5MB limit · upsert UserProfile |
+| ResumeUpload component | PASS | drag-drop + invalidates userProfile() on success |
+| skill-gap.ts | PASS | COMMON_SKILLS module-level · computeSkillGap static import in actions |
+| getSkillGapAction | PASS | Bluedoor desc fetch + fallback to position+company · auth gate |
+| SkillGapTab | PASS | isLoading/isError/null/data states · staleTime 5min |
+| skill gap tab wired | PASS | job-detail-panels.tsx 3rd tab · BookOpen icon |
+| getSalaryIntelligenceAction | PASS | min/max avg · currency majority vote · byRole top-5 by avgMax |
+| SalaryIntelligence component | PASS | isLoading/isError/null/data · KPI row + role bars |
+| salary intel SSR prefetch | PASS | /stats page parallel prefetch · queryKeys.salaryIntel() |
+| salaryIntel invalidation | PASS | invalidateAllJobQueries adds salaryIntel() bust |
+| persist scope unchanged | PASS | salary-intel + skill-gap NOT in shouldPersistQuery |
+| dead code | PASS | no unused imports, no console.log in new files |
+| COMMON_SKILLS placement | PASS | module-level const (fixed from inside function) |
 
 ## EVAL-0012 Evidence (Deep Audit — 2026-06-27)
 

@@ -4,7 +4,7 @@ import { after } from "next/server";
 import prisma from "./db";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
-import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent } from "./types";
+import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult } from "./types";
 import { redirect } from "next/navigation";
 import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
 import {
@@ -20,6 +20,8 @@ import type { JobFilterOptions } from "@/lib/jobs/filter-types";
 import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
 import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse, DiscoverFacets, DiscoverSearchParams } from "@/lib/bluedoor/types";
 import { getDiscoverFacets, getJobDetail, getJobEvents, searchJobs, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
+import { computeSkillGap } from "@/lib/jobs/skill-gap";
+import type { SkillGapResult } from "@/lib/jobs/skill-gap";
 
 /** Get authenticated user ID or redirect to /sign-in */
 async function authenticateAndRedirect(): Promise<string> {
@@ -455,6 +457,52 @@ export async function upsertUserProfileAction(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Skill Gap — compare user profile skills vs job description
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Compute skill gap for a job.
+ * Pulls user's skills from UserProfile + job description from Bluedoor (if linked).
+ * Falls back to position+company text when no Bluedoor description is available.
+ *
+ * Returns SkillGapResult or null when user has no skills set.
+ */
+export async function getSkillGapAction(jobId: string): Promise<SkillGapResult | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const [profile, jobRow] = await Promise.all([
+      prisma.userProfile.findUnique({ where: { userId }, select: { skills: true } }),
+      prisma.job.findUnique({
+        where: { id: jobId, userId },
+        select: { position: true, company: true, bluedoorJobId: true },
+      }),
+    ]);
+
+    const userSkills: string[] = profile?.skills ?? [];
+
+    let jobDescription = [jobRow?.position, jobRow?.company].filter(Boolean).join(' ');
+
+    if (jobRow?.bluedoorJobId) {
+      try {
+        const detail = await getJobDetail(jobRow.bluedoorJobId);
+        if (detail?.description_text) {
+          jobDescription = detail.description_text;
+        }
+      } catch {
+        // Bluedoor unreachable — fall back to position+company text
+      }
+    }
+
+    if (!userSkills.length) return null;
+
+    return computeSkillGap(userSkills, jobDescription);
+  } catch {
+    return null;
+  }
+}
+
 /** Fetch workplace_type + employment_type facet counts for /discover filter dropdowns. */
 export async function getBluedoorFacetsAction(
   params: { q?: string; country?: string }
@@ -517,5 +565,143 @@ export async function getTimelineAction(): Promise<TimelineEvent[]> {
     return await getTimelineEvents(userId);
   } catch {
     return [];
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Salary Intelligence — aggregate from enriched jobs
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Aggregate salary data from the user's Bluedoor-enriched jobs.
+ * Returns null when no jobs have salary data yet.
+ */
+export async function getSalaryIntelligenceAction(): Promise<SalaryIntelResult | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    // All jobs for total count
+    const total = await prisma.job.count({ where: { userId } });
+
+    // Jobs with at least one salary field
+    const jobsWithSalary = await prisma.job.findMany({
+      where: {
+        userId,
+        OR: [
+          { bluedoorSalaryMin: { not: null } },
+          { bluedoorSalaryMax: { not: null } },
+        ],
+      },
+      select: {
+        position: true,
+        bluedoorSalaryMin: true,
+        bluedoorSalaryMax: true,
+        bluedoorSalaryCurrency: true,
+      },
+    });
+
+    if (!jobsWithSalary.length) return null;
+
+    // Overall averages
+    let sumMin = 0, sumMax = 0, minCount = 0, maxCount = 0;
+    const currencyMap: Record<string, number> = {};
+
+    for (const j of jobsWithSalary) {
+      if (j.bluedoorSalaryMin != null) { sumMin += j.bluedoorSalaryMin; minCount++; }
+      if (j.bluedoorSalaryMax != null) { sumMax += j.bluedoorSalaryMax; maxCount++; }
+      const cur = j.bluedoorSalaryCurrency ?? 'USD';
+      currencyMap[cur] = (currencyMap[cur] ?? 0) + 1;
+    }
+
+    const avgMin = minCount > 0 ? Math.round(sumMin / minCount) : 0;
+    const avgMax = maxCount > 0 ? Math.round(sumMax / maxCount) : 0;
+    const currency = Object.entries(currencyMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'USD';
+
+    // Group by normalised position title (first 2 words — avoids 1-per-job explosion)
+    const roleMap: Record<string, { sumMin: number; sumMax: number; minC: number; maxC: number }> = {};
+
+    for (const j of jobsWithSalary) {
+      const role = j.position.split(/\s+/).slice(0, 3).join(' ');
+      if (!roleMap[role]) roleMap[role] = { sumMin: 0, sumMax: 0, minC: 0, maxC: 0 };
+      if (j.bluedoorSalaryMin != null) { roleMap[role].sumMin += j.bluedoorSalaryMin; roleMap[role].minC++; }
+      if (j.bluedoorSalaryMax != null) { roleMap[role].sumMax += j.bluedoorSalaryMax; roleMap[role].maxC++; }
+    }
+
+    const byRole = Object.entries(roleMap)
+      .map(([position, d]) => ({
+        position,
+        avgMin: d.minC > 0 ? Math.round(d.sumMin / d.minC) : 0,
+        avgMax: d.maxC > 0 ? Math.round(d.sumMax / d.maxC) : 0,
+        count: Math.max(d.minC, d.maxC),
+      }))
+      .sort((a, b) => b.avgMax - a.avgMax)
+      .slice(0, 5);
+
+    return {
+      count: jobsWithSalary.length,
+      total,
+      avgMin,
+      avgMax,
+      currency,
+      byRole,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Resume PDF upload — extract text + persist to UserProfile.resumeText
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type UploadResumeResult =
+  | { success: true; text: string }
+  | { success: false; error: string };
+
+/**
+ * Server action: accept a PDF File from FormData, extract text via pdfjs-dist,
+ * and upsert into UserProfile.resumeText. Validates size (5MB max) and MIME type.
+ */
+export async function uploadResumeAction(formData: FormData): Promise<UploadResumeResult> {
+  const userId = await authenticateAndRedirect();
+
+  const file = formData.get('resume');
+  if (!file || !(file instanceof File)) {
+    return { success: false, error: 'No file provided.' };
+  }
+
+  const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+  if (file.size > MAX_BYTES) {
+    return { success: false, error: 'File exceeds 5 MB limit. Try a smaller PDF.' };
+  }
+
+  if (file.type !== 'application/pdf') {
+    return { success: false, error: 'Only PDF files are accepted.' };
+  }
+
+  try {
+    const { extractPdfText } = await import('@/lib/pdf/extract-text');
+    const buffer = await file.arrayBuffer();
+    const text = await extractPdfText(buffer);
+
+    if (!text.trim()) {
+      return { success: false, error: 'Could not extract text from this PDF. Try pasting the resume text directly.' };
+    }
+
+    await prisma.userProfile.upsert({
+      where: { userId },
+      update: { resumeText: text.trim() },
+      create: {
+        userId,
+        skills: [],
+        targetRoles: [],
+        experienceLevel: null,
+        resumeText: text.trim(),
+      },
+    });
+
+    return { success: true, text: text.trim() };
+  } catch {
+    return { success: false, error: 'Failed to parse PDF. Please try again or paste the text directly.' };
   }
 }

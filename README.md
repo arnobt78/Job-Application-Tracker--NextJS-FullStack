@@ -1,4 +1,4 @@
-# Job Application Tracker & Discovery — Next.js, TypeScript, Clerk, Prisma, PostgreSQL, Bluedoor API (+ FastAPI AI Pipeline) FullStack Project
+# Job Application Tracker & Discovery — Next.js, TypeScript, NextAuth v5, Prisma, PostgreSQL, Bluedoor API (+ FastAPI AI Pipeline) FullStack Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.19-2D3748)](https://www.prisma.io/)
 [![TanStack Query](https://img.shields.io/badge/TanStack_Query-5.90-FF4154)](https://tanstack.com/query)
-[![Clerk](https://img.shields.io/badge/Clerk-6.12-purple)](https://clerk.com/)
+[![NextAuth](https://img.shields.io/badge/NextAuth-v5-purple)](https://authjs.dev/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791)](https://www.postgresql.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC)](https://tailwindcss.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18)](https://vitest.dev/)
@@ -91,8 +91,8 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 
 ### User Experience
 
-- **Clerk authentication** — email/password, OAuth, guest demo sign-in
-- **Custom auth UI** — branded Sign In / Sign Up forms (no default Clerk chrome)
+- **NextAuth v5 authentication** — credentials, Google/GitHub OAuth, guest demo sign-in dropdown
+- **Custom auth UI** — branded Sign In / Sign Up forms (no hosted provider chrome)
 - **Notification bell** — SSE + BroadcastChannel; unread badge + popover list
 - **Dark / light / system theme** — via `next-themes`
 - **Glassmorphism UI** — `GlassCard`, glass dropdowns, targeted skeletons
@@ -138,7 +138,7 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 | **Next.js Server Actions** | —        | Type-safe server functions (`"use server"`)                 |
 | **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations                   |
 | **PostgreSQL**             | —        | Relational database for job records                         |
-| **Clerk**                  | 6.x      | Authentication, session, user identity                      |
+| **NextAuth v5**            | 5.x      | Authentication — JWT session, Prisma adapter, OAuth + credentials |
 | **Bluedoor API**           | —        | Free job postings API — enrichment + discover (no auth key) |
 | **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams               |
 | **Resend**                 | optional | Email alerts when postings change                           |
@@ -276,7 +276,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   ├── app/pipeline/agents/          # Extractor → Final Verifier
 │   ├── app/llm/router.py             # Ollama → Groq → OpenRouter → Anthropic
 │   └── docker-compose.yml
-├── proxy.ts                          # Clerk middleware (auth + legacy redirects)
+├── middleware.ts                      # NextAuth middleware (auth + legacy redirects)
 ├── vercel.json                       # Cron schedule + security headers
 ├── next.config.ts                    # Images, headers, Sentry wrapper
 ├── .env.example                      # Environment variable template
@@ -294,7 +294,7 @@ Before you start, install:
 | **Node.js 20+**        | LTS recommended                      |
 | **npm** (or pnpm/yarn) | Package manager                      |
 | **PostgreSQL**         | Local Docker, Neon, Supabase, or VPS |
-| **Clerk account**      | Free tier works for development      |
+| **PostgreSQL client**  | psql, TablePlus, or pgAdmin          |
 
 Optional: **Upstash Redis**, **Sentry**, **Resend**, **Python 3.11+** (for AI service).
 
@@ -321,7 +321,7 @@ npm install
 cp .env.example .env.local
 ```
 
-Fill in **Clerk keys** and **PostgreSQL URLs** — see [Environment Variables](#environment-variables).
+Fill in **NextAuth secret** and **PostgreSQL URLs** — see [Environment Variables](#environment-variables).
 
 ### 4. Set up the database
 
@@ -349,31 +349,35 @@ npm run dev -- -p 3001
 
 ## Environment Variables
 
-> **Minimum to run locally:** Clerk keys + `DATABASE_URL` / `DIRECT_URL`.  
+> **Minimum to run locally:** `AUTH_SECRET` + `DATABASE_URL` / `DIRECT_URL`.  
 > Everything else is optional — the app degrades gracefully without it.
 
 Create `.env.local` in the project root (never commit it). A full template lives in `.env.example`.
 
 ### Required
 
-| Variable                            | Description                         | How to get it                                             |
-| ----------------------------------- | ----------------------------------- | --------------------------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key (browser-safe)     | [Clerk Dashboard](https://dashboard.clerk.com) → API Keys |
-| `CLERK_SECRET_KEY`                  | Clerk secret key (server only)      | Same as above                                             |
-| `DATABASE_URL`                      | PostgreSQL connection string        | Neon, Supabase, local Postgres…                           |
-| `DIRECT_URL`                        | Direct DB URL for Prisma migrations | Usually same as `DATABASE_URL`                            |
+| Variable       | Description                                 | How to get it                                              |
+| -------------- | ------------------------------------------- | ---------------------------------------------------------- |
+| `AUTH_SECRET`  | JWT signing secret for NextAuth sessions    | `openssl rand -base64 32`                                  |
+| `DATABASE_URL` | PostgreSQL connection string                | Neon, Supabase, local Postgres…                            |
+| `DIRECT_URL`   | Direct DB URL for Prisma migrations         | Usually same as `DATABASE_URL`                             |
 
-**Clerk URL settings** (local defaults — in `.env.example`):
+**Demo credentials** (pre-seeded for local dev):
 
 ```env
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_USER_PROFILE_URL=/user-profile
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+# Sign in with the guest dropdown on /sign-in
+Email:    test@user.com
+Password: 12345678
 ```
 
-Also set **After sign-in URL** and **After sign-up URL** to `/dashboard` in the Clerk Dashboard.
+**OAuth (optional)** — add these to enable Google / GitHub sign-in:
+
+```env
+AUTH_GOOGLE_ID=        # Google Cloud Console → OAuth 2.0 → callback: /api/auth/callback/google
+AUTH_GOOGLE_SECRET=
+AUTH_GITHUB_ID=        # GitHub → Settings → Developer settings → OAuth Apps → callback: /api/auth/callback/github
+AUTH_GITHUB_SECRET=
+```
 
 **Example local PostgreSQL:**
 
@@ -415,7 +419,7 @@ Defined in `prisma/schema.prisma`:
 ```prisma
 model Job {
   id        String   @id @default(uuid())
-  clerkId   String   // Clerk user ID — row-level isolation
+  userId    String   // NextAuth user ID (cuid) — row-level isolation
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   position  String
@@ -439,7 +443,7 @@ model Job {
 }
 ```
 
-Each job belongs to one Clerk user via `clerkId`. Server actions always filter by authenticated `userId`.
+Each job belongs to one NextAuth user via `userId`. Server actions always filter by authenticated `userId`.
 
 ### Commands
 
@@ -482,9 +486,9 @@ npm run lint && npm run typecheck && npm test && npm run build
 | `/dashboard/[id]` | Protected | Opens edit job dialog for direct URL sharing       |
 | `/discover`       | Protected | Bluedoor job search — filter, track applications   |
 | `/stats`          | Protected | Stats cards, KPIs, 4 chart sections                |
-| `/user-profile`   | Protected | Clerk user profile management                      |
+| `/profile`        | Protected | User profile (skills, target roles, resume for AI) |
 
-**Legacy redirects** (handled in `proxy.ts`):
+**Legacy redirects** (handled in `middleware.ts`):
 
 | Old URL            | Redirects to |
 | ------------------ | ------------ |
@@ -500,7 +504,7 @@ This project uses **Server Actions** for most data operations. HTTP routes:
 ### `GET /api/jobs/events`
 
 - **Purpose:** Server-Sent Events — cache invalidation + in-app notifications
-- **Auth:** Clerk session required (401 if unauthenticated)
+- **Auth:** NextAuth session required (401 if unauthenticated)
 - **Used by:** `hooks/useJobsCacheSync.ts`
 - **Events:** `{ type: 'invalidate' }` and `{ type: 'notify', payload }`
 
@@ -519,7 +523,7 @@ This project uses **Server Actions** for most data operations. HTTP routes:
 ### `POST /api/ai/pipeline`
 
 - **Purpose:** Proxy to Python FastAPI 9-agent pipeline
-- **Auth:** Clerk session + `X-Internal-Secret` header
+- **Auth:** NextAuth session + `X-Internal-Secret` header
 - **Requires:** `AI_SERVICE_URL` + `AI_SERVICE_SECRET`
 
 ### `POST /api/monitoring`
@@ -559,19 +563,19 @@ async function authenticateAndRedirect(): Promise<string> {
 }
 ```
 
-Prisma queries always include `clerkId: userId` so users cannot access each other's data.
+Prisma queries always include `userId` in `where` clauses so users cannot access each other's data.
 
 ---
 
 ## Authentication
 
-### Clerk integration
+### NextAuth v5 integration
 
-- **Middleware:** `proxy.ts` protects `/dashboard`, `/discover`, `/stats`, `/user-profile`
-- **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards
-- **OAuth:** `AuthOAuthButtons` + `lib/auth/clerk-oauth.ts`
-- **Demo login:** `TryDemoAccountButton` + `useGuestSignIn` (test credentials in dev)
-- **SSR user:** `dashboard/layout.tsx` → `currentUser()` → `NavUserProvider`
+- **Middleware:** `middleware.ts` — NextAuth JWT gate protects `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`
+- **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards, no hosted provider chrome
+- **OAuth:** `AuthOAuthButtons` — `signIn('google')` / `signIn('github')` from `next-auth/react`
+- **Demo login:** guest dropdown on sign-in page — `useGuestSignIn` → `signIn('credentials', { email, password })`
+- **SSR user:** `dashboard/layout.tsx` → `auth()` → `NavUserProvider`
 
 ### Post-auth redirect
 
@@ -680,7 +684,7 @@ Scaffolded — requires `python-ai-service/` running separately.
 
 ```text
 AiInsightsPanel (client)
-  └─ useAIPipeline → POST /api/ai/pipeline (Clerk auth)
+  └─ useAIPipeline → POST /api/ai/pipeline (NextAuth session)
        └─ X-Internal-Secret → FastAPI /pipeline
             └─ 9-agent pipeline:
                  Extractor → Analyzer → Preprocessor → Optimizer
@@ -776,7 +780,7 @@ Both forms accept a **`standalone`** prop:
 | `useJobsListBodyLoading` | `useJobsListBodyLoading.ts` | Skeleton only on cold cache         |
 | `useAIPipeline`          | `useAIPipeline.ts`          | AI insights mutation                |
 | `useGuestSignIn`         | `useGuestSignIn.ts`         | Demo account login flow             |
-| `useNavUserSession`      | `useNavUserSession.ts`      | SSR avatar + Clerk useUser          |
+| `useNavUserSession`      | `useNavUserSession.ts`      | SSR avatar + NextAuth useSession     |
 
 **Reuse `useJobsMutation` in another project:**
 
@@ -846,16 +850,16 @@ mutate({
 ### Protected middleware
 
 ```typescript
-// proxy.ts
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/discover(.*)",
-  "/stats",
-  "/user-profile(.*)",
-]);
+// middleware.ts
+import { auth } from '@/auth';
+const PROTECTED = ['/dashboard', '/discover', '/stats', '/timeline', '/profile'];
 
-export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect();
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isProtected = PROTECTED.some(p => pathname === p || pathname.startsWith(p + '/'));
+  if (isProtected && !req.auth) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
+  }
 });
 ```
 
@@ -877,7 +881,7 @@ Tests live in `lib/__tests__/`, `hooks/__tests__/`, and `components/__tests__/`.
 | `useJobsMutation.test.ts`  | Optimistic list mutations              |
 
 ```bash
-npm test   # 49 tests
+npm test   # 51 tests
 ```
 
 ---
@@ -893,16 +897,18 @@ npm test   # 49 tests
 
 ### Production checklist
 
-- [ ] Clerk production keys (`pk_live_` / `sk_live_`)
+- [ ] `AUTH_SECRET` set in Vercel env (generate: `openssl rand -base64 32`)
 - [ ] PostgreSQL production database
 - [ ] `DATABASE_URL` + `DIRECT_URL` in Vercel env
-- [ ] Clerk redirect URLs include your production domain
+- [ ] `NEXT_PUBLIC_APP_URL` set to production domain (needed for webhook registration + email links)
+- [ ] Optional: `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google OAuth (callback: `/api/auth/callback/google`)
+- [ ] Optional: `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` — GitHub OAuth (callback: `/api/auth/callback/github`)
 - [ ] Optional: Upstash Redis for multi-instance cache/SSE
 - [ ] Optional: `CRON_SECRET` for nightly Bluedoor re-sync
 - [ ] Optional: `BLUEDOOR_WEBHOOK_SECRET` for live webhook events
-- [ ] Optional: Resend for email alerts
+- [ ] Optional: Resend (`RESEND_API_KEY` + `EMAIL_FROM`) for email alerts
 - [ ] Optional: Sentry DSN + auth token for source maps
-- [ ] Optional: Python AI service on Coolify VPS
+- [ ] Optional: Python AI service (`AI_SERVICE_URL` + `AI_SERVICE_SECRET`) on Coolify VPS
 
 See also: `docs/VERCEL_PRODUCTION_GUARDRAILS.md`, `docs/PROJECT_PLAN.md`
 
@@ -910,7 +916,7 @@ See also: `docs/VERCEL_PRODUCTION_GUARDRAILS.md`, `docs/PROJECT_PLAN.md`
 
 ## Keywords
 
-`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `Clerk authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `BroadcastChannel` · `Redis Streams` · `Upstash` · `Bluedoor API` · `Job enrichment` · `Job discovery` · `Resend email` · `FastAPI` · `Ollama` · `LLM pipeline` · `Job tracker CRM` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
+`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `NextAuth v5 authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `BroadcastChannel` · `Redis Streams` · `Upstash` · `Bluedoor API` · `Job enrichment` · `Job discovery` · `Resend email` · `FastAPI` · `Ollama` · `LLM pipeline` · `Job tracker CRM` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
 
 ---
 

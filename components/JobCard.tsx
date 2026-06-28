@@ -15,6 +15,7 @@ import DeleteJobButton from "./DeleteJobButton";
 import { GlassCard } from "@/components/ui/glass-card";
 import { EditJobDialog } from "@/components/dialogs/edit-job-dialog";
 import { JobEnrichmentBadge } from "@/components/jobs/job-enrichment-badge";
+import { AIFitChip } from "@/components/jobs/ai-fit-chip";
 import { CompanyLogo } from "@/components/ui/company-logo";
 import { extractDomain } from "@/lib/ui/company-logo";
 
@@ -33,6 +34,8 @@ function JobCard({ job }: { job: JobType }) {
           </h3>
           {/* Bluedoor live posting badge — null-safe, renders nothing when not enriched */}
           <JobEnrichmentBadge job={job} className="mt-0.5 shrink-0" />
+          {/* AI fit score — shown only when AI pipeline has run for this job */}
+          <AIFitChip fitScore={job.aiInsight?.fitScore} className="mt-0.5 shrink-0" />
         </div>
         <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
           <CompanyLogo domain={extractDomain(job.applyUrl)} size={14} className="opacity-80" />

@@ -2,7 +2,7 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
-**Last updated:** 2026-06-27 (NextAuth migration + audit)  
+**Last updated:** 2026-06-28 (Phase 3 partial — AI fit chip, PDF parser, Skill Gap, Salary Intel)  
 **Verification:** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓
 
 ---
@@ -17,10 +17,10 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Phase 1 — Bluedoor** | ✅ Complete — enrichment, discover (two-panel sidebar), webhooks, facets, cron, notifications, React Email, weekly digest, logos |
 | **Stats overhaul** | ✅ Complete — KPI row + 4 chart types + weekly velocity |
 | **Global timeline** | ✅ Complete — `/timeline` — job_created, enriched, posting_changed, ai_generated |
-| **Phase 2 — AI** | ✅ ~85% — FastAPI + streaming SSE + `PipelineProgress` + DB persist + `/profile` for UserProfile |
+| **Phase 2 — AI** | ✅ ~90% — FastAPI + streaming SSE + `PipelineProgress` + DB persist + `/profile` for UserProfile |
 | **Phase 2 — n8n / Coolify** | ⚠️ Partial — internal API + `docs/n8n/*.json` templates; no VPS deploy |
-| **Testing / analytics** | ⚠️ Partial — Vitest 49 + Playwright E2E scaffold + PostHog (optional) |
-| **Phase 3** | ⬜ Future — resume parser, browser extension, etc. |
+| **Testing / analytics** | ⚠️ Partial — Vitest 51 + Playwright E2E scaffold + PostHog (optional) |
+| **Phase 3 — partial** | ✅ AI fit chip · react-markdown · Framer Motion badge · Resume PDF parser · Skill Gap tab · Salary Intelligence |
 
 **Roadmap detail:** `docs/PROJECT_PLAN.md` · **Stack decisions:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
 
@@ -46,8 +46,12 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Timeline** | `/timeline` — global activity feed from Job rows + `JobAIInsight` |
 | **User profile** | `/profile` — skills, target roles, experience level, resume text for AI context |
 | **AI — streaming** | `useStreamPipeline` → `/api/ai/pipeline/stream` → `PipelineProgress` (9 steps) |
-| **AI — panel** | `AiInsightsPanel` — DB instant load, SSE generate/regenerate, `saveAIInsightAction` |
-| **Posting Activity tab** | `JobDetailPanels` — AI Insights + Bluedoor event timeline on `/dashboard/[id]` |
+| **AI — panel** | `AiInsightsPanel` — DB instant load, SSE generate/regenerate, `saveAIInsightAction`, react-markdown output |
+| **AI fit chip** | `AIFitChip` on `JobCard` — fitScore from `getCachedJobs include aiInsight`; auto-busts via `saveAIInsightAction` |
+| **Posting Activity tab** | `JobDetailPanels` — AI Insights · Skill Gap · Posting Activity tabs on `/dashboard/[id]` |
+| **Skill Gap** | `lib/jobs/skill-gap.ts` + `SkillGapTab` — user profile skills vs Bluedoor JD; matched/missing/bonus |
+| **Resume PDF parser** | `lib/pdf/extract-text.ts` (pdfjs-dist) + `ResumeUpload` drag-drop + `uploadResumeAction` on `/profile` |
+| **Salary Intelligence** | `getSalaryIntelligenceAction` + `SalaryIntelligence` on `/stats` — avg range, currency, top roles |
 | **Internal API** | `GET /api/internal/jobs` + `POST /api/internal/notify` (`X-Internal-Secret`) |
 | **n8n templates** | `docs/n8n/` — daily-digest, stale-app-alert, posting-change-webhook JSON |
 | **PostHog** | `PostHogProvider` + `trackEvent` — no-op without `NEXT_PUBLIC_POSTHOG_KEY` |
@@ -59,11 +63,9 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | --- | --- |
 | Coolify VPS deploy | FastAPI + Ollama + n8n on Hetzner — not in repo ops |
 | n8n instance | JSON templates in `docs/n8n/`; import + run on VPS |
-| AI fit chip on `JobCard` | Fit score visible in AI panel only |
 | ARQ / Celery job queue | Pipeline synchronous in FastAPI request |
-| Bluedoor `/v1/orgs` enrichment | ✅ `getBluedoorOrg` → companySize/Industry/Hq on Job |
 | E2E in CI | Playwright specs exist; CI wiring optional |
-| Phase 3 | Resume PDF parser, browser extension, team mode |
+| Phase 3 advanced | Auto-apply email, browser extension, team mode, skill gap AI-powered (current: keyword-based) |
 
 ---
 

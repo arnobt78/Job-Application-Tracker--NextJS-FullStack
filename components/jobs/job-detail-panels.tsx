@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Activity } from 'lucide-react';
+import { Sparkles, Activity, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AiInsightsPanel } from '@/components/jobs/ai-insights-panel';
 import { PostingActivityTab } from '@/components/jobs/posting-activity-tab';
+import { SkillGapTab } from '@/components/jobs/skill-gap-tab';
 import type { PipelineJobInput } from '@/lib/ai/pipeline-client';
 
-type Tab = 'ai' | 'activity';
+type Tab = 'ai' | 'activity' | 'skillgap';
 
 type JobDetailPanelsProps = {
   job: PipelineJobInput;
@@ -17,7 +18,7 @@ type JobDetailPanelsProps = {
 
 /**
  * Tab panel rendered below EditJobForm in /dashboard/[id].
- * Shows AI Insights tab always; Posting Activity tab only when bluedoorJobId is set.
+ * Tabs: AI Insights (always) | Posting Activity (Bluedoor-linked only) | Skill Gap (always)
  */
 export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
   const [active, setActive] = useState<Tab>('ai');
@@ -27,6 +28,11 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
       key: 'ai',
       label: 'AI Insights',
       icon: <Sparkles className="h-3.5 w-3.5" />,
+    },
+    {
+      key: 'skillgap',
+      label: 'Skill Gap',
+      icon: <BookOpen className="h-3.5 w-3.5" />,
     },
     {
       key: 'activity',
@@ -70,6 +76,7 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
       {/* Panel content */}
       <div className="p-4">
         {active === 'ai' && <AiInsightsPanel job={job} />}
+        {active === 'skillgap' && <SkillGapTab jobId={job.job_id} />}
         {active === 'activity' && bluedoorJobId && (
           <PostingActivityTab bluedoorJobId={bluedoorJobId} />
         )}

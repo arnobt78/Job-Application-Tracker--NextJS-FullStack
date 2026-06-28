@@ -19,17 +19,17 @@
 **Priority:** CRITICAL  
 **Category:** Security / Auth
 
-**Description:** Users SHALL authenticate via Clerk before accessing protected features.
+**Description:** Users SHALL authenticate via NextAuth v5 before accessing protected features.
 
 **Acceptance Criteria:**
 
-1. Sign-in at `/sign-in`, sign-up at `/sign-up`
-2. SSO callback handled at `/sign-in/sso-callback`
-3. User profile accessible at `/user-profile`
+1. Sign-in at `/sign-in`, sign-up at `/sign-up` (custom UI — no hosted provider chrome)
+2. OAuth callback at `/api/auth/callback/google` and `/api/auth/callback/github`
+3. User profile accessible at `/profile` (custom — skills, target roles, resume for AI)
 4. Unauthenticated users redirected from protected routes
 
 **Verification:** TC-0001, TC-0002  
-**Artifacts:** ART-0001 (`proxy.ts`), ART-0002 (`app/sign-in/`), ART-0003 (`app/sign-up/`)
+**Artifacts:** ART-0001 (`middleware.ts`), ART-0002 (`app/sign-in/`), ART-0003 (`app/sign-up/`), ART-0200 (`auth.ts`), ART-0201 (`lib/auth/config.ts`)
 
 ---
 
@@ -47,7 +47,7 @@
 2. List all jobs at `/dashboard` with filters and pagination
 3. Edit job at `/dashboard/[id]` (dialog + detail panels)
 4. Delete job from edit dialog
-5. All operations scoped to authenticated user's `clerkId`
+5. All operations scoped to authenticated user's `userId` (NextAuth cuid)
 
 **Verification:** TC-0003…TC-0007  
 **Artifacts:** ART-0004 (`utils/actions.ts`), ART-0005 (`CreateJobForm.tsx`), ART-0006 (`EditJobForm.tsx`), ART-0007 (`prisma/schema.prisma` Job model)
@@ -215,12 +215,12 @@
 **Priority:** CRITICAL  
 **Category:** Security
 
-**Description:** Users SHALL only access jobs where `Job.clerkId` matches their Clerk user ID.
+**Description:** Users SHALL only access jobs where `Job.userId` matches their NextAuth session user ID.
 
 **Acceptance Criteria:**
 
-1. All server actions filter by clerkId
-2. Update/delete use compound where (id + clerkId)
+1. All server actions filter by `userId` (from `auth()` session)
+2. Update/delete use compound where `{ id, userId }`
 3. Unauthorized access redirects or returns null
 
 **Verification:** TC-0017  
@@ -331,7 +331,7 @@
 **Priority:** HIGH  
 **Category:** DevOps
 
-**Description:** Application SHALL deploy to Vercel with env vars for Clerk and database.
+**Description:** Application SHALL deploy to Vercel with env vars for NextAuth and database.
 
 **Acceptance Criteria:**
 
@@ -410,7 +410,7 @@
 2. Results from `searchBluedoorJobsAction`; discover queries NOT persisted to localStorage
 3. "Track Application" uses `useCreateJobMutation` for instant dashboard invalidation
 4. Posting Activity tab on `/dashboard/[id]` via `getBluedoorJobEventsAction` when `bluedoorJobId` set
-5. Discover nav link in dashboard; route protected by Clerk middleware
+5. Discover nav link in dashboard; route protected by NextAuth middleware
 
 **Verification:** TC-0027  
 **Artifacts:** ART-0077…ART-0081
@@ -428,7 +428,7 @@
 **Acceptance Criteria (shipped in scaffold):**
 
 1. `python-ai-service/` FastAPI app with 9-agent pipeline + LLM fallback router
-2. `POST /api/ai/pipeline` Next.js proxy (Clerk auth → internal secret)
+2. `POST /api/ai/pipeline` Next.js proxy (NextAuth session → internal secret)
 3. `useAIPipeline` hook + `AiInsightsPanel` in `JobDetailPanels` and Discover Details modal
 4. On-demand only — NOT persisted to localStorage
 

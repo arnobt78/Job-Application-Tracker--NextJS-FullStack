@@ -4,6 +4,7 @@ import { ApplicationTrendChart } from '@/components/stats/application-trend-char
 import { WeeklyVelocityChart } from '@/components/stats/weekly-velocity-chart';
 import { StatusDistributionChart } from '@/components/stats/status-distribution-chart';
 import { ModeDistributionChart } from '@/components/stats/mode-distribution-chart';
+import { SalaryIntelligence } from '@/components/stats/salary-intelligence';
 import { GlassCard } from '@/components/ui/glass-card';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import type { Metadata } from 'next';
@@ -13,13 +14,14 @@ import {
   getChartsDataAction,
   getStatsAction,
   getWeeklyChartsDataAction,
+  getSalaryIntelligenceAction,
 } from '@/utils/actions';
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
-import { BarChart2, TrendingUp, Activity, PieChart } from 'lucide-react';
+import { BarChart2, TrendingUp, Activity, PieChart, DollarSign } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +36,7 @@ export const metadata: Metadata = createPageMetadata({
 async function StatsPage() {
   const queryClient = new QueryClient();
 
-  // SSR prefetch all stats + charts data in parallel
+  // SSR prefetch all stats + charts + salary data in parallel
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: queryKeys.stats.all,
@@ -47,6 +49,10 @@ async function StatsPage() {
     queryClient.prefetchQuery({
       queryKey: queryKeys.chartsWeekly.all,
       queryFn: () => getWeeklyChartsDataAction(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: queryKeys.salaryIntel(),
+      queryFn: () => getSalaryIntelligenceAction(),
     }),
   ]);
 
@@ -114,6 +120,19 @@ async function StatsPage() {
             <ModeDistributionChart />
           </GlassCard>
         </div>
+      </div>
+
+      {/* Salary Intelligence — aggregated from Bluedoor-enriched jobs */}
+      <div className="mt-10">
+        <PageSectionHeader
+          icon={DollarSign}
+          title="Salary Intelligence"
+          subtitle="Market salary data extracted from your enriched job postings"
+          className="mb-4"
+        />
+        <GlassCard variant="emerald">
+          <SalaryIntelligence />
+        </GlassCard>
       </div>
     </HydrationBoundary>
   );

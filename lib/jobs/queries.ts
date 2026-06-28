@@ -90,6 +90,8 @@ export async function getCachedJobs(
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        // Include AI fit score — 2 fields only, negligible overhead; auto-busted when saveAIInsightAction runs
+        include: { aiInsight: { select: { fitScore: true, fitLabel: true } } },
       });
 
       const count = await prisma.job.count({ where: whereClause });

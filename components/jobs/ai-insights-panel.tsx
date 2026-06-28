@@ -26,6 +26,8 @@ import type { AIInsightType } from '@/utils/types';
 import { PipelineProgress } from '@/components/jobs/pipeline-progress';
 import { trackEvent } from '@/lib/analytics/posthog';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 type AiInsightsPanelProps = {
   job: PipelineJobInput;
@@ -57,9 +59,12 @@ function CoverLetterSection({ text }: { text: string }) {
         {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
       </button>
       {open && (
-        <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-black/20 p-3 text-xs leading-relaxed text-muted-foreground">
-          {text}
-        </pre>
+        <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-black/20 p-3">
+          {/* LLM output is markdown — render with remark-gfm for proper formatting */}
+          <div className="prose prose-invert prose-xs max-w-none text-xs leading-relaxed text-muted-foreground [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -69,7 +74,9 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
   return (
     <div className="flex flex-col gap-3">
       {data.summary && (
-        <p className="text-sm text-muted-foreground">{data.summary}</p>
+        <div className="prose prose-invert prose-sm max-w-none text-sm text-muted-foreground [&_p]:my-1">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.summary}</ReactMarkdown>
+        </div>
       )}
 
       {data.fit_score && (

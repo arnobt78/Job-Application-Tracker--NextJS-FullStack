@@ -33,9 +33,16 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - `JobAIInsight` + `UserProfile` DB persist · `/profile` UI
 - Internal API: `GET /api/internal/jobs?userId=` · `POST /api/internal/notify` (`X-Internal-Secret`)
 - n8n JSON templates in `docs/n8n/` (not deployed)
+- **AI fit chip** `components/jobs/ai-fit-chip.tsx` — embedded in `getCachedJobs` include, shown on `JobCard`
+- **react-markdown** in `AiInsightsPanel` (cover letter + summary) · **Framer Motion** on `JobEnrichmentBadge`
+
+## Phase 3 (partial ✅)
+- **Resume PDF parser**: `lib/pdf/extract-text.ts` (pdfjs-dist) · `uploadResumeAction` · `ResumeUpload` drag-drop on `/profile`
+- **Skill Gap**: `lib/jobs/skill-gap.ts` `computeSkillGap()` · `getSkillGapAction` · `SkillGapTab` in `JobDetailPanels`
+- **Salary Intel**: `getSalaryIntelligenceAction` · `SalaryIntelligence` on `/stats` · SSR-prefetched · invalidated on CRUD
 
 ## Query keys
-`jobs.*` · `stats` · `charts` · `chartsWeekly` · `job(id)` · `discover.*` · `aiInsight.job(id)` · `timeline()` · `userProfile()`
+`jobs.*` · `stats` · `charts` · `chartsWeekly` · `job(id)` · `discover.*` · `aiInsight.job(id)` · `timeline()` · `userProfile()` · `skillGap(jobId)` · `salaryIntel()`
 
 ## Routes
 `/dashboard` · `/dashboard/[id]` (JobDetailPanels) · `/discover` · `/stats` · `/timeline` · `/profile`

@@ -58,4 +58,10 @@ export const queryKeys = {
   userProfile: () => ['user-profile'] as const,
   // Global activity timeline — built from Job rows, not persisted.
   timeline: () => ['timeline'] as const,
+  // Skill gap analysis — per-job comparison of user profile skills vs job description.
+  // NOT persisted: on-demand, live Bluedoor data.
+  skillGap: (jobId: string) => ['skill-gap', jobId] as const,
+  // Salary intelligence — aggregated from user's enriched jobs.
+  // Persisted: invalidated on job CRUD (same as stats).
+  salaryIntel: () => ['salary-intel'] as const,
 } as const;

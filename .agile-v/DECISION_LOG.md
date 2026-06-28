@@ -46,3 +46,8 @@
 | 2026-06-27T12:00:00Z | Requirement Architect | C1 | Add REQ-0028 stats overhaul, REQ-0029 notifications; update REQ-0027 to scaffolded [C1] | Retroactive capture from shipped work + docs audit | REQ-0028, REQ-0029, REQ-0027 |
 | 2026-06-27T12:00:00Z | Product Owner | C1 | BL-0008 → COMMITTED; add BL-0010 Phase 1 gaps | Facets, webhook subscribe, digest, logos remain | BL-0010 |
 | 2026-06-27T12:00:00Z | Red Team Verifier | C1 | EVAL-0013 PASS — lint/typecheck/test(49) @ `0f2ea55` | Governance reactivation verification | REQ-0024 |
+| 2026-06-28T00:00:00Z | Build Agent (JS) | C1 | Phase 3 partial: AI fit chip, react-markdown, Framer Motion, PDF parser, Skill Gap, Salary Intel | User plan approval; production-readiness sprint | REQ-0027, REQ-0028, REQ-0031, REQ-0032 |
+| 2026-06-28T00:00:00Z | Build Agent (JS) | C1 | COMMON_SKILLS module-level (not inside function) | Performance: avoid array re-allocation per computeSkillGap call | REQ-0032 |
+| 2026-06-28T00:00:00Z | Build Agent (JS) | C1 | computeSkillGap static import (not dynamic) | No heavy deps unlike pdfjs — consistency and tree-shaking | REQ-0032 |
+| 2026-06-28T00:00:00Z | Build Agent (JS) | C1 | salaryIntel NOT in persist scope; invalidated client-side via invalidateAllJobQueries | Matches architecture rule: only jobs/stats/charts/job(id) persisted | REQ-0028 |
+| 2026-06-28T00:00:00Z | Red Team Verifier | C1 | EVAL-0014 PASS — lint/typecheck/test(51)/build @ HEAD | Phase 3 partial full audit | REQ-0024 |
