@@ -62,6 +62,6 @@ export const queryKeys = {
   // NOT persisted: on-demand, live Bluedoor data.
   skillGap: (jobId: string) => ['skill-gap', jobId] as const,
   // Salary intelligence — aggregated from user's enriched jobs.
-  // Persisted: invalidated on job CRUD (same as stats).
+  // NOT persisted in localStorage; invalidated on job CRUD via invalidateAllJobQueries.
   salaryIntel: () => ['salary-intel'] as const,
 } as const;

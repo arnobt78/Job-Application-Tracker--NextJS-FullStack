@@ -65,7 +65,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | n8n instance | JSON templates in `docs/n8n/`; import + run on VPS |
 | ARQ / Celery job queue | Pipeline synchronous in FastAPI request |
 | E2E in CI | Playwright specs exist; CI wiring optional |
-| Phase 3 advanced | Auto-apply email, browser extension, team mode, skill gap AI-powered (current: keyword-based) |
+| Phase 3 advanced | Auto-apply email, browser extension, team mode, LLM-powered skill gap |
 
 ---
 
@@ -97,7 +97,7 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | --- | --- |
 | `app/(dashboard)/layout.tsx` | SSR NextAuth session → NavUserProvider + NotificationsProvider |
 | `app/(dashboard)/dashboard/page.tsx` | prefetch list + filterOptions + stats |
-| `app/(dashboard)/stats/page.tsx` | prefetch stats + charts + chartsWeekly |
+| `app/(dashboard)/stats/page.tsx` | prefetch stats + charts + chartsWeekly + **salaryIntel** |
 | `app/(dashboard)/dashboard/[id]/page.tsx` | prefetch job detail + `EditJobDialogPage` + `JobDetailPanels` |
 | `app/(dashboard)/profile/page.tsx` | SSR prefetch `UserProfile` + `UserProfileForm` |
 | `app/(dashboard)/timeline/page.tsx` | SSR prefetch global activity feed |
@@ -106,6 +106,12 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `components/timeline/timeline-view.tsx` | Client timeline list — `getTimelineEventsAction` |
 | `lib/jobs/timeline.ts` | Derive events from Job + aiInsight (cached by jobsTag) |
 | `components/user-profile/user-profile-form.tsx` | Skills tags, target roles, resume textarea |
+| `components/jobs/ai-fit-chip.tsx` | Inline fit score badge on `JobCard` |
+| `components/jobs/skill-gap-tab.tsx` | Profile vs job description keyword gap analysis |
+| `components/stats/salary-intelligence.tsx` | Aggregated Bluedoor salary KPIs on `/stats` |
+| `components/user-profile/resume-upload.tsx` | PDF drag-drop → `uploadResumeAction` |
+| `lib/pdf/extract-text.ts` | pdfjs-dist server-side text extraction |
+| `lib/jobs/skill-gap.ts` | `computeSkillGap()` — COMMON_SKILLS keyword matching |
 | `components/jobs/pipeline-progress.tsx` | 9-step animated progress during SSE pipeline |
 | `app/api/ai/pipeline/stream/route.ts` | SSE proxy → Python `/pipeline/run/stream` |
 | `components/providers/posthog-provider.tsx` | Lazy PostHog init |
@@ -129,8 +135,8 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `hooks/useAIPipeline.ts` | Blocking mutation + `useStreamPipeline` for SSE progress |
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + `invalidateAllJobQueries` |
 | `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist rules |
-| `lib/invalidate-jobs.ts` | jobs · stats · charts · chartsWeekly · filterOptions · job(id) · **timeline** |
-| `lib/query-keys.ts` | discover.* · ai.pipeline · aiInsight · **timeline** · chartsWeekly |
+| `lib/invalidate-jobs.ts` | jobs · stats · charts · chartsWeekly · filterOptions · timeline · **salaryIntel** · job(id) |
+| `lib/query-keys.ts` | discover.* · aiInsight · timeline · **skillGap** · **salaryIntel** · chartsWeekly |
 | `context/notifications-context.tsx` | BroadcastChannel subscriber; AppNotification[] state |
 | `components/layout/notification-bell.tsx` | Bell icon + unread badge + popover list |
 | `components/jobs/job-enrichment-badge.tsx` | LIVE / CLOSED / CHANGED / SALARY / Syncing |
@@ -270,7 +276,7 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 6. User profile from `/profile` passed as `PipelineUserProfile` context when available.
 
 **Wired in:** `JobDetailPanels` on `/dashboard/[id]` + `DiscoverJobDetailsModal`.  
-**Not yet:** production FastAPI deploy on Coolify; AI fit chip on dashboard cards.
+**Not yet:** production FastAPI deploy on Coolify.
 
 ---
 
@@ -286,12 +292,12 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 
 ## Invalidation
 
-**Client** (`invalidateAllJobQueries`): `jobs.all`, `stats`, `charts`, `chartsWeekly`, `filterOptions`, `job.detail(id)`, **`timeline()`**.  
+**Client** (`invalidateAllJobQueries`): `jobs.all`, `stats`, `charts`, `chartsWeekly`, `filterOptions`, `timeline()`, `salaryIntel()`, `job.detail(id)`.  
 Mutations: `onSuccess` broadcasts once; `onSettled` resyncs all keys without re-broadcast.
 
 **Server** (`invalidateUserJobCaches`): `revalidatePath` dashboard/stats/discover/**timeline** + tags + Redis + SSE.
 
-Discover, AI mutation, posting-events, and facet queries are **not** in persist scope — refetch on navigation/filter/tab open. `JobAIInsight` lives in PostgreSQL.
+Discover, skill-gap, AI mutation, posting-events, and facet queries are **not** in persist scope.
 
 ---
 

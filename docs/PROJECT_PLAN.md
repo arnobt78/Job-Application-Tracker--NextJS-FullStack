@@ -1,11 +1,9 @@
 # Jobify v2 — Project Vision & Roadmap
 
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19 · **Last updated:** 2026-06-27 (NextAuth migration + audit)  
-**Status:** Phase 1 **✅ complete** · Phase 2 **~90%** (code in repo; VPS not deployed) · Phase 3 **planned**  
-**Stack:** Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (optional) · Bluedoor API · React Email · PostHog · Python FastAPI · Ollama · n8n · Coolify VPS (planned)
-
-**Verification (2026-06-27):** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓
+**Date:** 2026-06-19 · **Last updated:** 2026-06-28 (Phase 3 partial)  
+**Status:** Phase 1 **✅ complete** · Phase 2 **~90%** (code in repo; VPS not deployed) · Phase 3 **🔄 partial**  
+**Verification (2026-06-28):** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ · `59060a0`
 
 ---
 
@@ -22,12 +20,12 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | Phase | Overall | Shipped in codebase | Remaining |
 | --- | --- | --- | --- |
 | **Core tracker** | ✅ Done | CRUD, filters, stats, export, auth, optimistic UI, SSE, **global timeline** | — |
-| **Phase 1 — Bluedoor** | ✅ Done | Enrichment, discover, facets, webhook, cron, bell, React Email, weekly digest, logos, Posting Activity, **org enrich** | AI fit chip (optional) |
+| **Phase 1 — Bluedoor** | ✅ Done | Enrichment, discover, facets, webhook, cron, bell, React Email, weekly digest, logos, Posting Activity, org enrich | — |
 | **Stats overhaul** | ✅ Done | KPI row, 4 charts, weekly velocity query | — |
 | **Phase 2 — AI** | 🔄 ~90% | FastAPI + 9 agents + LLM router, DB persist, SSE streaming, profile UI, internal API | Coolify deploy, prod LLM keys |
 | **Phase 2 — Infra** | ⚠️ Partial | `docker-compose.yml`, internal API, n8n JSON templates | Coolify, Ollama VPS, n8n instance |
 | **Testing / analytics** | ⚠️ Partial | Vitest **51**, Playwright E2E, PostHog (optional) | E2E CI wiring |
-| **Phase 3** | ⬜ Future | — | Resume parser, extension, team mode, etc. |
+| **Phase 3** | 🔄 Partial | AI fit chip, PDF resume parser, Skill Gap tab, Salary Intel, react-markdown, Framer badge | Extension, team mode, auto-apply email |
 
 ---
 
@@ -223,7 +221,6 @@ tests/e2e/                                 # Playwright specs
 | Set prod env vars | `AI_SERVICE_URL`, `AI_SERVICE_SECRET` on Vercel + Coolify |
 | n8n instance + import flows | JSON templates exist; no running n8n server |
 | ARQ async job queue | Pipeline is synchronous in request handler |
-| AI fit chip on `JobCard` | Score visible in AI panel only |
 
 ### 2.3 Infrastructure on Coolify VPS (planned)
 
@@ -285,21 +282,31 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 12. ✅ Discover two-panel sidebar (`DiscoverSidebar` on lg+)
 13. ⚠️ n8n workflow JSON templates (`docs/n8n/`)
 14. ⬜ Coolify: deploy FastAPI + pull Ollama models + import n8n flows
-15. ⬜ AI fit chip on dashboard cards
+15. ✅ AI fit chip on dashboard cards (`AIFitChip`)
+
+### Phase 3 (partial)
+
+1. ✅ Resume PDF parser (`uploadResumeAction` + `ResumeUpload`)
+2. ✅ Skill Gap tab (`computeSkillGap` + `SkillGapTab`)
+3. ✅ Salary Intelligence on `/stats`
+4. ✅ react-markdown in `AiInsightsPanel` · Framer Motion on enrichment badge
+5. ⬜ Browser extension · team mode · auto-apply email detection
 
 ---
 
-## Phase 3 — Advanced (Future)
+## Phase 3 — Advanced (partial 🔄)
 
-| Feature | Description |
-| --- | --- |
-| Resume parser | Upload PDF → extract skills → user profile for AI matching |
-| Skill gap analyzer | Profile vs Bluedoor market demand |
-| Salary intelligence | Aggregate Bluedoor salary data for target role + location |
-| Auto-apply detection | Parse email confirmations → auto-log application |
-| Multi-user / team mode | Shared job lists, referral tracking |
-| Browser extension | One-click "Track this job" from any career page |
-| Company intelligence | Bluedoor `/v1/orgs` enrichment on cards |
+| Feature | Status | Implementation |
+| --- | --- | --- |
+| Resume PDF parser | ✅ | `lib/pdf/extract-text.ts` · `uploadResumeAction` · `ResumeUpload` on `/profile` |
+| Skill gap analyzer | ✅ | `lib/jobs/skill-gap.ts` · `SkillGapTab` in `JobDetailPanels` (keyword-based) |
+| Salary intelligence | ✅ | `getSalaryIntelligenceAction` · `SalaryIntelligence` on `/stats` |
+| AI fit chip on cards | ✅ | `AIFitChip` on `JobCard` via `getCachedJobs` aiInsight include |
+| react-markdown + Framer Motion | ✅ | `AiInsightsPanel` · `JobEnrichmentBadge` |
+| Auto-apply detection | ⬜ | Parse email confirmations → auto-log application |
+| Multi-user / team mode | ⬜ | Shared job lists, referral tracking |
+| Browser extension | ⬜ | One-click "Track this job" from any career page |
+| Company intelligence on cards | ✅ | `companySize` from `getBluedoorOrg` on `JobCard` |
 
 ---
 
@@ -308,12 +315,12 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | Screen / Feature | Vision | Current |
 | --- | --- | --- |
 | `/discover` | Two-panel + facet sidebar + infinite scroll | ✅ Sidebar lg+ · ✅ facet counts · ✅ infinite scroll |
-| `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge + CompanyLogo · ⬜ AI chip on card |
-| `/dashboard/[id]` | AI Insights tab + Posting Activity tab | ✅ `JobDetailPanels` — DB load + SSE streaming |
-| `/profile` | Skills + resume for AI personalisation | ✅ `UserProfileForm` |
+| `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge + CompanyLogo + **AIFitChip** + companySize |
+| `/dashboard/[id]` | AI Insights + Posting Activity + Skill Gap | ✅ `JobDetailPanels` — 3 tabs |
+| `/profile` | Skills + resume PDF upload | ✅ `UserProfileForm` + `ResumeUpload` |
 | `/timeline` | Global activity feed | ✅ job_created · enriched · posting_changed · ai_generated |
 | Notification center | Bell + SSE | ✅ Complete |
-| `/stats` | Rich analytics | ✅ 4 charts + KPI row |
+| `/stats` | Rich analytics + salary intel | ✅ 4 charts + KPI row + **SalaryIntelligence** |
 | AI streaming | Pipeline progress + streamed output | ✅ `PipelineProgress` + SSE; cover letter shown after complete |
 
 ---
@@ -385,7 +392,7 @@ n8n (planned)
 8. ✅ Global timeline + discover sidebar
 9. ⚠️ n8n JSON templates (deploy pending)
 10. ⬜ Coolify deploy + Ollama models
-11. ⬜ AI fit chip on dashboard cards
+11. ✅ AI fit chip on dashboard cards
 
 ---
 
@@ -408,4 +415,4 @@ n8n (planned)
 
 ---
 
-_Last updated: 2026-06-27 (NextAuth migration, org enrich, timeline invalidation, 51 tests)_
+_Last updated: 2026-06-28 (Phase 3 partial — fit chip, PDF parser, skill gap, salary intel) · `59060a0`_

@@ -1,10 +1,10 @@
 # Jobify v2 — Tech Stack Analysis
 
-**Version:** v1.5  
-**Date:** 2026-06-19 · **Last updated:** 2026-06-27 (NextAuth migration)  
-**Status:** Phase 1 **✅ complete** · Phase 2 **~90%** · Phase 3 **planned**
+**Version:** v1.6  
+**Date:** 2026-06-19 · **Last updated:** 2026-06-28 (Phase 3 partial)  
+**Status:** Phase 1 **✅ complete** · Phase 2 **~90%** · Phase 3 **🔄 partial**
 
-**Verified:** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓
+**Verified:** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ · `59060a0`
 
 ---
 
@@ -105,7 +105,19 @@
 | `/api/internal/*` routes | ✅ | `internal/jobs`, `internal/notify` (`X-Internal-Secret`) |
 | Coolify deploy | ⬜ | — |
 
----
+### Phase 3 feature matrix (partial)
+
+| Feature | Status | Files |
+| --- | --- | --- |
+| AI fit chip on JobCard | ✅ | `ai-fit-chip.tsx` · `getCachedJobs` aiInsight include |
+| Resume PDF parser | ✅ | `lib/pdf/extract-text.ts` · `uploadResumeAction` · `resume-upload.tsx` |
+| Skill gap analyzer | ✅ | `lib/jobs/skill-gap.ts` · `skill-gap-tab.tsx` |
+| Salary intelligence | ✅ | `getSalaryIntelligenceAction` · `salary-intelligence.tsx` |
+| react-markdown | ✅ | `AiInsightsPanel` + remark-gfm |
+| Framer Motion badges | ✅ | `JobEnrichmentBadge` AnimatePresence |
+| Browser extension | ⬜ | — |
+| Team mode | ⬜ | — |
+| Auto-apply email | ⬜ | — |
 
 ## 1. Current Stack (Existing)
 
@@ -382,12 +394,14 @@ Coolify VPS (planned)
 | User profile UI | `/profile` + `UserProfileForm` | ✅ |
 | PostHog analytics | `lib/analytics/posthog.ts` — optional env | ⚠️ |
 | E2E tests | Playwright `tests/e2e/` | ⚠️ |
-| Markdown rendering | `react-markdown` | ⬜ |
+| Markdown rendering | `react-markdown` + remark-gfm | ✅ |
 | Company logos | Clearbit via `CompanyLogo` | ✅ |
-| Framer Motion badges | Animated status change | ⬜ |
+| Framer Motion badges | Animated status change | ✅ |
+| AI fit chip | `AIFitChip` on JobCard | ✅ |
+| Resume PDF parser | pdfjs-dist server-side | ✅ |
+| Skill gap tab | Keyword-based profile vs JD | ✅ |
+| Salary intelligence | Aggregated enriched job salaries on `/stats` | ✅ |
 | 9-agent progress UI | Step indicator | ✅ `PipelineProgress` |
-
----
 
 ## 8. Database Schema
 
@@ -513,6 +527,15 @@ model UserProfile {
 | Analytics | PostHog (optional) | ⚠️ |
 | E2E | Playwright specs | ⚠️ |
 
+### Shipped (Phase 3 partial)
+
+| Layer | Tool |
+| --- | --- |
+| AI fit chip | `AIFitChip` on JobCard |
+| Resume PDF parser | pdfjs-dist + `uploadResumeAction` |
+| Skill gap | `computeSkillGap` + `SkillGapTab` |
+| Salary intel | `SalaryIntelligence` on `/stats` |
+
 ### Planned (not in codebase)
 
 | Layer | Tool |
@@ -521,8 +544,9 @@ model UserProfile {
 | Container PaaS | Coolify on Hetzner |
 | Local LLM runtime | Ollama on VPS |
 | Task queue | ARQ + Redis |
-| AI fit chip on cards | Dashboard JobCard badge |
-| Resume PDF parser | Phase 3 |
+| Browser extension | One-click track from career pages |
+| Team mode | Shared job lists |
+| Auto-apply email | Parse confirmations → auto-log |
 
 ### Tech Decisions Rationale
 
@@ -539,5 +563,5 @@ model UserProfile {
 
 ---
 
-_Document version: v1.5 — Last updated 2026-06-27 (NextAuth, org enrich, 51 tests, timeline invalidation)_
+_Document version: v1.6 — Last updated 2026-06-28 (Phase 3 partial) · `59060a0`_
 _See also: [PROJECT_PLAN.md](./PROJECT_PLAN.md) · [PROJECT_WALKTHROUGH.md](./PROJECT_WALKTHROUGH.md)_

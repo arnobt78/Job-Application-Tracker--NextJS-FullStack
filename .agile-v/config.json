@@ -95,6 +95,7 @@
     "phase_1": "COMPLETE — Bluedoor + discover + stats + notifications + timeline + org enrich",
     "phase_1_remaining": "—",
     "phase_2": "~90% code — Coolify/Ollama/n8n deploy pending",
+    "phase_3": "partial — fit chip, PDF parser, skill gap, salary intel shipped",
     "plan_doc": "docs/PROJECT_PLAN.md",
     "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md",
     "walkthrough_doc": "docs/PROJECT_WALKTHROUGH.md"
