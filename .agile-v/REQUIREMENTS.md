@@ -9,7 +9,7 @@
 | Cycle    | C1                                               |
 | Revision | 1.0                                              |
 | Author   | Requirement Architect (Bootstrap)                |
-| Status   | Draft — awaiting Logic Gatekeeper + Human Gate 1 |
+| Status   | Draft — Phase 1 ~92% implemented; awaiting Human Gate 1 |
 
 ---
 
@@ -44,9 +44,9 @@
 **Acceptance Criteria:**
 
 1. Create job at `/add-job` with position, company, location, status, mode
-2. List all jobs at `/jobs`
-3. Edit job at `/jobs/[id]`
-4. Delete job from edit page
+2. List all jobs at `/dashboard` with filters and pagination
+3. Edit job at `/dashboard/[id]` (dialog + detail panels)
+4. Delete job from edit dialog
 5. All operations scoped to authenticated user's `clerkId`
 
 **Verification:** TC-0003…TC-0007  
@@ -179,12 +179,13 @@
 
 **Acceptance Criteria:**
 
-1. `/add-job`, `/jobs(.*)`, `/stats`, `/user-profile(.*)` protected
+1. `/add-job`, `/dashboard(.*)`, `/discover`, `/stats`, `/user-profile(.*)` protected
 2. Landing page `/` remains public
 3. Static assets excluded from middleware matcher
+4. Middleware file SHALL be `middleware.ts` (Next.js convention)
 
 **Verification:** TC-0002  
-**Artifacts:** ART-0001
+**Artifacts:** ART-0001 (`middleware.ts`)
 
 ---
 
@@ -370,13 +371,13 @@
 | REQ-0020 | Prisma schema cleanup (remove unused Task/Tour/Token) | LOW      | `done [C1]` `998d3a5` |
 | REQ-0021 | Automated test suite (unit + e2e)                     | HIGH     | `new [C2]` |
 | REQ-0022 | Observability (logging, error tracking)               | MEDIUM   | `new [C2]` |
-| REQ-0027 | AI agent pipeline (Ollama + FastAPI + n8n)            | HIGH     | `new [C2]` — Phase 2 |
+| REQ-0027 | AI agent pipeline (Ollama + FastAPI + n8n)            | HIGH     | `scaffolded [C1]` |
 
 ---
 
 ## REQ-0025: Bluedoor Live Posting Enrichment
 
-**Status:** `approved [C1]` — **implemented 2026-06-19** (uncommitted)  
+**Status:** `approved [C1]` — **implemented 2026-06-19** (`58e8297`+)  
 **Priority:** HIGH  
 **Category:** Integration / Core Feature
 
@@ -397,7 +398,7 @@
 
 ## REQ-0026: Job Discovery (Bluedoor Search)
 
-**Status:** `approved [C1]` — **implemented 2026-06-19** (uncommitted)  
+**Status:** `approved [C1]` — **implemented 2026-06-19** (`58e8297`+)  
 **Priority:** MEDIUM  
 **Category:** Discovery
 
@@ -407,26 +408,82 @@
 
 1. `/discover` route with SSR prefetch, URL-driven filters (q, country, workplace, employment, salary)
 2. Results from `searchBluedoorJobsAction`; discover queries NOT persisted to localStorage
-3. "Track Application" pre-fills create job with title, location, apply URL and triggers enrichment
-4. Discover nav link in dashboard; route protected by Clerk proxy
+3. "Track Application" uses `useCreateJobMutation` for instant dashboard invalidation
+4. Posting Activity tab on `/dashboard/[id]` via `getBluedoorJobEventsAction` when `bluedoorJobId` set
+5. Discover nav link in dashboard; route protected by Clerk middleware
 
 **Verification:** TC-0027  
 **Artifacts:** ART-0077…ART-0081
 
 ---
 
-## REQ-0027: AI Agent Pipeline (Phase 2 — Planned)
+## REQ-0027: AI Agent Pipeline (Phase 2 — Scaffolded)
 
-**Status:** `new [C2]`  
+**Status:** `scaffolded [C1]` — code in repo; not deployed  
 **Priority:** HIGH  
 **Category:** AI / Automation
 
 **Description:** Phase 2 SHALL provide human-in-the-loop AI workflows (fit analysis, cover letter draft, interview prep, digests) via a 9-agent FastAPI pipeline on Coolify with Ollama primary and cloud LLM fallback.
 
-**Acceptance Criteria:** See `docs/PROJECT_PLAN.md` Phase 2 section.
+**Acceptance Criteria (shipped in scaffold):**
+
+1. `python-ai-service/` FastAPI app with 9-agent pipeline + LLM fallback router
+2. `POST /api/ai/pipeline` Next.js proxy (Clerk auth → internal secret)
+3. `useAIPipeline` hook + `AiInsightsPanel` in `JobDetailPanels` and Discover Details modal
+4. On-demand only — NOT persisted to localStorage
+
+**Acceptance Criteria (remaining):**
+
+1. Coolify deploy + Ollama models on VPS
+2. `JobAIInsight` + `UserProfile` Prisma models + persist pipeline output
+3. Cover letter streaming UI + 9-agent progress indicator
+4. n8n automation flows + `/api/internal/*` routes
 
 **Verification:** TC-0028 (Phase 2)  
-**Artifacts:** TBD — `python-ai-service/` on Coolify
+**Artifacts:** ART-0090…ART-0096 (see BUILD_MANIFEST.md)
+
+---
+
+## REQ-0028: Stats Analytics Overhaul
+
+**Status:** `approved [C1]` — **implemented 2026-06-27**  
+**Priority:** HIGH  
+**Category:** Analytics
+
+**Description:** Users SHALL view expanded analytics on `/stats` including KPIs, multiple chart types, and weekly velocity.
+
+**Acceptance Criteria:**
+
+1. KPI row: response rate, interview rate, top job type (`stats-kpi-row.tsx`)
+2. Monthly application trend with projection (`application-trend-chart.tsx`)
+3. Weekly velocity chart — 12 weeks (`weekly-velocity-chart.tsx` + `getCachedWeeklyCharts`)
+4. Status distribution donut + mode distribution bars
+5. SSR prefetch for stats + charts + chartsWeekly on `/stats/page.tsx`
+6. `chartsWeekly` included in `invalidateAllJobQueries` and persist allowlist
+
+**Verification:** TC-0029  
+**Artifacts:** ART-0088 (`components/stats/*`), ART-0089 (`getCachedWeeklyCharts` in `lib/jobs/queries.ts`)
+
+---
+
+## REQ-0029: Real-Time Notification Center
+
+**Status:** `approved [C1]` — **implemented 2026-06-27**  
+**Priority:** HIGH  
+**Category:** Integration / UX
+
+**Description:** Users SHALL receive in-app and email notifications when enriched job postings change status, description, or salary.
+
+**Acceptance Criteria:**
+
+1. SSE event bus (`lib/jobs-events.ts`) multiplexes `invalidate` + `notify` on `/api/jobs/events`
+2. `NotificationsProvider` + `NotificationBell` in dashboard nav (max 50, read/unread)
+3. Cross-tab relay via BroadcastChannel `jobify-notifications` (`useJobsCacheSync`)
+4. `publishNotification` + `sendPostingChangeEmail` wired in `resyncJob` (`enrich.ts`)
+5. Resend email graceful no-op when `RESEND_API_KEY` absent
+
+**Verification:** TC-0030  
+**Artifacts:** ART-0082…ART-0087 (see BUILD_MANIFEST.md)
 
 ---
 

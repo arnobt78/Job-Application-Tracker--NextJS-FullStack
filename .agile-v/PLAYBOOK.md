@@ -69,12 +69,13 @@ Specify → Constrain → Orchestrate → Prove → Evolve → Verify
 |---|---|
 | Cycle | C1 |
 | Checkpoint | **INT-0003** `c1-dev-20260612` (Dev-Active) |
-| Backlog | **BL-0008** — Phase 1 Bluedoor (implemented, uncommitted) |
-| Phase 2 | **BL-0009** — AI pipeline (planned, `docs/PROJECT_PLAN.md`) |
+| Phase 1 | **~92%** — BL-0008 committed; BL-0010 gaps open |
+| Phase 2 | **BL-0009** — AI pipeline scaffolded; Coolify deploy pending |
 | Gate 1 | PENDING (`c1-gate1-baseline-20260611`) |
 | Gate 2 | NOT_REACHED |
 | Governance | REQ-0024 (always-on traceability) |
-| New REQs | REQ-0025 enrichment · REQ-0026 discover · REQ-0027 Phase 2 AI |
+| Git HEAD | `0f2ea55` |
+| Verify | lint ✓ · typecheck ✓ · test 49/49 ✓ |
 
 ---
 
@@ -125,7 +126,8 @@ Archives: `cycles/C1/` (frozen after Gate 2)
 | SSR pages | `export const dynamic = 'force-dynamic'` |
 | Prefetch | `await prefetchQuery` before `dehydrate` (dashboard/stats/[id]) |
 | Cold skeletons | `useQueryBodyLoading` — skip when SSR/persist warm |
-| Persist | `PersistQueryClient` localStorage `jobify-query-cache` |
+| Persist | `PersistQueryClient` localStorage `jobify-query-cache` — **not** discover/ai/events |
+| Auth middleware | `middleware.ts` — Clerk gate (never `proxy.ts`) |
 | No route `loading.tsx` | Inline skeletons on data slots only |
 | CRUD cache | onSuccess `invalidateAll`+broadcast · onSettled same `broadcast:false` |
 | Server bust | `invalidateUserJobCaches` + tags + Redis + SSE |
@@ -143,7 +145,7 @@ Full rules: `CLAUDE.md` at repo root.
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-Current baseline: **49 tests** passing · Phase 1 Bluedoor uncommitted on `1a1bec0`
+Current baseline: **49 tests** passing · Phase 1 ~92% @ `0f2ea55`
 
 ---
 
@@ -177,9 +179,11 @@ Decision Points: [choices] | Log: [TIMESTAMP | AGENT | DECISION | RATIONALE | LI
 | REQ-0019 | Auth SSR avatar — done |
 | REQ-0020…0023 | Prisma cleanup / auth UI — done |
 | REQ-0024 | Agile V governance — active |
-| REQ-0025 | Bluedoor enrichment — Phase 1 implemented |
-| REQ-0026 | `/discover` search — Phase 1 implemented |
-| REQ-0027 | AI agent pipeline — Phase 2 planned |
+| REQ-0025 | Bluedoor enrichment — implemented |
+| REQ-0026 | `/discover` + Posting Activity — implemented |
+| REQ-0027 | AI agent pipeline — scaffolded [C1] |
+| REQ-0028 | Stats analytics overhaul — implemented |
+| REQ-0029 | Notification center + email — implemented |
 
 Full list: `.agile-v/REQUIREMENTS.md`  
 Traceability: `.agile-v/ATM.md`

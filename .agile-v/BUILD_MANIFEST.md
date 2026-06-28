@@ -4,7 +4,7 @@
 
 | ART-ID | Cycle | Type | Path | REQ-IDs | Status |
 |---|---|---|---|---|---|
-| ART-0001 | C1 | Proxy | `proxy.ts` | REQ-0001, REQ-0009 | Baseline |
+| ART-0001 | C1 | Middleware | `middleware.ts` | REQ-0001, REQ-0009 | Baseline (renamed from `proxy.ts` AUDIT-0001) |
 | ART-0002 | C1 | Page | `app/sign-in/[[...sign-in]]/page.tsx` | REQ-0001 | Baseline |
 | ART-0003 | C1 | Page | `app/sign-up/[[...sign-up]]/page.tsx` | REQ-0001 | Baseline |
 | ART-0004 | C1 | Server Actions | `utils/actions.ts` | REQ-0002, REQ-0003, REQ-0004, REQ-0011, REQ-0005, REQ-0006, REQ-0007 | Baseline |
@@ -85,8 +85,29 @@
 | ART-0079 | C1 | Component | `components/discover/*` | REQ-0026 | Phase 1 |
 | ART-0080 | C1 | Nav | `components/layout/dashboard-nav.tsx` (Discover) | REQ-0026 | Phase 1 |
 | ART-0081 | C1 | Docs | `docs/PROJECT_PLAN.md`, `JOBIFY_TECH_STACK_ANALYSIS.md` | REQ-0027 | Planning |
+| ART-0082 | C1 | Lib | `lib/jobs-events.ts` | REQ-0029 | Phase 1 |
+| ART-0083 | C1 | API | `app/api/jobs/events/route.ts` | REQ-0029 | Phase 1 |
+| ART-0084 | C1 | Context | `context/notifications-context.tsx` | REQ-0029 | Phase 1 |
+| ART-0085 | C1 | Component | `components/layout/notification-bell.tsx` | REQ-0029 | Phase 1 |
+| ART-0086 | C1 | Lib | `lib/notifications/email.ts` | REQ-0029 | Phase 1 |
+| ART-0087 | C1 | Hook | `hooks/useJobsCacheSync.ts` (notify relay) | REQ-0029 | Phase 1 |
+| ART-0088 | C1 | Component | `components/stats/*` | REQ-0028 | Stats overhaul |
+| ART-0089 | C1 | Query | `getCachedWeeklyCharts` in `lib/jobs/queries.ts` | REQ-0028 | Stats overhaul |
+| ART-0090 | C1 | Service | `python-ai-service/` | REQ-0027 | Phase 2 scaffold |
+| ART-0091 | C1 | API | `app/api/ai/pipeline/route.ts` | REQ-0027 | Phase 2 scaffold |
+| ART-0092 | C1 | Lib | `lib/ai/pipeline-client.ts` | REQ-0027 | Phase 2 scaffold |
+| ART-0093 | C1 | Hook | `hooks/useAIPipeline.ts` | REQ-0027 | Phase 2 scaffold |
+| ART-0094 | C1 | Component | `components/jobs/ai-insights-panel.tsx` | REQ-0027 | Phase 2 scaffold |
+| ART-0095 | C1 | Component | `components/jobs/posting-activity-tab.tsx` | REQ-0026 | Phase 1 |
+| ART-0096 | C1 | Component | `components/jobs/job-detail-panels.tsx` | REQ-0026, REQ-0027 | Phase 1 |
+| ART-0097 | C1 | Component | `components/discover/discover-job-details-modal.tsx` | REQ-0026, REQ-0027 | Phase 1 |
+| ART-0098 | C1 | Component | `components/discover/discover-results.tsx` (infinite scroll) | REQ-0026 | Phase 1 |
+| ART-0099 | C1 | Docs | `docs/PROJECT_WALKTHROUGH.md`, `README.md` | REQ-0024 | Docs audit |
 
 ## Deprecated / removed
+
+- `proxy.ts` — renamed to `middleware.ts` (AUDIT-0001)
+- `components/ChartsContainer.tsx` — replaced by `components/stats/application-trend-chart.tsx`
 
 - `components/JobsList.tsx`, `components/Navbar.tsx`, `components/Sidebar.tsx`
 - `app/(dashboard)/stats/loading.tsx`, legacy `/jobs` routes

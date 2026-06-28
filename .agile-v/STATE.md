@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | **Cycle** | C1 |
-| **Stage** | 3 Synthesis — **Phase 1+2 complete + full audit PASS** |
+| **Stage** | 3 Synthesis — **Phase 1 ~92% + Phase 2 scaffolded** |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
-| **Pipeline** | Phase 1+2 + Posting Activity tab + EVAL-0012 audit → committed `58e8297` → manual QA pending |
-| **Last Updated** | 2026-06-27T20:00:00Z |
-| **Git HEAD** | `58e8297` (posted activity + docs sync, pushed to origin) |
+| **Pipeline** | BL-0008 committed · docs audit sync · Gate 1 pending · manual QA pending |
+| **Last Updated** | 2026-06-28T00:00:00Z |
+| **Git HEAD** | `0f2ea55` fix(auth): middleware.ts rename — COMMITTED + PUSHED |
 | **Active Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Skills** | 24 registered — **`agile-v-core` FIRST every prompt** |
 
@@ -22,30 +22,32 @@
 
 ## Resume (current session)
 
-- Phase 1 Bluedoor implemented (schema, lib, discover UI, webhook, cron)
-- Verify: `npm run lint && npm run typecheck && npm test && npm run build` — **PASS** (49 tests) @ local
-- Read `CLAUDE.md` + `docs/PROJECT_WALKTHROUGH.md` + `docs/PROJECT_PLAN.md`
-- INT-0003 active · commit Phase 1 when ready · Gate 1 still pending
+- Phase 1 Bluedoor **~92%** — enrichment, discover, notifications, stats overhaul, Posting Activity tab
+- Phase 2 **scaffolded** — FastAPI + 9 agents + `AiInsightsPanel` (not deployed)
+- Verify @ `2026-06-27`: lint ✓ · typecheck ✓ · test **49/49** ✓
+- Read `CLAUDE.md` · `docs/PROJECT_PLAN.md` · `docs/PROJECT_WALKTHROUGH.md` · `.agile-v/PLAYBOOK.md`
+- INT-0003 active · Gate 1 still pending
 
 ## Vision (locked)
 
 | Phase | Scope | Status |
 |---|---|---|
-| **Phase 1** | Bluedoor enrich + `/discover` in Next.js | **Implemented** (uncommitted) |
-| **Phase 2** | FastAPI + Ollama 9-agent pipeline + n8n on Coolify | Planned (`docs/PROJECT_PLAN.md`) |
-| **Principle** | Application OS first — enrich + optional discovery, not full job board | — |
+| **Phase 1** | Bluedoor enrich + `/discover` + stats + notifications | **~92%** (see BL-0010 gaps) |
+| **Phase 2** | FastAPI + Ollama 9-agent pipeline + n8n on Coolify | Scaffolded (`python-ai-service/`) |
+| **Principle** | Application CRM first — enrich + optional discovery, not full job board | — |
 
 ## Architecture Constraints (always)
 
 | Rule | Path / pattern |
 |---|---|
 | SSR pages | `export const dynamic = 'force-dynamic'` in `page.tsx` |
+| Auth middleware | `middleware.ts` (Clerk gate — **not** `proxy.ts`) |
 | Server code | `page.tsx`, server actions, `lib/jobs/queries.ts`, `lib/bluedoor/*` |
 | Client code | components/hooks only when SSR impossible |
-| Prefetch | `await prefetchQuery` before `dehydrate` (dashboard/stats/[id]/discover) |
+| Prefetch | `await prefetchQuery` / `prefetchInfiniteQuery` before `dehydrate` |
 | Nav avatar | `dashboard/layout` `currentUser()` → `NavUserProvider` |
 | Cold skeletons | `useQueryBodyLoading` only when cache empty |
-| Persist | `PersistQueryClient` — jobs/stats/charts/job only; **not discover** |
+| Persist | `PersistQueryClient` — jobs/stats/charts/charts-weekly/job only; **not discover/ai/events** |
 | Bluedoor enrich | `after()` post-response; never block CRUD response |
 | CRUD | `useJobsMutation` onSuccess `invalidateAll`+broadcast · onSettled `broadcast:false` |
 | Server bust | `invalidateUserJobCaches` + tags + Redis + SSE |
@@ -53,27 +55,31 @@
 | No `cacheComponents: true` | conflicts with `force-dynamic` |
 | Bluedoor API | Official API only — no scraping |
 
-## Shipped (C1 — recent)
+## Shipped (C1)
 
 | Scope | REQ |
 |---|---|
-| Dashboard + SSR/cache/persist track (`280e284`…`1a1bec0`) | REQ-0003, REQ-0014, REQ-0015, REQ-0024 |
-| Phase 1 Bluedoor (local, uncommitted) | REQ-0025, REQ-0026 |
-| **Phase 1 completion** — SSE notification bus + bell + discover details modal + cursor pagination + Resend emails | REQ-0025, REQ-0026 |
-| **Phase 2 scaffold** — FastAPI 9-agent pipeline + LLM router + AiInsightsPanel | REQ-0027 |
-| **publishNotification fix** — enrich.ts now fires SSE bell on posting change | REQ-0026 |
-| **AiInsightsPanel wired** — `/dashboard/[id]` + `/discover` Details modal | REQ-0027 |
-| **Posting Activity tab** — `JobDetailPanels` tabbed AI+timeline; `getJobEvents()` client + server action | REQ-0026 |
+| Core CRM + SSR/cache/persist | REQ-0001…0018, REQ-0024 |
+| Phase 1 Bluedoor enrichment | REQ-0025 |
+| `/discover` + infinite scroll + Details modal | REQ-0026 |
+| Notification bell + SSE + Resend email | REQ-0029 |
+| Stats overhaul (4 charts + KPI row + weekly velocity) | REQ-0028 |
+| Posting Activity tab (`getJobEvents`) | REQ-0026 |
+| Phase 2 AI scaffold (FastAPI + panel) | REQ-0027 |
+| `middleware.ts` fix (was `proxy.ts`) | REQ-0009 |
+| Docs audit sync | REQ-0024 |
 
-**Verify @ local (`2026-06-27`):** lint ✓ typecheck ✓ test **49/49** ✓ build ✓ (all 5 API routes)
-
-**AUDIT-0001 fix:** `proxy.ts` → `middleware.ts` (critical — Clerk edge gate was not running)
+**Verify @ local (`2026-06-27`):** lint ✓ · typecheck ✓ · test **49/49** ✓ · build ✓
 
 ## Active Backlog
 
-**BL-0008** (READY TO COMMIT) — Phase 1+2 + Posting Activity tab implemented, audit PASS  
-**BL-0009** (SCAFFOLDED) — Phase 2 Python service ready; needs Coolify deploy + real LLM keys  
-Next: git commit · manual QA discover/enrich/bell/AI panel/activity tab · Gate 1 · BL-0003 E2E
+| BL | Status | Scope |
+|---|---|---|
+| **BL-0008** | ✅ COMMITTED | Phase 1+2 core + Posting Activity (`58e8297`+) |
+| **BL-0010** | OPEN | Phase 1 gaps: facets API, webhook subscribe, weekly digest, React Email, logos |
+| **BL-0009** | SCAFFOLDED | Phase 2 deploy: Coolify + Ollama + DB persist + n8n |
+| **BL-0003** | BACKLOG | E2E Playwright + Bluedoor unit tests |
+| Gate 1 | PENDING | Human approve baseline REQs |
 
 ## Gates
 
@@ -84,7 +90,7 @@ Next: git commit · manual QA discover/enrich/bell/AI panel/activity tab · Gate
 
 ## Agent Memory
 
-`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · `docs/PROJECT_PLAN.md` · **`.agile-v/PLAYBOOK.md`**
+`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · `docs/PROJECT_PLAN.md` · `docs/JOBIFY_TECH_STACK_ANALYSIS.md` · **`.agile-v/PLAYBOOK.md`**
 
 ## Verify Before Done
 

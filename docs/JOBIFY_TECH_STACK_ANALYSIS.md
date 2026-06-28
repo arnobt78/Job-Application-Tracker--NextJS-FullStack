@@ -1,10 +1,12 @@
 # Jobify v2 — Tech Stack Analysis
 
-**Version:** v1.1  
+**Version:** v1.2  
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19 · **Last updated:** 2026-06-27  
+**Date:** 2026-06-19 · **Last updated:** 2026-06-27 (audit refresh)  
 **Project:** Jobify — Job Application Tracker with Live Enrichment & AI (planned)  
-**Status:** Phase 1 **implemented** · Phase 2 **scaffolded** · Phase 3 **planned**
+**Status:** Phase 1 **~92% implemented** · Phase 2 **scaffolded** · Phase 3 **planned**
+
+**Verified:** lint ✓ · typecheck ✓ · test 49/49 ✓ · HEAD `58e8297`
 
 ---
 
@@ -77,6 +79,7 @@
 | Per-change email | ✅ | `lib/notifications/email.ts` |
 | Stats KPI row | ✅ | `components/stats/stats-kpi-row.tsx` |
 | 4 chart types + weekly query | ✅ | `components/stats/*`, `getCachedWeeklyCharts` |
+| Posting Activity tab | ✅ | `getJobEvents`, `posting-activity-tab.tsx`, `job-detail-panels.tsx` |
 | Facet API (`/jobs/facets`) | ⬜ | Not wired |
 | Auto webhook subscription | ⬜ | Inbound only |
 | Weekly digest email | ⬜ | — |
@@ -90,7 +93,7 @@
 | 9-agent pipeline | ✅ | `python-ai-service/app/pipeline/` |
 | LLM fallback router | ✅ | `python-ai-service/app/llm/router.py` |
 | Next.js proxy | ✅ | `app/api/ai/pipeline/route.ts` |
-| `useAIPipeline` + panel UI | ✅ | `hooks/useAIPipeline.ts`, `ai-insights-panel.tsx` |
+| `useAIPipeline` + panel UI | ✅ | `hooks/useAIPipeline.ts`, `ai-insights-panel.tsx`, `job-detail-panels.tsx` |
 | `JobAIInsight` DB model | ⬜ | Not in Prisma schema |
 | `UserProfile` DB model | ⬜ | Not in Prisma schema |
 | AI output streaming | ⬜ | Blocking HTTP today |
@@ -154,7 +157,7 @@ Built inside Next.js. No separate Bluedoor microservice.
 | --- | --- | --- |
 | `GET /jobs` (search) | Discovery + enrich lookup | ✅ `lib/bluedoor/client.ts` `searchJobs` |
 | `GET /jobs/{job_id}` | Full job detail | ✅ `getJobDetail` — Details modal |
-| `GET /jobs/{job_id}/events` | Lifecycle history | ⬜ Posting Activity tab not built |
+| `GET /jobs/{job_id}/events` | Lifecycle history | ✅ `getJobEvents` — Posting Activity tab |
 | `GET /jobs/facets` | Live filter counts | ⬜ Not integrated |
 | `POST /webhook_endpoints` | Register receiver | ⬜ Manual setup only |
 | `POST /subscriptions` | Subscribe to job_id | ⬜ Not auto-called on enrich |
@@ -365,7 +368,8 @@ Coolify VPS (planned)
 | Stats charts | Recharts (4 chart types) | ✅ |
 | KPI derived metrics | `StatsKpiRow` (no extra DB query) | ✅ |
 | Notification center | SSE + BroadcastChannel | ✅ |
-| AI output display | `AiInsightsPanel` (blocking) | ⚠️ scaffold |
+| Posting Activity timeline | `PostingActivityTab` on `/dashboard/[id]` | ✅ |
+| AI output display | `AiInsightsPanel` in `JobDetailPanels` (blocking) | ⚠️ scaffold |
 | AI streaming | ReadableStream / Vercel AI SDK | ⬜ |
 | Markdown rendering | `react-markdown` | ⬜ |
 | Company logos | logo.dev / Clearbit | ⬜ |
@@ -506,5 +510,5 @@ See `docs/PROJECT_PLAN.md` §2.2 for intended fields.
 
 ---
 
-_Document version: v1.1 — Last updated 2026-06-27_  
+_Document version: v1.2 — Last updated 2026-06-27 (Posting Activity tab + `getJobEvents` shipped)_  
 _See also: [PROJECT_PLAN.md](./PROJECT_PLAN.md) · [PROJECT_WALKTHROUGH.md](./PROJECT_WALKTHROUGH.md)_

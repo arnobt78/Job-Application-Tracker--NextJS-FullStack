@@ -1,11 +1,11 @@
 # Jobify v2 — Project Vision & Roadmap
 
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19 · **Last updated:** 2026-06-27  
-**Status:** Phase 1 **~90% complete** · Phase 2 **scaffolded** (code in repo, not deployed) · Phase 3 **planned**  
+**Date:** 2026-06-19 · **Last updated:** 2026-06-27 (audit refresh)  
+**Status:** Phase 1 **~92% complete** · Phase 2 **scaffolded** (code in repo, not deployed) · Phase 3 **planned**  
 **Stack:** Next.js 16 · React 19 · Clerk 6 · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (optional) · Bluedoor API · Python FastAPI · Ollama · n8n · Coolify VPS (planned)
 
-**Verification (2026-06-27):** lint ✓ · typecheck ✓ · test 49/49 ✓ · build ✓
+**Verification (2026-06-27):** lint ✓ · typecheck ✓ · test 49/49 ✓ · build ✓ · HEAD `58e8297`
 
 ---
 
@@ -22,7 +22,7 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | Phase | Overall | Shipped in codebase | Remaining |
 | --- | --- | --- | --- |
 | **Core tracker** | ✅ Done | CRUD, filters, stats, export, auth, optimistic UI, SSE | — |
-| **Phase 1 — Bluedoor** | ✅ ~90% | Enrichment, discover, webhook handler, cron, bell, email, badges | Facets API, auto webhook subscribe, weekly digest, React Email |
+| **Phase 1 — Bluedoor** | ✅ ~92% | Enrichment, discover, webhook handler, cron, bell, email, badges, **Posting Activity tab** | Facets API, auto webhook subscribe, weekly digest, React Email |
 | **Stats overhaul** | ✅ Done | KPI row, 4 charts, weekly velocity query | — |
 | **Phase 2 — AI** | 🔄 Scaffolded | FastAPI, 9 agents, LLM router, proxy route, AiInsightsPanel | Deploy, DB persist, streaming UI, n8n |
 | **Phase 2 — Infra** | ⬜ Planned | `docker-compose.yml` in python-ai-service | Coolify, Ollama on VPS, n8n flows |
@@ -119,7 +119,20 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | Mode distribution bars | ✅ | `ModeDistributionChart` |
 | `chartsWeekly` invalidation | ✅ | `invalidateAllJobQueries` + `chartsTag` |
 
-### 1.5 Actual Routes & Files (as built)
+### 1.5 Posting Activity Tab ✅
+
+| Item | Status | Implementation |
+| --- | --- | --- |
+| Bluedoor events client | ✅ | `getJobEvents()` in `lib/bluedoor/client.ts` |
+| Server Action | ✅ | `getBluedoorJobEventsAction` in `utils/actions.ts` |
+| Timeline UI | ✅ | `components/jobs/posting-activity-tab.tsx` |
+| Tabbed panels on `/dashboard/[id]` | ✅ | `JobDetailPanels` — AI Insights + Posting Activity |
+| Query key | ✅ | `queryKeys.discover.events(bluedoorJobId)` — on-demand, not persisted |
+| Enabled when | — | Tab disabled until `bluedoorJobId` is set (job enriched) |
+
+Events shown: `job.created` · `job.updated` · `job.closed` · `job.reopened` with icons and timestamps.
+
+### 1.6 Actual Routes & Files (as built)
 
 ```bash
 app/
@@ -138,13 +151,16 @@ lib/bluedoor/                     # client, enrich, types
 components/discover/              # filters, cards, results, modals, layout wrappers
 components/stats/                 # 4 charts + KPI row
 components/jobs/job-enrichment-badge.tsx
+components/jobs/job-detail-panels.tsx
+components/jobs/posting-activity-tab.tsx
+components/pages/edit-job-dialog-page.tsx
 context/notifications-context.tsx
 lib/notifications/email.ts
 ```
 
 > **Note:** Original plan listed `app/api/bluedoor/search` and `enrich` routes. **Actual architecture** uses Server Actions in `utils/actions.ts` — simpler, type-safe, consistent with the rest of the app.
 
-### 1.6 Phase 1 Remaining Work
+### 1.7 Phase 1 Remaining Work
 
 | Priority | Task | Effort |
 | --- | --- | --- |
@@ -153,7 +169,7 @@ lib/notifications/email.ts
 | Low | React Email templates for posting alerts + weekly digest | 1–2 days |
 | Low | Weekly analytics email cron | 1 day |
 | Low | Company logos on discover cards (`logo.dev`) | 0.5 day |
-| Low | Dashboard timeline (application + Bluedoor events merged) | 2–3 days |
+| Low | Global dashboard timeline (all jobs' events on main grid — per-job tab exists on `/dashboard/[id]`) | 2–3 days |
 
 ---
 
@@ -172,7 +188,7 @@ lib/notifications/email.ts
 | Next.js proxy route | ✅ | `app/api/ai/pipeline/route.ts` |
 | TypeScript client + types | ✅ | `lib/ai/pipeline-client.ts` |
 | `useAIPipeline` hook | ✅ | `hooks/useAIPipeline.ts` |
-| `AiInsightsPanel` UI | ✅ | Edit dialog + Discover Details modal |
+| `AiInsightsPanel` UI | ✅ | `JobDetailPanels` on `/dashboard/[id]` + Discover Details modal |
 | Docker + docker-compose | ✅ | `python-ai-service/Dockerfile`, `docker-compose.yml` |
 | pytest (mocked LLM) | ✅ | `python-ai-service/tests/` |
 
@@ -187,7 +203,6 @@ lib/notifications/email.ts
 | `UserProfile` Prisma model | No skills/target roles for personalized matching |
 | Cover letter **streaming** UI | Full response after ~5–15s blocking request |
 | 9-agent progress indicator | Animated step UI during pipeline run |
-| `/dashboard/[id]` Posting Activity tab | Bluedoor `/jobs/{id}/events` timeline |
 | n8n automation flows | See §2.4 |
 | Internal API routes (`/api/internal/*`) | For n8n → Next.js triggers |
 | ARQ async job queue | Pipeline is synchronous in request handler |
@@ -244,13 +259,12 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 3. ✅ All 9 agents implemented
 4. ✅ Full orchestrator
 5. ✅ Next.js → FastAPI integration (`/api/ai/pipeline`, `useAIPipeline`, `AiInsightsPanel`)
-6. ✅ AI Insights wired into edit dialog + discover Details modal
+6. ✅ AI Insights + Posting Activity wired into `/dashboard/[id]` (`JobDetailPanels`) + discover Details modal
 7. ⬜ Coolify: deploy FastAPI + pull Ollama models
 8. ⬜ Prisma: `JobAIInsight` + `UserProfile` models + persist pipeline output
 9. ⬜ n8n flows (daily digest, stale alert, interview prep)
 10. ⬜ Cover letter streaming UI + pipeline progress indicator
-11. ⬜ `/dashboard/[id]` Posting Activity tab
-12. ⬜ Internal API routes for n8n integration
+11. ⬜ Internal API routes for n8n integration
 
 ---
 
@@ -274,7 +288,7 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | --- | --- | --- |
 | `/discover` | Two-panel + facet sidebar + infinite scroll | ✅ Infinite scroll · ⬜ facet sidebar · ✅ filter bar + grid |
 | `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge · ⬜ AI chip on card (panel in edit dialog only) |
-| `/dashboard/[id]` | AI Insights tab + Posting Activity tab | ✅ AI panel in edit dialog · ⬜ Activity tab |
+| `/dashboard/[id]` | AI Insights tab + Posting Activity tab | ✅ `JobDetailPanels` — both tabs; Activity requires `bluedoorJobId` |
 | Notification center | Bell + SSE | ✅ Complete |
 | `/stats` | Rich analytics | ✅ 4 charts + KPI row |
 | AI streaming | Pipeline progress + streamed output | ⬜ Blocking request + static panel |
@@ -322,9 +336,10 @@ n8n cron (planned)
 9. ✅ SSE notification bell (BroadcastChannel relay, NotificationsProvider)
 10. ✅ `publishNotification` wired in `resyncJob`
 11. ✅ Discover + Stats UI overhaul (glass filters, card shells, 4 charts, KPIs)
-12. ⬜ Bluedoor facet API integration
-13. ⬜ Auto webhook subscription registration
-14. ⬜ Weekly email digest
+12. ✅ Posting Activity tab (`getJobEvents` + `PostingActivityTab` + `JobDetailPanels`)
+13. ⬜ Bluedoor facet API integration
+14. ⬜ Auto webhook subscription registration
+15. ⬜ Weekly email digest
 
 ### Phase 2
 
@@ -334,7 +349,7 @@ n8n cron (planned)
 4. ⬜ Coolify deploy + Ollama models
 5. ⬜ AI output DB persistence
 6. ⬜ n8n flows
-7. ⬜ Streaming UI + Posting Activity tab
+7. ⬜ Streaming UI + pipeline progress indicator
 
 ---
 
@@ -357,4 +372,4 @@ n8n cron (planned)
 
 ---
 
-_Last updated: 2026-06-27_
+_Last updated: 2026-06-27 (audit — Posting Activity tab shipped in `58e8297`)_

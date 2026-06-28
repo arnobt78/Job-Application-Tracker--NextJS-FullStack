@@ -25,12 +25,17 @@
 | REQ-0020 | ART-0007 | — | RISK-0001 | Done `998d3a5` |
 | REQ-0021 | — | TC-0001…TC-0024 | RISK-0002 | C2 Backlog |
 | REQ-0022 | — | — | — | C2 Backlog |
-| REQ-0024 | ART-0062…0066 | TC-0025 | — | Active governance |
+| REQ-0024 | ART-0062…0066, ART-0099 | TC-0025 | — | Active governance |
+| REQ-0025 | ART-0067…0076, ART-0095 | TC-0026 | — | Implemented |
+| REQ-0026 | ART-0077…0080, ART-0095…0098 | TC-0027 | — | Implemented |
+| REQ-0027 | ART-0090…0094, ART-0096, ART-0097 | TC-0028 | — | Scaffolded |
+| REQ-0028 | ART-0088, ART-0089 | TC-0029 | — | Implemented |
+| REQ-0029 | ART-0082…0087 | TC-0030 | — | Implemented |
 
 ## Coverage Summary
 
 | Metric | Value |
 |---|---|
-| REQs with ART mapping | 19 / 19 active (baseline + governance) |
-| REQs with TC mapping | 19 / 19 active (baseline + governance) |
+| REQs with ART mapping | 29 / 29 active |
+| REQs with TC mapping | 25 / 29 (Phase 2 TC partial) |
 | Orphan artifacts | Task, Tour, Token models (no REQ — see RISK-0001) |

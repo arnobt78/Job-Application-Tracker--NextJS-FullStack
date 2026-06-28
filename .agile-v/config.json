@@ -12,26 +12,27 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-19T17:00:00Z",
+    "reactivated": "2026-06-27T12:00:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
   "stack": {
     "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5", "Sonner"],
-    "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL"],
+    "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL", "FastAPI (scaffolded)"],
     "auth": ["Clerk 6"],
+    "integrations": ["Bluedoor API", "Resend"],
     "observability": ["Sentry (optional)"],
-    "cache": ["unstable_cache", "Redis optional", "React Query", "SSE"],
-    "deployment": ["Vercel"]
+    "cache": ["unstable_cache", "Redis optional", "React Query", "SSE", "BroadcastChannel"],
+    "deployment": ["Vercel (Next.js)", "Coolify VPS (planned Phase 2)"]
   },
   "approval_authority": {
     "gate_1": ["Project Owner", "Tech Lead"],
     "gate_2": ["Project Owner"]
   },
   "model_versions": {
-    "orchestrator": { "tier": "high", "last_validated": "2026-06-13", "validated_by": "infinity-loop-reactivate" },
-    "build_agent": { "tier": "medium", "last_validated": "2026-06-13", "validated_by": "infinity-loop-reactivate" },
-    "red_team": { "tier": "medium", "last_validated": "2026-06-13", "validated_by": "infinity-loop-reactivate" }
+    "orchestrator": { "tier": "high", "last_validated": "2026-06-27", "validated_by": "infinity-loop-reactivate" },
+    "build_agent": { "tier": "medium", "last_validated": "2026-06-27", "validated_by": "infinity-loop-reactivate" },
+    "red_team": { "tier": "medium", "last_validated": "2026-06-27", "validated_by": "EVAL-0013" }
   },
   "llm_provider_registry": [
     {
@@ -41,7 +42,7 @@
       "retention": "session",
       "api_data_usage": "per Cursor policy",
       "approved_for": ["source_code", "requirements", "non-PHI"],
-      "review_date": "2026-06-13"
+      "review_date": "2026-06-27"
     }
   ],
   "active_skills": {
@@ -81,18 +82,21 @@
     "backlog": ".agile-v/BACKLOG.md",
     "build_manifest": ".agile-v/BUILD_MANIFEST.md",
     "atm": ".agile-v/ATM.md",
-    "policy": ".agile-v/POLICY.yaml"
+    "policy": ".agile-v/POLICY.yaml",
+    "playbook": ".agile-v/PLAYBOOK.md"
   },
   "git_baseline": {
-    "head": "1a1bec0",
+    "head": "0f2ea55",
     "branch": "main",
-    "last_commit": "chore(agile-v): sync state for tomorrow resume @ 280e284",
-    "working_tree": "dirty — Phase 1 Bluedoor uncommitted"
+    "last_verified": "2026-06-27T12:00:00Z",
+    "working_tree": "dirty — docs audit + middleware.ts rename uncommitted"
   },
   "roadmap": {
-    "phase_1": "Bluedoor enrichment + /discover (implemented)",
-    "phase_2": "FastAPI + Ollama + n8n on Coolify",
+    "phase_1": "~92% — Bluedoor enrichment + discover + stats + notifications + Posting Activity",
+    "phase_1_remaining": "facets API, webhook subscribe, weekly digest, React Email, logos",
+    "phase_2": "FastAPI scaffolded — needs Coolify deploy + DB persist + n8n",
     "plan_doc": "docs/PROJECT_PLAN.md",
-    "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md"
+    "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md",
+    "walkthrough_doc": "docs/PROJECT_WALKTHROUGH.md"
   }
 }

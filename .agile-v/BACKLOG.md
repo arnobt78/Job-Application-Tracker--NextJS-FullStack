@@ -2,30 +2,38 @@
 
 <!-- BL-XXXX → REQ-XXXX | Maintained by agile-v-product-owner -->
 
-## BL-0008: Phase 1 — Bluedoor Enrichment + Discover (ready to commit)
+## BL-0010: Phase 1 Remaining Gaps (~8%)
 
-**REQ:** REQ-0025, REQ-0026, REQ-0002, REQ-0003, REQ-0015 · **token:** `c1-dev-20260612`  
-**Status:** **COMPLETE** (uncommitted · pre-commit audit PASS 2026-06-27) · Bluedoor API free tier
+**REQ:** REQ-0025, REQ-0026, REQ-0029 · **Status:** OPEN  
+**Scope:** Items documented in `docs/PROJECT_PLAN.md` §1.7
 
-### Shipped (2026-06-19 → 2026-06-27)
-- Prisma: `applyUrl` + 11 Bluedoor enrichment fields + index on `bluedoorJobId`
-- `lib/bluedoor/` — client, types, enrich (ATS key / URL / fuzzy match); resyncJob detects status/desc/salary changes
-- `utils/actions.ts` — `after()` enrich on create/update; `enrichJobAction`; `searchBluedoorJobsAction`; `getBluedoorJobDetailsAction`
-- `JobEnrichmentBadge` + `JobCard` apply link; forms: optional `applyUrl`
-- `/discover` — SSR `prefetchInfiniteQuery`, cursor pagination (`useInfiniteQuery`), Details modal, Track Application
-- `POST /api/bluedoor/webhook` · `GET /api/cron/enrich` · `vercel.json` cron 03:00 UTC
-- Nav: Discover link · `proxy.ts` protects `/discover`
-- **SSE notification bus** — `lib/jobs-events.ts` (invalidate + notify union); `/api/jobs/events` multiplexes both
-- **Notification bell** — `NotificationsProvider` + BroadcastChannel relay + `NotificationBell` in nav
-- **Resend email** — `lib/notifications/email.ts`; graceful no-op; lazy import
-- **publishNotification fix** — `enrich.ts` now fires SSE bell + email on posting change
-- **AiInsightsPanel wired** — `/dashboard/[id]` (`JobDetailPanels`) + `/discover` Details modal
-- **Posting Activity tab** — `getJobEvents()` client + action + `PostingActivityTab` + `JobDetailPanels` tabs
-- Docs: `PROJECT_PLAN.md`, `CLAUDE.md`, `PROJECT_WALKTHROUGH.md`, `.env.example` updated
+| Priority | Task | Effort |
+|---|---|---|
+| Medium | Wire `GET /jobs/facets` for live filter counts on `/discover` | 1–2 days |
+| Medium | Auto-register Bluedoor webhook subscriptions on successful enrich | 1 day |
+| Low | React Email templates for posting alerts + weekly digest | 1–2 days |
+| Low | Weekly analytics email cron | 1 day |
+| Low | Company logos on discover cards (`logo.dev`) | 0.5 day |
+
+---
+
+## BL-0008: Phase 1 — Bluedoor + Discover + Stats + Notifications ✅
+
+**REQ:** REQ-0025, REQ-0026, REQ-0028, REQ-0029, REQ-0027 (scaffold) · **token:** `c1-dev-20260612`  
+**Status:** **COMMITTED** (`58e8297`+) · EVAL-0012 PASS
+
+### Shipped
+- Prisma Bluedoor fields · `lib/bluedoor/` · enrichment badges · webhook · cron
+- `/discover` — infinite scroll, glass filters, Details modal, Track Application
+- SSE notification bus + bell + BroadcastChannel + Resend email
+- Stats overhaul — KPI row + 4 charts + weekly velocity + `chartsWeekly` invalidation
+- Posting Activity tab — `getJobEvents` + `JobDetailPanels`
+- Phase 2 scaffold — `python-ai-service/` + `/api/ai/pipeline` + `AiInsightsPanel`
+- `middleware.ts` fix (Clerk gate was not running as `proxy.ts`)
+- Docs: `PROJECT_PLAN.md`, `PROJECT_WALKTHROUGH.md`, `JOBIFY_TECH_STACK_ANALYSIS.md`, `README.md`
 
 ### Next
-- Git commit Phase 1+2
-- Manual QA: add job with Lever/Greenhouse URL → badge; discover search → track; bell fires; AI panel
+- Manual QA: enrich with real ATS URL · discover · bell · AI panel · activity tab
 - Gate 1 approval
 
 ---
@@ -33,51 +41,32 @@
 ## BL-0009: Phase 2 — Python AI Service (scaffolded)
 
 **REQ:** REQ-0027 · **Status:** SCAFFOLDED — needs deploy + real LLM keys  
-**Scope:** `python-ai-service/` FastAPI · 9-agent pipeline · Ollama/Groq/OpenRouter/Anthropic fallback  
-**Next:** Deploy on Coolify VPS · wire real LLM keys · cover letter streaming UI  
-**Ref:** `docs/PROJECT_PLAN.md`
+**Scope:** Coolify VPS · Ollama models · `JobAIInsight`/`UserProfile` Prisma · n8n · streaming UI  
+**Ref:** `docs/PROJECT_PLAN.md` Phase 2
 
 ---
 
-## BL-0007: User-Driven Extension ✅ (superseded)
+## BL-0007: User-Driven Extension ✅
 
-**REQ:** REQ-0014, REQ-0015, REQ-0019 · Cache/SSR track shipped @ `280e284` · **DONE**
-
----
-
-## BL-0001: Clerk Auth Flicker-Free (dashboard) ✅
-
-**REQ:** REQ-0019 · **Shipped:** `37f8525` · **DONE**
+**REQ:** REQ-0014, REQ-0015, REQ-0019 · Cache/SSR track @ `280e284` · **DONE**
 
 ---
 
-## BL-0002: Prisma Schema Cleanup ✅
+## BL-0001…0006 ✅
 
-**REQ:** REQ-0020 · **Shipped:** `998d3a5` · **DONE**
-
----
-
-## BL-0005: Landing + Auth Marketing UI ✅
-
-**REQ:** REQ-0013, REQ-0023 · **Shipped:** `f660eb9` · **DONE**
-
----
-
-## BL-0006: UI Polish ✅
-
-**REQ:** REQ-0012, REQ-0013, REQ-0019, REQ-0023 · **DONE**
+Auth flicker-free · Prisma cleanup · Landing/auth UI · UI polish — all **DONE**
 
 ---
 
 ## BL-0003: Automated Test Suite
 
-**REQ:** REQ-0021 · Backlog (49 vitest; E2E Playwright pending; add Bluedoor unit tests)
+**REQ:** REQ-0021 · 49 Vitest passing; E2E Playwright + Bluedoor unit tests pending
 
 ---
 
 ## BL-0004: Observability
 
-**REQ:** REQ-0022 · Backlog (Sentry integrated; PostHog deferred)
+**REQ:** REQ-0022 · Sentry integrated; PostHog deferred
 
 ---
 
@@ -85,8 +74,8 @@
 
 | Priority | BL | Status |
 |---|---|---|
-| 1 | BL-0008 | IMPLEMENTED — commit + QA |
-| 2 | BL-0009 | PLANNED (Phase 2) |
-| 3 | BL-0003 | Backlog (E2E) |
-| 4 | Gate 1 approval | PENDING |
+| 1 | BL-0010 | OPEN — Phase 1 gaps |
+| 2 | BL-0009 | SCAFFOLDED — Phase 2 deploy |
+| 3 | Gate 1 approval | PENDING |
+| 4 | BL-0003 | Backlog (E2E) |
 | 5 | BL-0004 | Backlog |
