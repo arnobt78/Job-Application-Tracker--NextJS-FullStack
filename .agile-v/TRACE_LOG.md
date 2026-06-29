@@ -86,3 +86,4 @@
 | 2026-06-29T00:00:00Z | prove | red-team-verifier | REQ-0033 | Typecheck audit — 28 errors found: Prisma client stale (schema added Team/TeamMember/extensionToken/inboundEmailAddress) | FAIL→FIX |
 | 2026-06-29T00:00:00Z | constrain | build-agent-js | REQ-0033 | `prisma db push --accept-data-loss` → client regenerated; `LLMSkillGapResult` explicit cast in skill-gap-tab.tsx | SUCCESS |
 | 2026-06-29T00:00:00Z | prove | red-team-verifier | REQ-0033, REQ-0024 | EVAL-0015 partial: lint ✓ · typecheck ✓ · 51/51 ✓ · build ✓ | PASS |
+| 2026-06-29T14:45:00Z | prove | red-team-verifier | REQ-0011 | Discover SSR fix: `lib/discover/query-options.ts`; `middleware.ts`→`proxy.ts`; EVAL-0016 lint/typecheck/test(51)/build PASS | SUCCESS |

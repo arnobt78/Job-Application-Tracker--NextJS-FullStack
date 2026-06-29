@@ -51,7 +51,7 @@
 | SSR | `force-dynamic` + `prefetchQuery` before `dehydrate` |
 | Skeletons | `useQueryBodyLoading` — cold cache only |
 | Persist | jobs/stats/charts/charts-weekly/job — **not** discover/ai/skill-gap/salary-intel |
-| Auth | `middleware.ts` NextAuth JWT |
+| Auth | `proxy.ts` NextAuth JWT (Next.js 16) |
 | CRUD cache | `invalidateAllJobQueries` + `invalidateUserJobCaches` + SSE |
 | Cross-tab | `useJobsCacheSync` + `/api/jobs/events` |
 | Nav | `auth()` → `NavUserProvider` |

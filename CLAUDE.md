@@ -7,7 +7,7 @@ Job application CRM + Bluedoor enrichment + discover + AI insights (FastAPI). No
 Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **51** · Playwright E2E · FastAPI (`python-ai-service/`)
 
 ## Auth
-- `middleware.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`; `/jobs/*` → `/dashboard`
+- `proxy.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team`; `/jobs/*` → `/dashboard`
 - `auth.ts` + `lib/auth/config.ts` — Google/GitHub OAuth + credentials; Prisma adapter
 - Navbar: `dashboard/layout` `auth()` → `NavUserProvider` · `useNavUserSession`
 
@@ -24,7 +24,7 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - `lib/bluedoor/client.ts` · `enrich.ts` · ATS → URL → fuzzy match
 - `after()` enrich · webhook subscribe · cron enrich + weekly digest
 - Org intel: `getBluedoorOrg` → `companySize`/`companyIndustry`/`companyHq` on Job
-- Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · not persisted
+- Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · `lib/discover/query-options.ts` (SSR-safe) · not persisted
 - Notifications: SSE bell + React Email (Resend)
 
 ## Phase 2 ~90% · Phase 3 ✅ · BL-0011 ✅ COMMITTED

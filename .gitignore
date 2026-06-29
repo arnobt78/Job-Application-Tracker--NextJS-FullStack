@@ -46,6 +46,7 @@ next-env.d.ts
 
 # Documentation
 HETZNER_VPS_MIGRATION_GUIDE.md
+COOLIFY_PUBLIC_BACKEND_GUIDE.md
 
 # Claude
 CLAUDE.md

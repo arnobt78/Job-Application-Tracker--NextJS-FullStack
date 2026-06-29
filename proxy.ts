@@ -1,5 +1,5 @@
 /**
- * Next.js middleware — route protection via NextAuth v5 (Next.js 16+).
+ * Next.js proxy — route protection via NextAuth v5 (Next.js 16+).
  * Uses the edge-safe authConfig (no PrismaAdapter, no bcrypt) so the JWT
  * cookie is verified without a Node.js DB call on every request.
  *

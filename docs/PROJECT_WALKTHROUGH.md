@@ -32,7 +32,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 
 | Area | What exists |
 | --- | --- |
-| **Auth** | NextAuth v5 (Google/GitHub/credentials), `middleware.ts` route protection |
+| **Auth** | NextAuth v5 (Google/GitHub/credentials), `proxy.ts` route protection (Next.js 16) |
 | **Dashboard** | URL filters, glass filter bar, `JobCardShell` skeletons, pagination, download, CompanyLogo |
 | **CRUD** | Server Actions + `useJobsMutation` optimistic updates + cross-tab invalidation |
 | **Bluedoor enrich** | `lib/bluedoor/client.ts`, `enrich.ts`, ATS/URL/fuzzy match, `after()` on create/update |
@@ -84,7 +84,7 @@ CRUD: useJobsMutation (optimistic) → onSuccess invalidateAll+broadcast · onSe
 Sync: SSE /api/jobs/events + BroadcastChannel (jobify-cache + jobify-notifications)
 
 Bluedoor: create/update with applyUrl → after() enrichJob → invalidateUserJobCaches → SSE updates cards
-Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Load More
+Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch + cursor pagination, Load More
 ```
 
 ---
@@ -100,7 +100,8 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `app/(dashboard)/profile/page.tsx` | SSR prefetch `UserProfile` + `UserProfileForm` + `ResumeUpload` + `BatchAnalysisTrigger` + `ExtensionConnect` + `EmailInboundSetup` |
 | `app/(dashboard)/team/page.tsx` | SSR prefetch team data → `TeamDashboard` (create team / member management) |
 | `app/(dashboard)/timeline/page.tsx` | SSR prefetch global activity feed |
-| `app/(dashboard)/discover/page.tsx` | two-panel: `DiscoverSidebar` (lg+) + results column |
+| `app/(dashboard)/discover/page.tsx` | two-panel: `DiscoverSidebar` (lg+) + results; SSR prefetch via `lib/discover/query-options.ts` |
+| `lib/discover/query-options.ts` | SSR-safe `buildDiscoverQueryOptions` — shared by page prefetch + client hooks |
 | `components/discover/discover-sidebar.tsx` | Sticky left-rail filters with facet counts (desktop) |
 | `components/timeline/timeline-view.tsx` | Client timeline list — `getTimelineEventsAction` |
 | `lib/jobs/timeline.ts` | Derive events from Job + aiInsight (cached by jobsTag) |

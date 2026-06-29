@@ -3,36 +3,27 @@
 | Field | Value |
 |---|---|
 | **Cycle** | C1 |
-| **Stage** | 3 Synthesis — Phase 1 ✅ · Phase 2 ~90% · Phase 3 ✅ · **BL-0011 ✅ COMMITTED** |
+| **Stage** | 3 Synthesis — P1 ✅ · P2 ~90% code · P3 ✅ · BL-0011 ✅ |
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
 | **Checkpoint** | INT-0003 `c1-dev-20260612` |
-| **Git HEAD (clean)** | pending BL-0011 commit |
-| **Working tree** | **DIRTY** — BL-0011 ready to commit (audit PASS 2026-06-29) |
-| **Auth** | NextAuth v5 |
-| **Last Updated** | 2026-06-29T00:00:00Z |
-| **Verify (HEAD)** | lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ (BL-0011 audit pass 2026-06-29) |
+| **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
+| **Last Updated** | 2026-06-29 |
+| **Verify** | lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ |
 
-## Shipped (committed)
-- P1: Bluedoor enrich, discover, stats, notifications, email, facets, timeline, org enrich
-- P2 code: FastAPI pipeline, SSE streaming, JobAIInsight/UserProfile, /profile, internal API, n8n JSON
-- Auth: NextAuth migration (`b0a0f26`)
-- P3 partial (`59060a0`): AIFitChip, PDF resume parser, Skill Gap (keyword), Salary Intel, react-markdown, Framer badge
+## Recent fix (2026-06-29)
+- Discover SSR crash: `buildDiscoverQueryOptions` → `lib/discover/query-options.ts` (server-safe)
+- `middleware.ts` → `proxy.ts` (Next.js 16 convention)
+- Discover toolbar aligned to infinite query cache
 
-## BL-0011 (REQ-0033) — COMMITTED 2026-06-29
-All Phase 3 Advanced items complete and committed.
-Next: Coolify VPS + Ollama + n8n deploy (BL-0009).
+## Shipped
+- P1–P3 code complete · BL-0011 committed
+- Vercel env synced (NextAuth, DB, Bluedoor, Resend, Sentry, Upstash)
 
 ## Backlog / not deployed
-- Coolify VPS · Ollama · n8n instance · E2E CI auth · Gate 1 approval (INT-0001)
+- Coolify VPS + Ollama + AI service · n8n · E2E CI auth · Gate 1
 
 ## Architecture rules
-`force-dynamic` · SSR prefetch · persist jobs/stats/charts/job only · `invalidateUserJobCaches`+SSE · Bluedoor API only · no `cacheComponents`
-
-## Session protocol (every prompt)
-1. READ `STATE.md` + `CHECKPOINTS.md` + `CLAUDE.md`
-2. MAP task → `REQ-XXXX` (halt if none)
-3. SCOPE-V · log `TRACE_LOG` + `DECISION_LOG`
-4. Verify: `npm run lint && npm run typecheck && npm run test && npm run build`
+`force-dynamic` · SSR prefetch · persist jobs/stats/charts/job only · `invalidateUserJobCaches`+SSE · Bluedoor API only
 
 ## Agent memory
-`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · `docs/PROJECT_PLAN.md` · `docs/JOBIFY_TECH_STACK_ANALYSIS.md` · `.agile-v/PLAYBOOK.md`
+`CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · `docs/PROJECT_PLAN.md` · `.agile-v/PLAYBOOK.md`

@@ -12,15 +12,13 @@
  */
 
 import { useSearchParams } from 'next/navigation';
-import { useInfiniteQuery, infiniteQueryOptions } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/query-keys';
-import { searchBluedoorJobsAction } from '@/utils/actions';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
 import { DiscoverJobCard } from './discover-job-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { SearchX, Loader2, Briefcase, ExternalLink, PlusCircle, Search } from 'lucide-react';
-import type { BluedoorSearchResponse } from '@/lib/bluedoor/types';
 
 // ─────────────────────────────────────────────
 // Static card shell — chrome always visible, only text slots skeleton
@@ -78,37 +76,6 @@ export function DiscoverCardShellGrid() {
       ))}
     </div>
   );
-}
-
-// ─────────────────────────────────────────────
-// Infinite query factory — shared between SSR prefetch and client hook
-// ─────────────────────────────────────────────
-
-export function buildDiscoverQueryOptions(
-  q: string,
-  country: string,
-  workplaceType: string,
-  employmentType: string,
-  salaryExists: boolean
-) {
-  return infiniteQueryOptions({
-    queryKey: queryKeys.discover.search(q, country, workplaceType, employmentType, salaryExists),
-    queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
-      searchBluedoorJobsAction({
-        q,
-        country,
-        workplaceType,
-        employmentType,
-        salaryExists: salaryExists || undefined,
-        cursor: pageParam,
-      }),
-    getNextPageParam: (lastPage: BluedoorSearchResponse) =>
-      lastPage.meta.next_cursor ?? undefined,
-    initialPageParam: undefined as string | undefined,
-    staleTime: 60_000,
-    // Show prior results while new fetch loads (prevents grid flash on filter change)
-    placeholderData: (prev) => prev,
-  });
 }
 
 // ─────────────────────────────────────────────

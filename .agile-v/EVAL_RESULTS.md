@@ -29,6 +29,7 @@
 | EVAL-0012 | 2026-06-27 | AUDIT-0001 middleware fix | lint/typecheck/test(49)/build | PASS | proxy.ts→middleware.ts |
 | EVAL-0014 | 2026-06-28 | Phase 3 partial @ 59060a0 | lint/typecheck/test(51)/build | PASS | REQ-0031 |
 | EVAL-0015 | 2026-06-28 | BL-0011 WIP audit | typecheck on dirty tree | **FLAG** | skill-gap-tab type errors; prisma client stale |
+| EVAL-0016 | 2026-06-29 | Discover SSR + proxy.ts | lint/typecheck/test(51)/build | PASS | `lib/discover/query-options.ts` |
 | EVAL-0013 | 2026-06-27 | Agile V reactivation @ 0f2ea55 | lint/typecheck/test(49) | PASS | REQ-0024 |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 

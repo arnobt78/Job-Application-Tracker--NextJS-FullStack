@@ -1,4 +1,4 @@
-/** Sentry Edge init — middleware.ts and edge routes (direct ingest, no tunnel). */
+/** Sentry Edge init — proxy.ts and edge routes (direct ingest, no tunnel). */
 import * as Sentry from '@sentry/nextjs';
 import { getServerSentryOptions } from '@/lib/sentry/config';
 

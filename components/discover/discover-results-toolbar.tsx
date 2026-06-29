@@ -7,9 +7,8 @@
  */
 
 import { useSearchParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/query-keys';
-import { searchBluedoorJobsAction } from '@/utils/actions';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
 import { Layers, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
@@ -23,24 +22,15 @@ export function DiscoverResultsToolbar() {
   const employmentType = searchParams.get('employmentType') ?? '';
   const salaryExists = searchParams.get('salaryExists') === 'yes';
 
-  const { data, isFetching } = useQuery({
-    queryKey: queryKeys.discover.search(q, country, workplaceType, employmentType, salaryExists),
-    queryFn: () =>
-      searchBluedoorJobsAction({
-        q,
-        country,
-        workplaceType,
-        employmentType,
-        salaryExists: salaryExists || undefined,
-      }),
-    staleTime: 60_000,
-    placeholderData: (prev) => prev,
-  });
+  const { data, isFetching } = useInfiniteQuery(
+    buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
+  );
 
-  const jobs = data?.data ?? [];
-  const total = data?.meta.total_matching;
+  const firstPage = data?.pages[0];
+  const jobs = firstPage?.data ?? [];
+  const total = firstPage?.meta.total_matching;
   const count =
-    total != null && !data?.meta.total_matching_unavailable ? total : jobs.length;
+    total != null && !firstPage?.meta.total_matching_unavailable ? total : jobs.length;
 
   const countBadge = isFetching && !data ? (
     <Skeleton className="h-6 min-w-[2.5rem] rounded-full" />

@@ -5,11 +5,8 @@ import { DiscoverPageHeader } from '@/components/discover/discover-page-header';
 import { DiscoverFilterSection } from '@/components/discover/discover-filter-section';
 import { DiscoverSidebar } from '@/components/discover/discover-sidebar';
 import { DiscoverResultsToolbar } from '@/components/discover/discover-results-toolbar';
-import {
-  DiscoverResults,
-  DiscoverCardShellGrid,
-  buildDiscoverQueryOptions,
-} from '@/components/discover/discover-results';
+import { DiscoverResults, DiscoverCardShellGrid } from '@/components/discover/discover-results';
+import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import { SlidersHorizontal } from 'lucide-react';
 import { Suspense } from 'react';
@@ -47,17 +44,20 @@ async function DiscoverPage({ searchParams }: DiscoverPageProps) {
 
   const queryClient = new QueryClient();
 
-  // SSR prefetch: infinite search results + facet counts in parallel.
-  // Facets hydrate the filter dropdowns with live counts immediately on render.
-  await Promise.all([
-    queryClient.prefetchInfiniteQuery(
-      buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
-    ),
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.discover.facets(q || undefined, country !== 'United States' ? country : undefined),
-      queryFn: () => getBluedoorFacetsAction({ q: q || undefined, country }),
-    }),
-  ]);
+  // SSR prefetch — must not throw; Bluedoor/auth slowness degrades to client fetch.
+  try {
+    await Promise.all([
+      queryClient.prefetchInfiniteQuery(
+        buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
+      ),
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.discover.facets(q || undefined, country !== 'United States' ? country : undefined),
+        queryFn: () => getBluedoorFacetsAction({ q: q || undefined, country }),
+      }),
+    ]);
+  } catch (error) {
+    console.error('[DiscoverPage] SSR prefetch failed:', error);
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

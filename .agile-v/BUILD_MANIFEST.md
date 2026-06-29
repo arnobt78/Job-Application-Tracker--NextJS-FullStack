@@ -4,7 +4,7 @@
 
 | ART-ID | Cycle | Type | Path | REQ-IDs | Status |
 |---|---|---|---|---|---|
-| ART-0001 | C1 | Middleware | `middleware.ts` | REQ-0001, REQ-0009 | Baseline (renamed from `proxy.ts` AUDIT-0001) |
+| ART-0001 | C1 | Proxy | `proxy.ts` | REQ-0001, REQ-0009 | Next.js 16 (was `middleware.ts` until 2026-06-29) |
 | ART-0002 | C1 | Page | `app/sign-in/[[...sign-in]]/page.tsx` | REQ-0001 | Baseline |
 | ART-0003 | C1 | Page | `app/sign-up/[[...sign-up]]/page.tsx` | REQ-0001 | Baseline |
 | ART-0004 | C1 | Server Actions | `utils/actions.ts` | REQ-0002, REQ-0003, REQ-0004, REQ-0011, REQ-0005, REQ-0006, REQ-0007 | Baseline |
