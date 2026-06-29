@@ -65,7 +65,7 @@ type NavShellProps = PropsWithChildren<{ className?: string }>;
 /**
  * Shared nav chrome — fixed h-14, glass backdrop-blur, z-50.
  * Server component. LandingNav, AuthNav, DashboardNav all compose this.
- * Wraps PageContainer for consistent max-w-7xl content width.
+ * Wraps PageContainer for consistent max-w-9xl content width.
  */
 export function NavShell({ children, className }: NavShellProps) {
   return (

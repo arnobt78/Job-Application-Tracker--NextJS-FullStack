@@ -8,17 +8,18 @@
 
 ## 1. Route Architecture
 
-| Old Route | New Route | Action |
-|-----------|-----------|--------|
-| `/add-job` | removed | Redirect `/add-job` → `/dashboard` in middleware |
-| `/jobs` | `/dashboard` | Rename folder; main dashboard page |
-| `/jobs/[id]` | `/dashboard/[id]` | Rename folder; job edit via dialog |
-| `/stats` | `/stats` | Unchanged |
-| `/user-profile/[[...user-profile]]` | same | Unchanged |
+| Old Route                           | New Route         | Action                                           |
+| ----------------------------------- | ----------------- | ------------------------------------------------ |
+| `/add-job`                          | removed           | Redirect `/add-job` → `/dashboard` in middleware |
+| `/jobs`                             | `/dashboard`      | Rename folder; main dashboard page               |
+| `/jobs/[id]`                        | `/dashboard/[id]` | Rename folder; job edit via dialog               |
+| `/stats`                            | `/stats`          | Unchanged                                        |
+| `/user-profile/[[...user-profile]]` | same              | Unchanged                                        |
 
 **Middleware (`proxy.ts`):** Protect `/dashboard`, `/dashboard/:path*`, `/stats`, `/user-profile/:path*`. Remove guards for `/add-job`, `/jobs`.
 
 **Folder structure after rename:**
+
 ```
 app/(dashboard)/
   layout.tsx                  ← no sidebar; uses DashboardNav
@@ -35,18 +36,21 @@ app/(dashboard)/
 ## 2. Navigation Architecture
 
 ### 2a. `NavShell` (`components/layout/nav-shell.tsx`)
+
 - Server component (no hooks — pure chrome)
 - Fixed `h-14`, `glass-nav` backdrop-blur, `z-50`, `inset-x-0 top-0`
-- Wraps `PageContainer` inside for max-w-7xl content width
+- Wraps `PageContainer` inside for max-w-9xl content width
 - Accepts `children: React.ReactNode`
 - Replaces `LANDING_CHROME_HEIGHT_CLASS` / `LANDING_CHROME_SHELL_CLASS` constants for all navs
 - `LandingNav`, `AuthNav`, `DashboardNav` are client components that compose `NavShell`
 
 ### 2b. `LandingNav` (update existing `components/layout/landing-nav.tsx`)
+
 - Add `<ThemeToggle />` between section nav links and "Create Account" CTA
 - No structural changes
 
 ### 2c. `AuthNav` (new `components/layout/auth-nav.tsx`)
+
 - Client component (uses `useRouter`)
 - Left: `SiteLogo` linked to `/`
 - Right: `ThemeToggle` + "Return Home" `RippleLink` href="/"
@@ -54,6 +58,7 @@ app/(dashboard)/
 - Used by `SignInPageContent` and `SignUpPageContent` (replace current standalone `SiteLogo` header)
 
 ### 2d. `DashboardNav` (new `components/layout/dashboard-nav.tsx`) — replaces `Navbar.tsx` + `Sidebar.tsx`
+
 - Client component (uses `usePathname` for active link state)
 - **Left:** `SiteLogo` linked to `/dashboard`
 - **Center (md+):** `Dashboard` (href `/dashboard`) + `Stats` (href `/stats`) as pill buttons
@@ -66,11 +71,13 @@ app/(dashboard)/
 ## 3. Dashboard Layout (`app/(dashboard)/layout.tsx`)
 
 Remove:
+
 - `lg:grid-cols-5` grid
 - `glass-sidebar` div + `<Sidebar />`
 - Import of `Navbar` + `Sidebar`
 
 Add:
+
 - `<DashboardNav />` sticky at top
 - Full-width `<PageContainer>` wrapping `{children}`
 
@@ -84,14 +91,17 @@ Add:
 ## 4. Dashboard Page (`/dashboard`)
 
 **`app/(dashboard)/dashboard/page.tsx`** — SSR, `force-dynamic`:
+
 - Prefetch jobs query → `HydrationBoundary`
 - Renders `DashboardPageContent` (server shell — static header + client boundary)
 
 **Page header (static, SSR):**
+
 ```
 [Briefcase icon] My Jobs                    [+ Add Job button]
 Track and manage your job applications
 ```
+
 - Title: `text-3xl font-bold`
 - Subtitle: `text-muted-foreground text-sm`
 - "Add Job" trigger: `RippleButton` with `PlusCircle` icon, glassmorphic style
@@ -119,10 +129,12 @@ Track and manage your job applications
 - `useEditJobMutation` onSuccess: `onOpenChange(false)` + toast + cache invalidation
 
 **`JobCard` update:**
+
 - Replace `RippleLink href={/jobs/${job.id}}` Edit button with `EditJobDialog` trigger
 - `EditJobDialog` rendered inline on each card, controlled via local `useState`
 
 **`/dashboard/[id]/page.tsx`:**
+
 - Server: prefetch single job → `HydrationBoundary`
 - Client: renders `EditJobDialog defaultOpen={true}` — supports direct URL edit link
 - On dialog close: `router.push('/dashboard')`
@@ -132,12 +144,14 @@ Track and manage your job applications
 ## 7. Auth Pages Updates
 
 **`SignInPageContent` + `SignUpPageContent`:**
+
 - Remove standalone `<PageContainer className="py-6"><SiteLogo /></PageContainer>` header
 - Add `<AuthNav />` at top (same glass sticky nav used on landing)
 - Keep `SplitContentLayout` + `AuthMarketingPanel` + form content unchanged
 - `ThemeToggle` in `AuthNav` provides dark/light mode on auth pages
 
 **`app/sign-in/[[...sign-in]]/page.tsx`** + `app/sign-up/[[...sign-up]]/page.tsx`:
+
 - No structural changes needed; `AuthNav` rendered inside `SignInPageContent`
 
 ---
@@ -151,10 +165,12 @@ Track and manage your job applications
 ## 9. Form Field Updates
 
 **`CustomFormField` in `FormComponents.tsx`:**
+
 - Add optional `required?: boolean` prop
 - When `required=true`, append `<span className="text-destructive ml-0.5">*</span>` after label text
 
 **`CustomFormSelect`:**
+
 - Same `required` prop treatment
 
 ---
@@ -172,6 +188,7 @@ Track and manage your job applications
 ## 11. Files Created / Modified
 
 **New files:**
+
 - `components/layout/nav-shell.tsx`
 - `components/layout/auth-nav.tsx`
 - `components/layout/dashboard-nav.tsx`
@@ -181,6 +198,7 @@ Track and manage your job applications
 - `app/(dashboard)/dashboard/[id]/page.tsx` (rename from `/jobs/[id]/page.tsx`)
 
 **Modified files:**
+
 - `components/layout/landing-nav.tsx` — add ThemeToggle
 - `components/layout/auth-nav.tsx` — replaces standalone SiteLogo in auth pages
 - `app/(dashboard)/layout.tsx` — remove sidebar grid, use DashboardNav
@@ -192,6 +210,7 @@ Track and manage your job applications
 - `utils/links.tsx` — update hrefs to `/dashboard`
 
 **Deprecated (keep file, no longer imported):**
+
 - `components/Navbar.tsx` — superseded by DashboardNav
 - `components/Sidebar.tsx` — superseded by DashboardNav
 - `components/LinksDropdown.tsx` — superseded by DashboardNav mobile menu
