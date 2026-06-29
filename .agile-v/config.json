@@ -12,7 +12,7 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-27T12:00:00Z",
+    "reactivated": "2026-06-28T20:30:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
@@ -86,16 +86,16 @@
     "playbook": ".agile-v/PLAYBOOK.md"
   },
   "git_baseline": {
-    "head": "0f2ea55",
+    "head": "7a648e3",
     "branch": "main",
-    "last_verified": "2026-06-27T12:00:00Z",
-    "working_tree": "dirty — docs audit + middleware.ts rename uncommitted"
+    "last_verified": "2026-06-28T20:30:00Z",
+    "working_tree": "dirty — BL-0011 WIP (extension, team, email, ARQ); typecheck FAIL"
   },
   "roadmap": {
     "phase_1": "COMPLETE — Bluedoor + discover + stats + notifications + timeline + org enrich",
     "phase_1_remaining": "—",
     "phase_2": "~90% code — Coolify/Ollama/n8n deploy pending",
-    "phase_3": "partial — fit chip, PDF parser, skill gap, salary intel shipped",
+    "phase_3": "partial shipped @ 59060a0; BL-0011 advanced WIP uncommitted",
     "plan_doc": "docs/PROJECT_PLAN.md",
     "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md",
     "walkthrough_doc": "docs/PROJECT_WALKTHROUGH.md"

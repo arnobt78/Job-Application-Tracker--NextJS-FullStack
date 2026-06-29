@@ -5,10 +5,10 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Last Updated | 2026-06-27T12:00:00Z |
+| Last Updated | 2026-06-28T20:30:00Z |
 | **eval_gate_status** | **NOT_RUN** |
-| **ui_slice_status** | **PASS** (Phase 1 ~92% @ local) |
-| Red Team | EVAL-0013 PASS |
+| **ui_slice_status** | **PASS** @ `7a648e3` |
+| Red Team | EVAL-0014 PASS · EVAL-0015 FLAG (BL-0011 WIP) |
 | Compliance Auditor | Pending |
 
 ## Eval Flywheel Record
@@ -27,7 +27,9 @@
 | EVAL-0010 | 2026-06-27 | Full deep audit | lint/typecheck/test(49)/build | PASS | publishNotification fix |
 | EVAL-0011 | 2026-06-27 | AiInsightsPanel + Posting Activity | lint/typecheck/test(49)/build | PASS | JobDetailPanels, getJobEvents |
 | EVAL-0012 | 2026-06-27 | AUDIT-0001 middleware fix | lint/typecheck/test(49)/build | PASS | proxy.ts→middleware.ts |
-| EVAL-0013 | 2026-06-27 | Agile V full sync reactivation | lint/typecheck/test(49) | PASS | REQ-0024 governance sync @ `0f2ea55` |
+| EVAL-0014 | 2026-06-28 | Phase 3 partial @ 59060a0 | lint/typecheck/test(51)/build | PASS | REQ-0031 |
+| EVAL-0015 | 2026-06-28 | BL-0011 WIP audit | typecheck on dirty tree | **FLAG** | skill-gap-tab type errors; prisma client stale |
+| EVAL-0013 | 2026-06-27 | Agile V reactivation @ 0f2ea55 | lint/typecheck/test(49) | PASS | REQ-0024 |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 
 ## Quality Gates Evidence (Planned)

@@ -9,7 +9,7 @@
 | Cycle    | C1                                               |
 | Revision | 1.0                                              |
 | Author   | Requirement Architect (Bootstrap)                |
-| Status   | Draft — Phase 1 ~92% implemented; awaiting Human Gate 1 |
+| Status   | Draft — Phase 1 ✅ · Phase 2 ~90% · Phase 3 partial ✅ · BL-0011 WIP · Gate 1 pending |
 
 ---
 
@@ -104,7 +104,7 @@
 **Acceptance Criteria:**
 
 1. Cards show pending, interview, declined counts
-2. Data user-scoped via clerkId
+2. Data user-scoped via `userId` (NextAuth cuid)
 3. Loading skeletons during fetch
 
 **Verification:** TC-0011  
@@ -354,7 +354,7 @@
 
 **Acceptance Criteria:**
 
-1. Scripts: db-inspect, migrate-clerkid, fix-status, fix-future-dates, seed-test-user
+1. Scripts: db-inspect, fix-status, fix-future-dates, seed-test-user
 2. Runnable via npm scripts
 
 **Verification:** TC-0024  
@@ -419,25 +419,25 @@
 
 ## REQ-0027: AI Agent Pipeline (Phase 2 — Scaffolded)
 
-**Status:** `scaffolded [C1]` — code in repo; not deployed  
+**Status:** `implemented [C1]` — code in repo @ `59060a0`; VPS deploy pending  
 **Priority:** HIGH  
 **Category:** AI / Automation
 
 **Description:** Phase 2 SHALL provide human-in-the-loop AI workflows (fit analysis, cover letter draft, interview prep, digests) via a 9-agent FastAPI pipeline on Coolify with Ollama primary and cloud LLM fallback.
 
-**Acceptance Criteria (shipped in scaffold):**
+**Acceptance Criteria (shipped):**
 
-1. `python-ai-service/` FastAPI app with 9-agent pipeline + LLM fallback router
-2. `POST /api/ai/pipeline` Next.js proxy (NextAuth session → internal secret)
-3. `useAIPipeline` hook + `AiInsightsPanel` in `JobDetailPanels` and Discover Details modal
-4. On-demand only — NOT persisted to localStorage
+1. `python-ai-service/` FastAPI 9-agent pipeline + LLM router
+2. `POST /api/ai/pipeline` + `/stream` NextAuth proxy
+3. `JobAIInsight` + `UserProfile` DB persist · `/profile` UI
+4. `useStreamPipeline` + `PipelineProgress` · internal API for n8n
+5. n8n JSON templates in `docs/n8n/`
 
 **Acceptance Criteria (remaining):**
 
 1. Coolify deploy + Ollama models on VPS
-2. `JobAIInsight` + `UserProfile` Prisma models + persist pipeline output
-3. Cover letter streaming UI + 9-agent progress indicator
-4. n8n automation flows + `/api/internal/*` routes
+2. n8n instance + import flows
+3. ARQ async queue (BL-0011 WIP)
 
 **Verification:** TC-0028 (Phase 2)  
 **Artifacts:** ART-0090…ART-0096 (see BUILD_MANIFEST.md)
@@ -504,6 +504,48 @@
 
 **Verification:** TC-0025 (process audit)  
 **Artifacts:** ART-0062 (`.agile-v/STATE.md`), ART-0063 (`.agile-v/SKILLS_REGISTRY.md`), ART-0064 (`.agile-v/TRACE_LOG.md`), ART-0065 (`.agile-v/DECISION_LOG.md`), ART-0066 (`.agile-v/PLAYBOOK.md`)
+
+---
+
+## REQ-0031: Phase 3 Partial Features
+
+**Status:** `implemented [C1]` @ `59060a0`  
+**Priority:** MEDIUM  
+**Category:** Analytics / UX / AI
+
+**Description:** Users SHALL access fit score on cards, resume PDF upload, keyword skill gap, and salary intelligence.
+
+**Acceptance Criteria:**
+
+1. `AIFitChip` on `JobCard` via `getCachedJobs` aiInsight include
+2. PDF resume parser (`lib/pdf/extract-text.ts`) + `ResumeUpload` on `/profile`
+3. `SkillGapTab` keyword analysis in `JobDetailPanels`
+4. `SalaryIntelligence` on `/stats` with SSR prefetch + CRUD invalidation
+5. react-markdown in `AiInsightsPanel` · Framer Motion on enrichment badge
+
+**Verification:** EVAL-0014  
+**Artifacts:** ART-0100…ART-0108 (BUILD_MANIFEST)
+
+---
+
+## REQ-0033: Phase 3 Advanced (Extension · Team · Automation)
+
+**Status:** `in_progress [C1]` — BL-0011 WIP uncommitted  
+**Priority:** MEDIUM  
+**Category:** Integration / Collaboration
+
+**Description:** Users SHALL track jobs via browser extension, collaborate in teams, receive auto-apply email parsing, and run batch/queued AI analysis.
+
+**Acceptance Criteria (target):**
+
+1. Chrome extension (`browser-extension/`) + `POST /api/extension/track`
+2. Team model + shared jobs (`Team`, `TeamMember`, `Job.teamId`)
+3. Inbound email address per user + parse application confirmations
+4. ARQ task queue in FastAPI + batch AI endpoint
+5. LLM-enhanced skill gap (optional upgrade from keyword)
+
+**Verification:** EVAL-0015 (pending WIP completion)  
+**Artifacts:** ART-0110+ (WIP)
 
 ---
 

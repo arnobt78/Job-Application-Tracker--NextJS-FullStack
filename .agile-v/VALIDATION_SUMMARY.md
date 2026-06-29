@@ -5,8 +5,16 @@
 | Cycle | C1 |
 | Stage | 3 Synthesis — Phase 1+2+3-partial + EVAL-0014 audit |
 | Status | `ACTIVE` — Agile V sync @ 2026-06-28; manual QA pending |
-| Last Updated | 2026-06-28T00:00:00Z |
-| Red Team | EVAL-0014 @ local — PASS (Phase 3 partial + full audit) |
+| Last Updated | 2026-06-28T20:30:00Z |
+| Red Team | EVAL-0014 PASS · EVAL-0015 FLAG (BL-0011 WIP) |
+
+## EVAL-0015 (BL-0011 WIP — 2026-06-28)
+
+| Check | Result | Notes |
+|---|---|---|
+| HEAD `7a648e3` | PASS | lint/typecheck/test(51)/build |
+| uncommitted WIP | **FLAG** | typecheck FAIL skill-gap-tab.tsx |
+| commit | **HALT** | finish BL-0011 first |
 
 ## Findings Summary
 

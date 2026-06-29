@@ -2,71 +2,51 @@
 
 <!-- BL-XXXX → REQ-XXXX | Maintained by agile-v-product-owner -->
 
-## BL-0010: Phase 1 Remaining Gaps (~8%)
+## BL-0011: Phase 3 Advanced — WIP ⚠️
 
-**REQ:** REQ-0025, REQ-0026, REQ-0029 · **Status:** OPEN  
-**Scope:** Items documented in `docs/PROJECT_PLAN.md` §1.7
+**REQ:** REQ-0033 · **Status:** IN_PROGRESS (uncommitted · typecheck FAIL)  
+**Scope:** Extension · team mode · auto-apply email · ARQ batch · LLM skill gap
 
-| Priority | Task | Effort |
-|---|---|---|
-| Medium | Wire `GET /jobs/facets` for live filter counts on `/discover` | 1–2 days |
-| Medium | Auto-register Bluedoor webhook subscriptions on successful enrich | 1 day |
-| Low | React Email templates for posting alerts + weekly digest | 1–2 days |
-| Low | Weekly analytics email cron | 1 day |
-| Low | Company logos on discover cards (`logo.dev`) | 0.5 day |
+| Item | Status |
+|---|---|
+| `browser-extension/` | WIP files |
+| Team Prisma models + `components/team/` | WIP schema |
+| `inboundEmailAddress` + email inbound | WIP type errors |
+| `python-ai-service/app/tasks/` ARQ | WIP scaffold |
+| `app/api/extension/` + `app/api/ai/batch/` | WIP untracked |
+| LLM skill gap in `skill-gap-tab.tsx` | WIP type mismatch |
 
----
-
-## BL-0008: Phase 1 — Bluedoor + Discover + Stats + Notifications ✅
-
-**REQ:** REQ-0025, REQ-0026, REQ-0028, REQ-0029, REQ-0027 (scaffold) · **token:** `c1-dev-20260612`  
-**Status:** **COMMITTED** (`58e8297`+) · EVAL-0012 PASS
-
-### Shipped
-- Prisma Bluedoor fields · `lib/bluedoor/` · enrichment badges · webhook · cron
-- `/discover` — infinite scroll, glass filters, Details modal, Track Application
-- SSE notification bus + bell + BroadcastChannel + Resend email
-- Stats overhaul — KPI row + 4 charts + weekly velocity + `chartsWeekly` invalidation
-- Posting Activity tab — `getJobEvents` + `JobDetailPanels`
-- Phase 2 scaffold — `python-ai-service/` + `/api/ai/pipeline` + `AiInsightsPanel`
-- `middleware.ts` fix (Clerk gate was not running as `proxy.ts`)
-- Docs: `PROJECT_PLAN.md`, `PROJECT_WALKTHROUGH.md`, `JOBIFY_TECH_STACK_ANALYSIS.md`, `README.md`
-
-### Next
-- Manual QA: enrich with real ATS URL · discover · bell · AI panel · activity tab
-- Gate 1 approval
+**Next:** fix types → prisma generate → gates → commit as single BL-0011
 
 ---
 
-## BL-0009: Phase 2 — Python AI Service (scaffolded)
+## BL-0010: Phase 1 Gaps ✅
 
-**REQ:** REQ-0027 · **Status:** SCAFFOLDED — needs deploy + real LLM keys  
-**Scope:** Coolify VPS · Ollama models · `JobAIInsight`/`UserProfile` Prisma · n8n · streaming UI  
-**Ref:** `docs/PROJECT_PLAN.md` Phase 2
+**REQ:** REQ-0025, REQ-0026, REQ-0029 · **Status:** **DONE** @ `59060a0`+
 
 ---
 
-## BL-0007: User-Driven Extension ✅
+## BL-0009: Phase 2 Deploy
 
-**REQ:** REQ-0014, REQ-0015, REQ-0019 · Cache/SSR track @ `280e284` · **DONE**
-
----
-
-## BL-0001…0006 ✅
-
-Auth flicker-free · Prisma cleanup · Landing/auth UI · UI polish — all **DONE**
+**REQ:** REQ-0027 · **Status:** CODE ~90% — Coolify/Ollama/n8n **not deployed**
 
 ---
 
-## BL-0003: Automated Test Suite
+## BL-0008: Phase 1 Core ✅
 
-**REQ:** REQ-0021 · 49 Vitest passing; E2E Playwright + Bluedoor unit tests pending
+**REQ:** REQ-0025…0029 · **Status:** COMMITTED
+
+---
+
+## BL-0003: Test Suite
+
+**REQ:** REQ-0021 · Vitest **51** ✓ · Playwright scaffold · E2E CI pending
 
 ---
 
 ## BL-0004: Observability
 
-**REQ:** REQ-0022 · Sentry integrated; PostHog deferred
+**REQ:** REQ-0022 · Sentry ✓ · PostHog optional ✓
 
 ---
 
@@ -74,8 +54,7 @@ Auth flicker-free · Prisma cleanup · Landing/auth UI · UI polish — all **DO
 
 | Priority | BL | Status |
 |---|---|---|
-| 1 | BL-0010 | OPEN — Phase 1 gaps |
-| 2 | BL-0009 | SCAFFOLDED — Phase 2 deploy |
-| 3 | Gate 1 approval | PENDING |
-| 4 | BL-0003 | Backlog (E2E) |
-| 5 | BL-0004 | Backlog |
+| 1 | **BL-0011** | **WIP** — finish + verify before commit |
+| 2 | BL-0009 | Deploy FastAPI + Ollama + n8n |
+| 3 | Gate 1 (INT-0001) | PENDING human approval |
+| 4 | BL-0003 | E2E CI wiring |

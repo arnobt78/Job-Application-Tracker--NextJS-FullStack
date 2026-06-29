@@ -1,25 +1,23 @@
 # Cycle C1 — Active
 
-**HEAD:** `0f2ea55` · **Branch:** `main` · **Checkpoint:** INT-0003 `c1-dev-20260612` · **Infinity Loop:** ON
-
-## Shipped since bootstrap
-
-Baseline CRM → landing/auth UI → NavShell → glass filters → dashboard redesign → optimistic stats → SSR/cache/persist → Phase 1 Bluedoor → notifications → stats overhaul → Posting Activity → Phase 2 AI scaffold
+**HEAD:** `7a648e3` · **Branch:** `main` · **Checkpoint:** INT-0003 · **Infinity Loop:** ON
 
 ## Phase status
 
-| Phase | % | Notes |
-|---|---|---|
-| Phase 1 | ~92% | BL-0010 gaps remain |
-| Phase 2 | Scaffolded | BL-0009 — deploy pending |
+| Phase | Status |
+|---|---|
+| P1 | ✅ COMPLETE |
+| P2 | ~90% code · deploy pending |
+| P3 | partial ✅ (`59060a0`) + BL-0011 WIP |
 
 ## Resume checklist
 
-1. `git status` · confirm HEAD
-2. Read `STATE.md`, `BACKLOG.md`, `CLAUDE.md`, `docs/PROJECT_PLAN.md`
-3. `npm run lint && npm run typecheck && npm test && npm run build` (**49 tests**)
-4. INT-0003 active · Gate 1 still pending (INT-0001)
+1. `git status` — WIP on BL-0011?
+2. Read `STATE.md`, `BACKLOG.md`, `CLAUDE.md`
+3. `npm run lint && npm run typecheck && npm test && npm run build` (51 tests @ HEAD)
+4. Map task → REQ-XXXX before coding
+5. Gate 1 pending — reply `Approve Gate 1` when ready
 
 ## Archive at Gate 2
 
-Frozen copies of REQUIREMENTS, BUILD_MANIFEST, TEST_SPEC, VALIDATION_SUMMARY pending human acceptance.
+Freeze REQUIREMENTS, BUILD_MANIFEST, TEST_SPEC, VALIDATION_SUMMARY after human acceptance.

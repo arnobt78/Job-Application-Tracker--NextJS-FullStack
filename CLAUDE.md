@@ -27,7 +27,7 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · not persisted
 - Notifications: SSE bell + React Email (Resend)
 
-## AI (Phase 2 ~90% code, not deployed)
+## Phase 2 ~90% · Phase 3 partial ✅ · BL-0011 WIP
 - FastAPI 9-agent pipeline · LLM: Ollama → Groq → OpenRouter → Haiku
 - `POST /api/ai/pipeline` + `/stream` · `useStreamPipeline` · `PipelineProgress`
 - `JobAIInsight` + `UserProfile` DB persist · `/profile` UI
@@ -40,6 +40,9 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - **Resume PDF parser**: `lib/pdf/extract-text.ts` (pdfjs-dist) · `uploadResumeAction` · `ResumeUpload` drag-drop on `/profile`
 - **Skill Gap**: `lib/jobs/skill-gap.ts` `computeSkillGap()` · `getSkillGapAction` · `SkillGapTab` in `JobDetailPanels`
 - **Salary Intel**: `getSalaryIntelligenceAction` · `SalaryIntelligence` on `/stats` · SSR-prefetched · invalidated on CRUD
+
+## WIP (BL-0011 — do not commit until gates pass)
+- Extension · team mode · email inbound · ARQ batch · LLM skill gap — uncommitted typecheck FAIL
 
 ## Query keys
 `jobs.*` · `stats` · `charts` · `chartsWeekly` · `job(id)` · `discover.*` · `aiInsight.job(id)` · `timeline()` · `userProfile()` · `skillGap(jobId)` · `salaryIntel()`

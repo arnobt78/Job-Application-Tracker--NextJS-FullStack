@@ -1,28 +1,26 @@
 # Phase 03 Summary — Synthesis C1
 
-**Status:** IN_PROGRESS — Phase 1 ~92% + Phase 2 scaffolded
+**Status:** IN_PROGRESS — BL-0011 WIP · Gate 1 pending
 
-## Shipped synthesis (C1)
+## Shipped (committed)
 
-| Commit / Date | Scope | REQ-IDs |
+| Commit | Scope | REQ |
 |---|---|---|
-| `f660eb9` | Landing + custom auth cards | REQ-0013, REQ-0023, REQ-0001 |
-| `07fcd0e`…`be950be` | NavShell, dashboard nav | REQ-0012, REQ-0019 |
-| `8ac2e6d`…`cc72b0b` | Sonner, instant shells, auth UX | REQ-0014, REQ-0001 |
-| `4efaf37` | Jobs list split + hooks | REQ-0003, REQ-0014 |
-| `998d3a5` | Prisma schema cleanup | REQ-0020 |
-| `fd6f20c` | Glass filters, confirms, filter-params | REQ-0003, REQ-0013, REQ-0014 |
-| `280e284`…`1a1bec0` | SSR/cache/persist/body-loading | REQ-0014, REQ-0015, REQ-0019 |
-| `2026-06-19` | Phase 1 Bluedoor enrichment + discover | REQ-0025, REQ-0026 |
-| `2026-06-27` | Notifications + stats overhaul + Posting Activity + AI scaffold | REQ-0027, REQ-0028, REQ-0029 |
-| `2026-06-27` | `middleware.ts` fix (AUDIT-0001) | REQ-0009 |
-| `2026-06-27` | Docs audit sync | REQ-0024 |
+| `b0a0f26` | NextAuth v5 migration | REQ-0001 |
+| `59060a0` | P3 partial: fit chip, PDF, skill gap, salary intel | REQ-0031 |
+| `7a648e3` | Docs sync Phase 3 status | REQ-0024 |
+| Earlier | P1 Bluedoor + P2 scaffold + stats + notifications | REQ-0025…0029, REQ-0027 |
 
-## Remaining synthesis (C1)
+## WIP (uncommitted)
 
-| BL | Scope | REQ-IDs |
+| BL | Scope | REQ |
 |---|---|---|
-| BL-0010 | Facets API, webhook subscribe, weekly digest, logos | REQ-0025, REQ-0026, REQ-0029 |
-| BL-0009 | Coolify deploy, DB persist, n8n, streaming UI | REQ-0027 |
+| BL-0011 | Extension, team, email inbound, ARQ, LLM skill gap | REQ-0033 |
 
-Future synthesis: map user tasks → REQ-XXXX → delta ART revisions.
+## Remaining
+
+| BL | Scope |
+|---|---|
+| BL-0009 | Coolify deploy + Ollama + n8n |
+| BL-0003 | E2E CI |
+| Gate 1 | Human REQ baseline approval |
