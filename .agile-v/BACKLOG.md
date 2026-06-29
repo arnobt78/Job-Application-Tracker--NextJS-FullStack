@@ -2,21 +2,33 @@
 
 <!-- BL-XXXX → REQ-XXXX | Maintained by agile-v-product-owner -->
 
-## BL-0011: Phase 3 Advanced — WIP ⚠️
+## BL-0011: Phase 3 Advanced (REQ-0033) — WIP
 
-**REQ:** REQ-0033 · **Status:** IN_PROGRESS (uncommitted · typecheck FAIL)  
-**Scope:** Extension · team mode · auto-apply email · ARQ batch · LLM skill gap
+**REQ:** REQ-0033 · **Status:** COMPLETE · **EVAL-0015 PASS (2026-06-29)**  
+**Scope:** Browser extension, team mode, email auto-apply, ARQ batch AI, LLM skill gap
 
 | Item | Status |
 |---|---|
-| `browser-extension/` | WIP files |
-| Team Prisma models + `components/team/` | WIP schema |
-| `inboundEmailAddress` + email inbound | WIP type errors |
-| `python-ai-service/app/tasks/` ARQ | WIP scaffold |
-| `app/api/extension/` + `app/api/ai/batch/` | WIP untracked |
-| LLM skill gap in `skill-gap-tab.tsx` | WIP type mismatch |
+| Prisma: Team/TeamMember/extensionToken/inboundEmailAddress | ✅ db push done |
+| `LLMSkillGapResult` types + `getLLMSkillGapAction` | ✅ coded |
+| `skill-gap-tab.tsx` AI mode (keyword/LLM toggle) + typefix | ✅ PASS |
+| `browser-extension/` manifest + background/content/popup | ✅ scaffolded |
+| `app/api/extension/` token · jobs · verify routes | ✅ coded |
+| `components/team/` create · invite · member-list | ✅ coded |
+| `components/user-profile/` batch · email · extension-connect | ✅ coded + wired in /profile |
+| `hooks/useAIBatch.ts` · `app/api/ai/batch/route.ts` | ✅ coded (+ user_id in user_data) |
+| FastAPI routes email/interview/queue/skills + ARQ tasks/ | ✅ scaffolded (+ ai-complete callback) |
+| `app/(dashboard)/team/page.tsx` + `components/team/team-dashboard.tsx` | ✅ DONE |
+| `app/api/email/inbound/route.ts` | ✅ DONE |
+| `app/api/internal/ai-complete/route.ts` | ✅ DONE |
+| `triggerInterviewPrepAction` + `publishNotification` on interview status | ✅ DONE |
+| `interview_prep_ready` notification type end-to-end | ✅ DONE |
+| `/team` in middleware + nav | ✅ DONE |
+| lint ✓ typecheck ✓ test 51/51 ✓ build ✓ | ✅ PASS (2026-06-29) |
+| Audit: dead code + CSS bug fixes (invite-member-form, triggerInterviewPrepAction) | ✅ DONE 2026-06-29 |
+| EVAL-0015 full pass → commit BL-0011 | ✅ COMMITTED 2026-06-29 |
 
-**Next:** fix types → prisma generate → gates → commit as single BL-0011
+**Status:** COMMITTED — next is BL-0009 (Coolify VPS deploy)
 
 ---
 

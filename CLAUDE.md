@@ -27,28 +27,30 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · not persisted
 - Notifications: SSE bell + React Email (Resend)
 
-## Phase 2 ~90% · Phase 3 partial ✅ · BL-0011 WIP
+## Phase 2 ~90% · Phase 3 ✅ · BL-0011 ✅ COMMITTED
 - FastAPI 9-agent pipeline · LLM: Ollama → Groq → OpenRouter → Haiku
 - `POST /api/ai/pipeline` + `/stream` · `useStreamPipeline` · `PipelineProgress`
 - `JobAIInsight` + `UserProfile` DB persist · `/profile` UI
-- Internal API: `GET /api/internal/jobs?userId=` · `POST /api/internal/notify` (`X-Internal-Secret`)
+- Internal API: `GET /api/internal/jobs?userId=` · `POST /api/internal/notify` · `POST /api/internal/ai-complete` (`X-Internal-Secret`)
 - n8n JSON templates in `docs/n8n/` (not deployed)
 - **AI fit chip** `components/jobs/ai-fit-chip.tsx` — embedded in `getCachedJobs` include, shown on `JobCard`
-- **react-markdown** in `AiInsightsPanel` (cover letter + summary) · **Framer Motion** on `JobEnrichmentBadge`
+- **react-markdown** in `AiInsightsPanel` · **Framer Motion** on `JobEnrichmentBadge`
 
-## Phase 3 (partial ✅)
+## Phase 3 ✅ COMPLETE
 - **Resume PDF parser**: `lib/pdf/extract-text.ts` (pdfjs-dist) · `uploadResumeAction` · `ResumeUpload` drag-drop on `/profile`
-- **Skill Gap**: `lib/jobs/skill-gap.ts` `computeSkillGap()` · `getSkillGapAction` · `SkillGapTab` in `JobDetailPanels`
+- **Skill Gap**: keyword (`getSkillGapAction`) + LLM AI toggle (`getLLMSkillGapAction` → FastAPI `/skill-gap`) · `SkillGapTab`
 - **Salary Intel**: `getSalaryIntelligenceAction` · `SalaryIntelligence` on `/stats` · SSR-prefetched · invalidated on CRUD
-
-## WIP (BL-0011 — do not commit until gates pass)
-- Extension · team mode · email inbound · ARQ batch · LLM skill gap — uncommitted typecheck FAIL
+- **Team mode**: `/team` route · `getTeamAction/createTeamAction/inviteTeamMemberAction/removeTeamMemberAction` · `TeamDashboard`
+- **Browser extension**: `app/api/extension/token|jobs|verify` · `ExtensionConnect` on `/profile` · `browser-extension/` manifest+popup
+- **Email inbound**: `app/api/email/inbound` Resend webhook → FastAPI `/parse-email` → job create + SSE · `EmailInboundSetup` on `/profile`
+- **ARQ batch AI**: `app/api/ai/batch` → FastAPI `/enqueue` → `run_pipeline_task` → `app/api/internal/ai-complete` → upsert `JobAIInsight` + SSE · `BatchAnalysisTrigger` + `useAIBatch`
+- **Interview prep**: `triggerInterviewPrepAction` via `after()` on status→interview · FastAPI `/pipeline/interview-prep` · `interview_prep_ready` SSE notification
 
 ## Query keys
-`jobs.*` · `stats` · `charts` · `chartsWeekly` · `job(id)` · `discover.*` · `aiInsight.job(id)` · `timeline()` · `userProfile()` · `skillGap(jobId)` · `salaryIntel()`
+`jobs.*` · `stats` · `charts` · `chartsWeekly` · `job(id)` · `discover.*` · `aiInsight.job(id)` · `timeline()` · `userProfile()` · `skillGap(jobId)` · `skillGapAI(jobId)` · `salaryIntel()` · `team.current()` · `team.members(teamId)`
 
 ## Routes
-`/dashboard` · `/dashboard/[id]` (JobDetailPanels) · `/discover` · `/stats` · `/timeline` · `/profile`
+`/dashboard` · `/dashboard/[id]` (JobDetailPanels) · `/discover` · `/stats` · `/timeline` · `/profile` · `/team`
 
 ## Env
 `AUTH_SECRET` · `AUTH_GOOGLE_*` · `AUTH_GITHUB_*` · `DATABASE_URL` · `BLUEDOOR_WEBHOOK_SECRET` · `CRON_SECRET` · `RESEND_API_KEY` · `AI_SERVICE_URL` · `AI_SERVICE_SECRET` · `NEXT_PUBLIC_POSTHOG_KEY` (opt)

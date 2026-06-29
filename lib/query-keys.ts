@@ -64,4 +64,12 @@ export const queryKeys = {
   // Salary intelligence — aggregated from user's enriched jobs.
   // NOT persisted in localStorage; invalidated on job CRUD via invalidateAllJobQueries.
   salaryIntel: () => ['salary-intel'] as const,
+  // LLM-powered skill gap — per-job, NOT persisted. Lazy-fetched from SkillGapTab AI toggle.
+  skillGapAI: (jobId: string) => ['skill-gap-ai', jobId] as const,
+  // Team mode — user's current team + members + team jobs. NOT persisted.
+  team: {
+    current: () => ['team', 'current'] as const,
+    members: (teamId: string) => ['team', 'members', teamId] as const,
+    jobs: (teamId: string) => ['team', 'jobs', teamId] as const,
+  },
 } as const;

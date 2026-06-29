@@ -4,9 +4,10 @@ import { after } from "next/server";
 import prisma from "./db";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
-import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult } from "./types";
+import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult, LLMSkillGapResult, TeamType, TeamMemberType, TeamRole } from "./types";
 import { redirect } from "next/navigation";
 import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
+import { publishNotification } from "@/lib/jobs-events";
 import {
   getCachedJobs,
   getCachedJob,
@@ -201,10 +202,10 @@ export async function updateJobAction(
   try {
     createAndEditJobSchema.parse(values);
 
-    // Capture previous applyUrl to detect change
+    // Capture previous state to detect changes
     const previous = await prisma.job.findUnique({
       where: { id, userId },
-      select: { applyUrl: true, bluedoorJobId: true },
+      select: { applyUrl: true, bluedoorJobId: true, status: true },
     });
 
     const job = await prisma.job.update({
@@ -224,6 +225,15 @@ export async function updateJobAction(
     if (hasNewApplyUrl && (applyUrlChanged || !previous?.bluedoorJobId)) {
       after(async () => {
         await enrichJob(id, userId);
+      });
+    }
+
+    // Trigger interview-prep when job moves INTO interview status
+    const movingToInterview =
+      values.status === 'interview' && previous?.status !== 'interview';
+    if (movingToInterview) {
+      after(async () => {
+        await triggerInterviewPrepAction(id, userId);
       });
     }
 
@@ -705,3 +715,406 @@ export async function uploadResumeAction(formData: FormData): Promise<UploadResu
     return { success: false, error: 'Failed to parse PDF. Please try again or paste the text directly.' };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P2 — Interview-Prep Auto-Trigger
+// ─────────────────────────────────────────────────────────────────────────────
+
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:8000';
+const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
+
+/**
+ * Background action: call FastAPI /pipeline/interview-prep when a job moves to 'interview'.
+ * Non-blocking — called via after() in updateJobAction.
+ * Merges returned interview_angles into the existing JobAIInsight (or creates one).
+ */
+async function triggerInterviewPrepAction(jobId: string, userId: string): Promise<void> {
+  try {
+    const [job, profile] = await Promise.all([
+      prisma.job.findUnique({
+        where: { id: jobId, userId },
+        select: {
+          position: true, company: true, location: true, status: true, mode: true,
+          applyUrl: true, bluedoorStatus: true, bluedoorWorkplaceType: true,
+          bluedoorSalaryMin: true, bluedoorSalaryMax: true, bluedoorSalaryCurrency: true,
+        },
+      }),
+      prisma.userProfile.findUnique({
+        where: { userId },
+        select: { resumeText: true, targetRoles: true, skills: true },
+      }),
+    ]);
+
+    if (!job) return;
+
+    const payload = {
+      job: {
+        job_id: jobId,
+        position: job.position,
+        company: job.company,
+        location: job.location,
+        status: job.status,
+        mode: job.mode,
+        apply_url: job.applyUrl ?? null,
+        bluedoor_status: job.bluedoorStatus ?? null,
+        bluedoor_workplace_type: job.bluedoorWorkplaceType ?? null,
+        bluedoor_salary_min: job.bluedoorSalaryMin ?? null,
+        bluedoor_salary_max: job.bluedoorSalaryMax ?? null,
+        bluedoor_salary_currency: job.bluedoorSalaryCurrency ?? null,
+      },
+      user: {
+        resume_summary: profile?.resumeText ?? null,
+        target_role: profile?.targetRoles?.[0] ?? null,
+        skills: profile?.skills ?? [],
+      },
+    };
+
+    const res = await fetch(`${AI_SERVICE_URL}/pipeline/interview-prep`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Secret': AI_SERVICE_SECRET,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(120_000),
+    });
+
+    if (!res.ok) return;
+
+    const result = (await res.json()) as {
+      interview_angles: Array<{ question: string; angle: string }>;
+    };
+
+    const angles = result.interview_angles.map((a) => `${a.question}: ${a.angle}`);
+    if (!angles.length) return;
+
+    // Merge angles into existing insight — upsert preserves fit score / cover letter in create path
+    await prisma.jobAIInsight.upsert({
+      where: { jobId },
+      create: { jobId, userId, interviewAngles: angles, redFlags: [] },
+      update: {
+        interviewAngles: angles,
+        updatedAt: new Date(),
+      },
+    });
+
+    await invalidateUserJobCaches(userId, jobId);
+    await publishNotification(userId, 'interview_prep_ready', jobId,
+      'Interview prep ready — check AI Insights for angles!');
+  } catch {
+    // Non-critical background task — silent failure
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P3 — LLM-Powered Skill Gap
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * LLM-powered skill gap — calls FastAPI /skill-gap for semantic matching.
+ * Falls back to keyword-based computeSkillGap when AI service is unavailable.
+ * Returns LLMSkillGapResult (superset of SkillGapResult) or null if no skills.
+ */
+export async function getLLMSkillGapAction(jobId: string): Promise<LLMSkillGapResult | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const [profile, jobRow] = await Promise.all([
+      prisma.userProfile.findUnique({ where: { userId }, select: { skills: true } }),
+      prisma.job.findUnique({
+        where: { id: jobId, userId },
+        select: { position: true, company: true, bluedoorJobId: true },
+      }),
+    ]);
+
+    const userSkills: string[] = profile?.skills ?? [];
+    if (!userSkills.length) return null;
+
+    let jobDescription = [jobRow?.position, jobRow?.company].filter(Boolean).join(' ');
+
+    if (jobRow?.bluedoorJobId) {
+      try {
+        const detail = await getJobDetail(jobRow.bluedoorJobId);
+        if (detail?.description_text) {
+          jobDescription = detail.description_text;
+        }
+      } catch {
+        // Bluedoor unreachable — fall back to position+company text
+      }
+    }
+
+    // Call FastAPI /skill-gap (LLM-powered)
+    try {
+      const res = await fetch(`${AI_SERVICE_URL}/skill-gap`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Internal-Secret': AI_SERVICE_SECRET,
+        },
+        body: JSON.stringify({
+          job_description: jobDescription,
+          user_skills: userSkills,
+          position: jobRow?.position ?? '',
+          company: jobRow?.company ?? '',
+        }),
+        signal: AbortSignal.timeout(30_000),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as {
+          matched: string[];
+          missing: string[];
+          bonus: string[];
+          match_pct: number;
+          ai_explanation: string | null;
+          learning_path: string[];
+          confidence: string;
+        };
+        return {
+          matched: data.matched,
+          missing: data.missing,
+          bonus: data.bonus,
+          matchPct: data.match_pct,
+          aiExplanation: data.ai_explanation,
+          learningPath: data.learning_path,
+          confidence: (data.confidence as 'high' | 'medium' | 'low') ?? 'medium',
+        };
+      }
+    } catch {
+      // AI service unavailable — fall back to keyword analysis below
+    }
+
+    // Keyword fallback — same as getSkillGapAction
+    const keywordResult = computeSkillGap(userSkills, jobDescription);
+    return {
+      ...keywordResult,
+      aiExplanation: null,
+      learningPath: [],
+      confidence: 'low' as const,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P5 — Team Mode Actions
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Assert user is a member of the team with at least minRole privilege.
+ *  Throws if not a member or insufficient role. */
+async function assertTeamMembership(
+  userId: string,
+  teamId: string,
+  minRole: TeamRole = 'member'
+): Promise<void> {
+  const roleOrder: Record<TeamRole, number> = { member: 0, admin: 1, owner: 2 };
+  const membership = await prisma.teamMember.findUnique({
+    where: { teamId_userId: { teamId, userId } },
+    select: { role: true },
+  });
+  if (!membership) throw new Error('Not a team member');
+  const userRoleLevel = roleOrder[membership.role as TeamRole] ?? -1;
+  const requiredLevel = roleOrder[minRole];
+  if (userRoleLevel < requiredLevel) throw new Error('Insufficient team role');
+}
+
+/** Create a new team and auto-add the creator as owner. */
+export async function createTeamAction(name: string): Promise<TeamType | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const team = await prisma.team.create({
+      data: {
+        name: name.trim(),
+        ownerId: userId,
+        members: {
+          create: { userId, role: 'owner' },
+        },
+      },
+    });
+    return team as TeamType;
+  } catch {
+    return null;
+  }
+}
+
+/** Get the current user's team (they may own or be a member of). */
+export async function getTeamAction(): Promise<{
+  team: TeamType;
+  members: TeamMemberType[];
+  role: TeamRole;
+} | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const membership = await prisma.teamMember.findFirst({
+      where: { userId },
+      include: {
+        team: true,
+        user: { select: { name: true, email: true, image: true } },
+      },
+      orderBy: { joinedAt: 'asc' },
+    });
+
+    if (!membership) return null;
+
+    const members = await prisma.teamMember.findMany({
+      where: { teamId: membership.teamId },
+      include: { user: { select: { name: true, email: true, image: true } } },
+      orderBy: { joinedAt: 'asc' },
+    });
+
+    return {
+      team: membership.team as TeamType,
+      members: members as unknown as TeamMemberType[],
+      role: membership.role as TeamRole,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Invite a user by email to the current user's team. Admin/owner only. */
+export async function inviteTeamMemberAction(
+  email: string
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const ownerMembership = await prisma.teamMember.findFirst({
+      where: { userId, role: { in: ['owner', 'admin'] } },
+    });
+    if (!ownerMembership) return { success: false, error: 'Not an admin or owner.' };
+
+    const invitee = await prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+      select: { id: true },
+    });
+    if (!invitee) return { success: false, error: 'No user found with that email.' };
+
+    const existing = await prisma.teamMember.findUnique({
+      where: { teamId_userId: { teamId: ownerMembership.teamId, userId: invitee.id } },
+    });
+    if (existing) return { success: false, error: 'User is already a team member.' };
+
+    await prisma.teamMember.create({
+      data: { teamId: ownerMembership.teamId, userId: invitee.id, role: 'member' },
+    });
+
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Could not invite member. Please try again.' };
+  }
+}
+
+/** Remove a team member. Owner/admin only; owner cannot be removed. */
+export async function removeTeamMemberAction(memberId: string): Promise<boolean> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    const target = await prisma.teamMember.findUnique({
+      where: { id: memberId },
+      select: { teamId: true, userId: true, role: true },
+    });
+    if (!target) return false;
+    if (target.role === 'owner') return false;
+
+    await assertTeamMembership(userId, target.teamId, 'admin');
+    await prisma.teamMember.delete({ where: { id: memberId } });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Get all jobs belonging to a team (requires membership). */
+export async function getTeamJobsAction(teamId: string): Promise<JobType[]> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    await assertTeamMembership(userId, teamId);
+    const jobs = await prisma.job.findMany({
+      where: { teamId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return jobs as JobType[];
+  } catch {
+    return [];
+  }
+}
+
+/** Create a job scoped to a team. User must be a team member. */
+export async function createTeamJobAction(
+  teamId: string,
+  values: CreateAndEditJobType
+): Promise<JobType | null> {
+  const userId = await authenticateAndRedirect();
+
+  try {
+    await assertTeamMembership(userId, teamId);
+    createAndEditJobSchema.parse(values);
+
+    const job = await prisma.job.create({
+      data: {
+        ...values,
+        applyUrl: values.applyUrl ?? null,
+        userId,
+        teamId,
+      },
+    });
+
+    await invalidateUserJobCaches(userId, job.id);
+
+    if (job.applyUrl) {
+      after(async () => { await enrichJob(job.id, userId); });
+    }
+
+    return job as JobType;
+  } catch {
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// P6 — Auto-Apply Email Detection
+// ─────────────────────────────────────────────────────────────────────────────
+
+const INBOUND_EMAIL_DOMAIN = process.env.INBOUND_EMAIL_DOMAIN ?? 'apply.jobify-tracker.app';
+
+/**
+ * Generate (or retrieve) the user's unique inbound email address.
+ * Format: user-{shortId}@{INBOUND_EMAIL_DOMAIN}
+ * Persisted to UserProfile.inboundEmailAddress.
+ */
+export async function generateInboundEmailAction(): Promise<string> {
+  const userId = await authenticateAndRedirect();
+
+  const existing = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { inboundEmailAddress: true },
+  });
+
+  if (existing?.inboundEmailAddress) {
+    return existing.inboundEmailAddress;
+  }
+
+  // Generate deterministic short ID from userId (no crypto dependency)
+  const shortId = userId.slice(-8).toLowerCase();
+  const address = `user-${shortId}@${INBOUND_EMAIL_DOMAIN}`;
+
+  await prisma.userProfile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      skills: [],
+      targetRoles: [],
+      experienceLevel: null,
+      inboundEmailAddress: address,
+    },
+    update: { inboundEmailAddress: address },
+  });
+
+  return address;
+}
+

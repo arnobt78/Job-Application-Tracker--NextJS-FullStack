@@ -22,6 +22,7 @@ const NOTIFICATION_LABELS: Record<AppNotification['notificationType'], string> =
   jd_changed: 'Job description changed',
   salary_added: 'Salary disclosed',
   posting_reopened: 'Posting reopened',
+  interview_prep_ready: 'Interview prep ready',
 };
 
 function NotificationItem({ notification }: { notification: AppNotification }) {

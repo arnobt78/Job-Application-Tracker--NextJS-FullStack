@@ -1,0 +1,160 @@
+{
+  "name": "Jobify — Interview Prep Auto-Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jobify-notify",
+        "responseMode": "responseNode"
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "n8n-webhook-trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.type}}",
+              "operation": "equal",
+              "value2": "status_changed"
+            },
+            {
+              "value1": "={{$json.body.new_status}}",
+              "operation": "equal",
+              "value2": "interview"
+            }
+          ]
+        },
+        "combineOperation": "all"
+      },
+      "name": "Filter: status_changed → interview",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "id": "n8n-filter-interview"
+    },
+    {
+      "parameters": {
+        "url": "={{$env.NEXT_PUBLIC_APP_URL}}/api/internal/jobs",
+        "authentication": "headerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "userId", "value": "={{$json.body.userId}}" },
+            { "name": "jobId",  "value": "={{$json.body.jobId}}" }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Fetch Job Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [680, 300],
+      "id": "n8n-fetch-job",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "internal-secret-header",
+          "name": "Jobify Internal Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.AI_SERVICE_URL}}/pipeline/interview-prep",
+        "method": "POST",
+        "authentication": "headerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "job",
+              "value": "={{$json.job}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "name": "Call AI Interview Prep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [900, 300],
+      "id": "n8n-ai-interview-prep",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ai-service-secret-header",
+          "name": "AI Service Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.NEXT_PUBLIC_APP_URL}}/api/internal/notify",
+        "method": "POST",
+        "authentication": "headerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "type",    "value": "interview_prep_ready" },
+            { "name": "userId",  "value": "={{$node['Webhook Trigger'].json.body.userId}}" },
+            { "name": "jobId",   "value": "={{$node['Webhook Trigger'].json.body.jobId}}" },
+            { "name": "message", "value": "Interview prep is ready for your application!" }
+          ]
+        }
+      },
+      "name": "Notify User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1120, 300],
+      "id": "n8n-notify-user",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "internal-secret-header",
+          "name": "Jobify Internal Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}"
+      },
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [460, 500],
+      "id": "n8n-respond-200"
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Filter: status_changed → interview", "type": "main", "index": 0 }]]
+    },
+    "Filter: status_changed → interview": {
+      "main": [
+        [{ "node": "Fetch Job Details", "type": "main", "index": 0 }],
+        [{ "node": "Respond 200", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Job Details": {
+      "main": [[{ "node": "Call AI Interview Prep", "type": "main", "index": 0 }]]
+    },
+    "Call AI Interview Prep": {
+      "main": [[{ "node": "Notify User", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "jobify-n8n-interview-prep"
+  }
+}

@@ -23,7 +23,12 @@ export type JobsInvalidationEvent = {
 
 export type JobsNotificationEvent = {
   type: 'notify';
-  notificationType: 'posting_closed' | 'jd_changed' | 'salary_added' | 'posting_reopened';
+  notificationType:
+    | 'posting_closed'
+    | 'jd_changed'
+    | 'salary_added'
+    | 'posting_reopened'
+    | 'interview_prep_ready';
   jobId: string;
   message: string;
   timestamp: string;

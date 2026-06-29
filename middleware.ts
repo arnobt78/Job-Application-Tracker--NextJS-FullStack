@@ -20,6 +20,7 @@ const PROTECTED_PREFIXES = [
   '/stats',
   '/timeline',
   '/profile',
+  '/team',
 ];
 
 export default auth((req) => {

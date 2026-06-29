@@ -9,11 +9,11 @@
 ## Resume INT-0003 (active — every session)
 
 1. READ `.agile-v/STATE.md` + this file + `CLAUDE.md` + `docs/PROJECT_PLAN.md`
-2. Git: clean HEAD `7a648e3` · WIP uncommitted on BL-0011
-3. Verify HEAD: `npm run lint && npm run typecheck && npm test && npm run build` (**51 tests**)
+2. Git: clean HEAD `7a648e3` · WIP uncommitted on BL-0011 (lint ✓ typecheck ✓ 51/51 ✓ build ✓)
+3. Verify HEAD: `npm run lint && npm run typecheck && npm test && npm run build`
 4. MAP tasks → REQ-XXXX · SCOPE-V · log TRACE + DECISION
-5. **Halt commit** if typecheck fails (finish BL-0011 first)
-6. Next: finish BL-0011 OR deploy BL-0009 OR user instruction
+5. BL-0011 typefix DONE (2026-06-29) — remaining: wire UI to `/profile` + team route + manual QA
+6. Next: wire BL-0011 UI into `/profile` OR user instruction
 
 ## Resume INT-0001 (Gate 1)
 

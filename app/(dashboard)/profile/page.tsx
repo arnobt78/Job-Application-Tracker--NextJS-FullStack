@@ -5,6 +5,9 @@ import { queryKeys } from '@/lib/query-keys';
 import { getUserProfileAction } from '@/utils/actions';
 import { UserProfileForm } from '@/components/user-profile/user-profile-form';
 import { ResumeUpload } from '@/components/user-profile/resume-upload';
+import { BatchAnalysisTrigger } from '@/components/user-profile/batch-analysis-trigger';
+import { ExtensionConnect } from '@/components/user-profile/extension-connect';
+import { EmailInboundSetup } from '@/components/user-profile/email-inbound-setup';
 import { GlassCard } from '@/components/ui/glass-card';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import { User } from 'lucide-react';
@@ -70,6 +73,21 @@ async function UserProfilePage() {
           {/* PDF upload — extracts text and auto-fills resumeText in the form below */}
           <GlassCard variant="neutral">
             <ResumeUpload />
+          </GlassCard>
+
+          {/* Bulk AI analysis — enqueue background fit scores for all unanalysed jobs */}
+          <GlassCard variant="violet">
+            <BatchAnalysisTrigger />
+          </GlassCard>
+
+          {/* Browser extension token — one-click job tracking from career pages */}
+          <GlassCard variant="neutral">
+            <ExtensionConnect />
+          </GlassCard>
+
+          {/* Auto-apply email detection — inbound email parsing via Resend */}
+          <GlassCard variant="sky">
+            <EmailInboundSetup />
           </GlassCard>
         </div>
       </div>

@@ -24,9 +24,12 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  accounts Account[]
-  sessions Session[]
-  jobs     Job[]
+  accounts        Account[]
+  sessions        Session[]
+  jobs            Job[]
+  // Team mode — user may own teams and be a member of teams
+  ownedTeams      Team[]       @relation("TeamOwner")
+  teamMemberships TeamMember[]
 
   @@map("users")
 }
@@ -105,14 +108,19 @@ model Job {
   companyIndustry  String? @map("company_industry")  // e.g. "Software Development"
   companyHq        String? @map("company_hq")        // e.g. "San Francisco, CA"
 
+  // Team — null for personal jobs; set for team-shared jobs
+  teamId    String? @map("team_id")
+
   aiInsight    JobAIInsight?
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([userId, status])
   @@index([userId, createdAt(sort: Desc)])
   // Index for nightly cron: find all jobs with a Bluedoor link across all users
   @@index([bluedoorJobId])
+  @@index([teamId])
 }
 
 /// AI pipeline insight — persisted after the first pipeline run to avoid redundant LLM calls.
@@ -143,6 +151,43 @@ model UserProfile {
   targetRoles     String[] @default([])
   experienceLevel String?                       // entry | mid | senior | staff | principal
   resumeText      String?                       // plain-text resume pasted by user
+  // P4: Browser extension auth token — generated from /profile page
+  extensionToken  String?  @unique @map("extension_token")
+  // P6: Unique inbound email for auto-apply detection via Resend webhook
+  inboundEmailAddress String? @unique @map("inbound_email_address")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ─── P5: Team Mode ─────────────────────────────────────────────────────────────
+
+/// Shared team for collaborative job tracking. Jobs can be scoped to a team.
+model Team {
+  id        String       @id @default(cuid())
+  name      String
+  ownerId   String       @map("owner_id")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  owner   User         @relation("TeamOwner", fields: [ownerId], references: [id])
+  members TeamMember[]
+  jobs    Job[]
+
+  @@index([ownerId])
+  @@map("teams")
+}
+
+/// Team membership with RBAC role (owner | admin | member).
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String   @map("team_id")
+  userId   String   @map("user_id")
+  role     String   @default("member")          // owner | admin | member
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
 }

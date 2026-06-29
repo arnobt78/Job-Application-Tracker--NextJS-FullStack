@@ -3,18 +3,23 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 3 Synthesis — Phase 1+2+3-partial + EVAL-0014 audit |
-| Status | `ACTIVE` — Agile V sync @ 2026-06-28; manual QA pending |
-| Last Updated | 2026-06-28T20:30:00Z |
-| Red Team | EVAL-0014 PASS · EVAL-0015 FLAG (BL-0011 WIP) |
+| Stage | 3 Synthesis — Phase 1+2+3-partial ✅ · BL-0011 WIP (typefix applied) |
+| Status | `ACTIVE` — EVAL-0015 partial PASS @ 2026-06-29 |
+| Last Updated | 2026-06-29T00:00:00Z |
+| Red Team | EVAL-0014 PASS · EVAL-0015 partial PASS (typefix applied 2026-06-29) |
 
-## EVAL-0015 (BL-0011 WIP — 2026-06-28)
+## EVAL-0015 (BL-0011 WIP — 2026-06-29 updated)
 
 | Check | Result | Notes |
 |---|---|---|
-| HEAD `7a648e3` | PASS | lint/typecheck/test(51)/build |
-| uncommitted WIP | **FLAG** | typecheck FAIL skill-gap-tab.tsx |
-| commit | **HALT** | finish BL-0011 first |
+| `prisma db push` | **FIXED** | Team/TeamMember/extensionToken/inboundEmailAddress now in DB + client |
+| `skill-gap-tab.tsx` typefix | **FIXED** | `LLMSkillGapResult` explicit cast + import |
+| lint | PASS | 0 warnings |
+| typecheck | PASS | 0 errors (working tree) |
+| test | PASS 51/51 | Vitest |
+| build | PASS | all routes ƒ dynamic |
+| BL-0011 UI wiring | **FLAG** | Components exist but not all wired in `/profile` + `/dashboard` |
+| commit | **PENDING** | Wire remaining UI + manual QA before commit |
 
 ## Findings Summary
 

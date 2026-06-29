@@ -46,6 +46,9 @@ export type JobType = {
 
   // AI fit score — present when JobAIInsight exists for this job (included via getCachedJobs)
   aiInsight?: { fitScore: number | null; fitLabel: string | null } | null;
+
+  // Team — null for personal jobs
+  teamId?: string | null;
 };
 
 /** Persisted AI pipeline insight for a specific job. */
@@ -71,6 +74,10 @@ export type UserProfileType = {
   targetRoles: string[];
   experienceLevel: string | null; // entry | mid | senior | staff | principal
   resumeText: string | null;
+  // Browser extension auth token — generated on demand from /profile page
+  extensionToken?: string | null;
+  // Unique inbound email for auto-apply detection
+  inboundEmailAddress?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -99,6 +106,46 @@ export type TimelineEvent = {
   /** Human-readable context (e.g. status, bluedoorStatus) */
   detail: string | null;
   timestamp: Date;
+};
+
+/** LLM-powered skill gap result — extends keyword analysis with AI explanation. */
+export type LLMSkillGapResult = {
+  matched: string[];
+  missing: string[];
+  bonus: string[];
+  matchPct: number;
+  /** LLM explanation of overall fit (null when AI unavailable — falls back to keyword) */
+  aiExplanation: string | null;
+  /** Ordered list of skills to learn, ranked by impact on this role */
+  learningPath: string[];
+  /** Confidence in the analysis — depends on how much job description detail was available */
+  confidence: 'high' | 'medium' | 'low';
+};
+
+/** Team role — owner has full control; admin can invite/remove; member can view/add jobs. */
+export type TeamRole = 'owner' | 'admin' | 'member';
+
+/** A shared team for collaborative job tracking. */
+export type TeamType = {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+/** A team membership entry with user details. */
+export type TeamMemberType = {
+  id: string;
+  teamId: string;
+  userId: string;
+  role: TeamRole;
+  joinedAt: Date;
+  user: {
+    name: string | null;
+    email: string;
+    image: string | null;
+  };
 };
 
 /** Salary intelligence — aggregated from the user's enriched jobs. */

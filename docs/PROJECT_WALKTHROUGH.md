@@ -2,7 +2,7 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
-**Last updated:** 2026-06-28 (Phase 3 partial — AI fit chip, PDF parser, Skill Gap, Salary Intel)  
+**Last updated:** 2026-06-29 (BL-0011 — team mode, browser extension, email inbound, ARQ batch AI, LLM skill gap, interview prep)  
 **Verification:** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓
 
 ---
@@ -20,7 +20,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Phase 2 — AI** | ✅ ~90% — FastAPI + streaming SSE + `PipelineProgress` + DB persist + `/profile` for UserProfile |
 | **Phase 2 — n8n / Coolify** | ⚠️ Partial — internal API + `docs/n8n/*.json` templates; no VPS deploy |
 | **Testing / analytics** | ⚠️ Partial — Vitest 51 + Playwright E2E scaffold + PostHog (optional) |
-| **Phase 3 — partial** | ✅ AI fit chip · react-markdown · Framer Motion badge · Resume PDF parser · Skill Gap tab · Salary Intelligence |
+| **Phase 3 — complete** | ✅ AI fit chip · react-markdown · Framer Motion · PDF parser · Skill Gap (keyword + LLM) · Salary Intel · Team mode · Browser extension · Email inbound · ARQ batch AI · Interview prep |
 
 **Roadmap detail:** `docs/PROJECT_PLAN.md` · **Stack decisions:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
 
@@ -63,9 +63,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | --- | --- |
 | Coolify VPS deploy | FastAPI + Ollama + n8n on Hetzner — not in repo ops |
 | n8n instance | JSON templates in `docs/n8n/`; import + run on VPS |
-| ARQ / Celery job queue | Pipeline synchronous in FastAPI request |
 | E2E in CI | Playwright specs exist; CI wiring optional |
-| Phase 3 advanced | Auto-apply email, browser extension, team mode, LLM-powered skill gap |
 
 ---
 
@@ -99,7 +97,8 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `app/(dashboard)/dashboard/page.tsx` | prefetch list + filterOptions + stats |
 | `app/(dashboard)/stats/page.tsx` | prefetch stats + charts + chartsWeekly + **salaryIntel** |
 | `app/(dashboard)/dashboard/[id]/page.tsx` | prefetch job detail + `EditJobDialogPage` + `JobDetailPanels` |
-| `app/(dashboard)/profile/page.tsx` | SSR prefetch `UserProfile` + `UserProfileForm` |
+| `app/(dashboard)/profile/page.tsx` | SSR prefetch `UserProfile` + `UserProfileForm` + `ResumeUpload` + `BatchAnalysisTrigger` + `ExtensionConnect` + `EmailInboundSetup` |
+| `app/(dashboard)/team/page.tsx` | SSR prefetch team data → `TeamDashboard` (create team / member management) |
 | `app/(dashboard)/timeline/page.tsx` | SSR prefetch global activity feed |
 | `app/(dashboard)/discover/page.tsx` | two-panel: `DiscoverSidebar` (lg+) + results column |
 | `components/discover/discover-sidebar.tsx` | Sticky left-rail filters with facet counts (desktop) |
@@ -136,7 +135,16 @@ Discover: useInfiniteQuery + buildDiscoverQueryOptions — cursor pagination, Lo
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + `invalidateAllJobQueries` |
 | `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist rules |
 | `lib/invalidate-jobs.ts` | jobs · stats · charts · chartsWeekly · filterOptions · timeline · **salaryIntel** · job(id) |
-| `lib/query-keys.ts` | discover.* · aiInsight · timeline · **skillGap** · **salaryIntel** · chartsWeekly |
+| `lib/query-keys.ts` | discover.* · aiInsight · timeline · skillGap · skillGapAI · salaryIntel · chartsWeekly · **team.current/members** |
+| `app/api/extension/token\|jobs\|verify` | Browser extension: generate token, POST job, verify connection |
+| `app/api/email/inbound` | Resend inbound webhook — HMAC verify → FastAPI `/parse-email` → job create + SSE |
+| `app/api/ai/batch` | ARQ batch enqueue — jobs without insight → FastAPI `/enqueue` |
+| `app/api/internal/ai-complete` | ARQ completion callback — upsert `JobAIInsight` + SSE invalidation |
+| `python-ai-service/app/api/routes/email.py` | `POST /parse-email` — LLM email classification |
+| `python-ai-service/app/api/routes/queue.py` | `POST /enqueue` + `GET /task/{id}` — ARQ queue endpoints |
+| `python-ai-service/app/api/routes/skills.py` | `POST /skill-gap` — LLM semantic skill matching |
+| `python-ai-service/app/api/routes/interview.py` | `POST /pipeline/interview-prep` — angles-only pipeline |
+| `python-ai-service/app/tasks/pipeline_task.py` | ARQ task + `_notify_complete` → `/api/internal/ai-complete` |
 | `context/notifications-context.tsx` | BroadcastChannel subscriber; AppNotification[] state |
 | `components/layout/notification-bell.tsx` | Bell icon + unread badge + popover list |
 | `components/jobs/job-enrichment-badge.tsx` | LIVE / CLOSED / CHANGED / SALARY / Syncing |

@@ -53,3 +53,5 @@
 | 2026-06-28T00:00:00Z | Red Team Verifier | C1 | EVAL-0014 PASS — lint/typecheck/test(51)/build @ HEAD | Phase 3 partial full audit | REQ-0024 |
 | 2026-06-28T20:30:00Z | AQMS Orchestrator | C1 | Infinity Loop reactivate; full `.agile-v/` sync; BL-0011 WIP halt until typecheck PASS | Session limit left WIP broken; do not commit BL-0011 | REQ-0024, REQ-0033 |
 | 2026-06-28T20:30:00Z | Requirement Architect | C1 | Add REQ-0031 (shipped), REQ-0033 (WIP); update REQ-0027 to implemented | Retroactive traceability | REQ-0031, REQ-0033 |
+| 2026-06-29T00:00:00Z | Build Agent (JS) | C1 | `prisma db push` instead of `prisma migrate dev` | Remote DB user lacks CREATE DATABASE permission → shadow DB fails; db push syncs schema without migration history | REQ-0033 |
+| 2026-06-29T00:00:00Z | Build Agent (JS) | C1 | Explicit `LLMSkillGapResult` cast in skill-gap-tab.tsx | TypeScript intersection bug with ternary union of two different `UseQueryResult<T>` types — `as LLMSkillGapResult` + explicit annotation resolves without changing runtime | REQ-0033 |

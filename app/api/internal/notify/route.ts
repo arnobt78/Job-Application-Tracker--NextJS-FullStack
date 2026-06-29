@@ -23,6 +23,7 @@ const VALID_TYPES: JobsNotificationEvent['notificationType'][] = [
   'jd_changed',
   'salary_added',
   'posting_reopened',
+  'interview_prep_ready',
 ];
 
 export async function POST(req: Request): Promise<Response> {

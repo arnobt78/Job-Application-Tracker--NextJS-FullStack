@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jobify Tracker</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <img src="icons/icon48.png" alt="" class="logo" />
+      <span class="title">Jobify</span>
+      <span id="status-dot" class="status-dot disconnected" title="Not connected"></span>
+    </header>
+
+    <!-- Not connected state -->
+    <div id="view-connect" class="view hidden">
+      <p class="hint">Connect to your Jobify account to start tracking jobs from any page.</p>
+      <button id="btn-connect" class="btn btn-primary">Connect to Jobify</button>
+    </div>
+
+    <!-- Connected + job detected -->
+    <div id="view-track" class="view hidden">
+      <p class="connected-label">Connected as <span id="user-name"></span></p>
+
+      <div class="field-group">
+        <label for="inp-position">Role</label>
+        <input id="inp-position" type="text" placeholder="e.g. Senior Engineer" />
+      </div>
+
+      <div class="field-group">
+        <label for="inp-company">Company</label>
+        <input id="inp-company" type="text" placeholder="e.g. Acme Corp" />
+      </div>
+
+      <div class="field-group">
+        <label for="inp-location">Location</label>
+        <input id="inp-location" type="text" placeholder="Remote / City" />
+      </div>
+
+      <button id="btn-track" class="btn btn-primary">Track This Job</button>
+      <p id="track-error" class="error hidden"></p>
+    </div>
+
+    <!-- Success state -->
+    <div id="view-success" class="view hidden">
+      <div class="success-icon">✓</div>
+      <p class="success-msg">Job tracked!</p>
+      <a id="link-dashboard" href="#" target="_blank" class="btn btn-secondary">View in Jobify</a>
+      <button id="btn-track-another" class="btn btn-ghost">Track another</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
