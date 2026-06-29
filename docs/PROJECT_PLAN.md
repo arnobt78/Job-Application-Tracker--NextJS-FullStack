@@ -1,9 +1,9 @@
 # Jobify v2 — Project Vision & Roadmap
 
 **Author:** Arnob Mahmud  
-**Date:** 2026-06-19 · **Last updated:** 2026-06-28 (Phase 3 partial)  
-**Status:** Phase 1 **✅ complete** · Phase 2 **~90%** (code in repo; VPS not deployed) · Phase 3 **🔄 partial**  
-**Verification (2026-06-28):** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ · `59060a0`
+**Date:** 2026-06-19 · **Last updated:** 2026-06-29 (BL-0011 Phase 3 Advanced)  
+**Status:** Phase 1 **✅ complete** · Phase 2 **~95%** (code in repo; VPS not deployed) · Phase 3 **✅ ~95%** (code in repo)  
+**Verification (2026-06-29):** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ · `2429e63`
 
 ---
 
@@ -22,10 +22,10 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | **Core tracker** | ✅ Done | CRUD, filters, stats, export, auth, optimistic UI, SSE, **global timeline** | — |
 | **Phase 1 — Bluedoor** | ✅ Done | Enrichment, discover, facets, webhook, cron, bell, React Email, weekly digest, logos, Posting Activity, org enrich | — |
 | **Stats overhaul** | ✅ Done | KPI row, 4 charts, weekly velocity query | — |
-| **Phase 2 — AI** | 🔄 ~90% | FastAPI + 9 agents + LLM router, DB persist, SSE streaming, profile UI, internal API | Coolify deploy, prod LLM keys |
-| **Phase 2 — Infra** | ⚠️ Partial | `docker-compose.yml`, internal API, n8n JSON templates | Coolify, Ollama VPS, n8n instance |
+| **Phase 2 — AI** | 🔄 ~95% | FastAPI + 9 agents + LLM router, DB persist, SSE streaming, profile UI, internal API, **ARQ queue**, batch AI, interview prep | Coolify deploy, prod LLM keys |
+| **Phase 2 — Infra** | ⚠️ Partial | `docker-compose.yml` (+ arq-worker), internal API, n8n JSON templates | Coolify, Ollama VPS, n8n instance |
 | **Testing / analytics** | ⚠️ Partial | Vitest **51**, Playwright E2E, PostHog (optional) | E2E CI wiring |
-| **Phase 3** | 🔄 Partial | AI fit chip, PDF resume parser, Skill Gap tab, Salary Intel, react-markdown, Framer badge | Extension, team mode, auto-apply email |
+| **Phase 3** | ✅ ~95% | Fit chip, PDF parser, Skill Gap (+ LLM mode), Salary Intel, **team mode**, **browser extension**, **email inbound**, batch AI | Manual QA · extension store publish |
 
 ---
 
@@ -207,7 +207,11 @@ tests/e2e/                                 # Playwright specs
 | **`useStreamPipeline` hook** | ✅ | Per-agent SSE progress events |
 | **`PipelineProgress` UI** | ✅ | Animated 9-step indicator in `AiInsightsPanel` |
 | `saveAIInsightAction` / `getAIInsightAction` | ✅ | `utils/actions.ts` — persist after pipeline run |
-| Internal API routes | ✅ | `GET /api/internal/jobs`, `POST /api/internal/notify` |
+| Internal API routes | ✅ | `GET /api/internal/jobs`, `POST /api/internal/notify`, `POST /api/internal/ai-complete` |
+| **ARQ async queue** | ✅ | `python-ai-service/app/tasks/` · `arq-worker` in docker-compose |
+| **Batch AI analysis** | ✅ | `POST /api/ai/batch` · `useAIBatch` · `BatchAnalysisTrigger` on `/profile` |
+| **Interview prep trigger** | ✅ | `triggerInterviewPrepAction` on status→interview · `interview_prep_ready` notification |
+| **Python routes** | ✅ | pipeline · queue · interview · skills · email — all in `main.py` |
 | **n8n workflow templates** | ⚠️ | `docs/n8n/*.json` — daily digest, stale alert, posting webhook |
 | Docker + docker-compose | ✅ | `python-ai-service/Dockerfile`, `docker-compose.yml` |
 | pytest (mocked LLM) | ✅ | `python-ai-service/tests/` |
@@ -220,7 +224,8 @@ tests/e2e/                                 # Playwright specs
 | Pull Ollama models on VPS | `llama3.2`, `mistral`, `gemma2`, `phi3` |
 | Set prod env vars | `AI_SERVICE_URL`, `AI_SERVICE_SECRET` on Vercel + Coolify |
 | n8n instance + import flows | JSON templates exist; no running n8n server |
-| ARQ async job queue | Pipeline is synchronous in request handler |
+
+> **Note:** ARQ queue code is **implemented** (`arq-worker` + Redis in docker-compose) — requires VPS Redis + worker process at runtime.
 
 ### 2.3 Infrastructure on Coolify VPS (planned)
 
@@ -265,6 +270,7 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | Enrichment Sync | Cron nightly | ✅ Vercel cron `/api/cron/enrich` |
 | Weekly Analytics Digest | Cron Sunday | ✅ Vercel cron `/api/cron/weekly-digest` |
 | Cover Letter Generator | User trigger | ✅ AiInsightsPanel + streaming + DB persist |
+| Interview Prep | Status → interview | ✅ `triggerInterviewPrepAction` · `docs/n8n/interview-prep.json` |
 
 ### 2.7 Phase 2 Development Sequence
 
@@ -284,28 +290,33 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 14. ⬜ Coolify: deploy FastAPI + pull Ollama models + import n8n flows
 15. ✅ AI fit chip on dashboard cards (`AIFitChip`)
 
-### Phase 3 (partial)
+### Phase 3 (BL-0011 ✅)
 
 1. ✅ Resume PDF parser (`uploadResumeAction` + `ResumeUpload`)
-2. ✅ Skill Gap tab (`computeSkillGap` + `SkillGapTab`)
+2. ✅ Skill Gap tab (`computeSkillGap` + `SkillGapTab` + optional LLM mode)
 3. ✅ Salary Intelligence on `/stats`
 4. ✅ react-markdown in `AiInsightsPanel` · Framer Motion on enrichment badge
-5. ⬜ Browser extension · team mode · auto-apply email detection
+5. ✅ Browser extension (`browser-extension/` + `/api/extension/*`)
+6. ✅ Team mode (`/team` · `Team`/`TeamMember` · shared jobs)
+7. ✅ Auto-apply email inbound (`inboundEmailAddress` · `EmailInboundSetup`)
+8. ✅ Batch AI (`useAIBatch` · ARQ queue · `/api/internal/ai-complete`)
 
 ---
 
-## Phase 3 — Advanced (partial 🔄)
+## Phase 3 — Advanced ✅ ~95%
 
 | Feature | Status | Implementation |
 | --- | --- | --- |
 | Resume PDF parser | ✅ | `lib/pdf/extract-text.ts` · `uploadResumeAction` · `ResumeUpload` on `/profile` |
-| Skill gap analyzer | ✅ | `lib/jobs/skill-gap.ts` · `SkillGapTab` in `JobDetailPanels` (keyword-based) |
+| Skill gap analyzer | ✅ | Keyword + optional LLM (`/api/ai/skills`) · `SkillGapTab` in `JobDetailPanels` |
 | Salary intelligence | ✅ | `getSalaryIntelligenceAction` · `SalaryIntelligence` on `/stats` |
 | AI fit chip on cards | ✅ | `AIFitChip` on `JobCard` via `getCachedJobs` aiInsight include |
 | react-markdown + Framer Motion | ✅ | `AiInsightsPanel` · `JobEnrichmentBadge` |
-| Auto-apply detection | ⬜ | Parse email confirmations → auto-log application |
-| Multi-user / team mode | ⬜ | Shared job lists, referral tracking |
-| Browser extension | ⬜ | One-click "Track this job" from any career page |
+| Browser extension | ✅ | `browser-extension/` · token auth · `POST /api/extension/jobs` |
+| Multi-user / team mode | ✅ | `/team` · `Team`/`TeamMember` Prisma · invite flow · `Job.teamId` |
+| Auto-apply email inbound | ✅ | `inboundEmailAddress` on `UserProfile` · `EmailInboundSetup` on `/profile` |
+| Batch AI analysis | ✅ | `useAIBatch` · ARQ worker · `POST /api/internal/ai-complete` callback |
+| Interview prep on status change | ✅ | `triggerInterviewPrepAction` · `interview_prep_ready` bell notification |
 | Company intelligence on cards | ✅ | `companySize` from `getBluedoorOrg` on `JobCard` |
 
 ---
@@ -317,10 +328,11 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | `/discover` | Two-panel + facet sidebar + infinite scroll | ✅ Sidebar lg+ · ✅ facet counts · ✅ infinite scroll |
 | `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge + CompanyLogo + **AIFitChip** + companySize |
 | `/dashboard/[id]` | AI Insights + Posting Activity + Skill Gap | ✅ `JobDetailPanels` — 3 tabs |
-| `/profile` | Skills + resume PDF upload | ✅ `UserProfileForm` + `ResumeUpload` |
+| `/profile` | Skills + resume PDF + extension + batch AI + email inbound | ✅ `UserProfileForm` + `ResumeUpload` + `ExtensionConnect` + `BatchAnalysisTrigger` |
+| `/team` | Shared job tracking + invite members | ✅ `TeamDashboard` · `InviteMemberForm` |
 | `/timeline` | Global activity feed | ✅ job_created · enriched · posting_changed · ai_generated |
-| Notification center | Bell + SSE | ✅ Complete |
-| `/stats` | Rich analytics + salary intel | ✅ 4 charts + KPI row + **SalaryIntelligence** |
+| Notification center | Bell + SSE (+ interview_prep_ready) | ✅ Complete |
+| `/stats` | Rich analytics + salary intel | ✅ 4 charts + KPI + **SalaryIntelligence** |
 | AI streaming | Pipeline progress + streamed output | ✅ `PipelineProgress` + SSE; cover letter shown after complete |
 
 ---
@@ -391,8 +403,16 @@ n8n (planned)
 7. ✅ Streaming UI + pipeline progress indicator
 8. ✅ Global timeline + discover sidebar
 9. ⚠️ n8n JSON templates (deploy pending)
-10. ⬜ Coolify deploy + Ollama models
+10. ⬜ Coolify deploy + Ollama models + Redis worker
 11. ✅ AI fit chip on dashboard cards
+12. ✅ ARQ batch queue + `ai-complete` callback
+
+### Phase 3
+
+1. ✅ Resume PDF parser · Skill Gap · Salary Intel · fit chip
+2. ✅ Browser extension · team mode · email inbound
+3. ✅ Batch AI · interview prep notification · LLM skill gap mode
+4. ⬜ Extension Chrome Web Store publish · manual QA at scale
 
 ---
 
@@ -415,4 +435,4 @@ n8n (planned)
 
 ---
 
-_Last updated: 2026-06-28 (Phase 3 partial — fit chip, PDF parser, skill gap, salary intel) · `59060a0`_
+_Last updated: 2026-06-29 (BL-0011 — team, extension, email inbound, ARQ, interview prep) · `2429e63`_
