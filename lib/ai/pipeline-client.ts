@@ -3,7 +3,7 @@
  *
  * Adds X-Internal-Secret header (AI_SERVICE_SECRET).
  * Times out after 30 seconds (pipeline can be slow on cold Ollama start).
- * AI_SERVICE_URL defaults to http://localhost:8000 for local dev.
+ * AI_SERVICE_URL defaults to http://localhost:3000 for local dev.
  */
 
 // ─────────────────────────────────────────────
@@ -56,7 +56,7 @@ export type PipelineResponse = {
 // ─────────────────────────────────────────────
 
 const AI_SERVICE_URL =
-  process.env.AI_SERVICE_URL ?? 'http://localhost:8000';
+  process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
 const TIMEOUT_MS = 30_000;
 

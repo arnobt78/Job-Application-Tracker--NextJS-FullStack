@@ -15,7 +15,7 @@ import prisma from '@/utils/db';
 
 export const dynamic = 'force-dynamic';
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:8000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
 
 async function enqueueOne(

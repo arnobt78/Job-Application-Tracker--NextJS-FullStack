@@ -720,7 +720,7 @@ export async function uploadResumeAction(formData: FormData): Promise<UploadResu
 // P2 — Interview-Prep Auto-Trigger
 // ─────────────────────────────────────────────────────────────────────────────
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:8000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
 
 /**

@@ -15,7 +15,7 @@ import type { PipelineRequest } from '@/lib/ai/pipeline-client';
 
 export const dynamic = 'force-dynamic';
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:8000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
 // Streaming pipeline can take up to 90s on cold Ollama start
 const TIMEOUT_MS = 90_000;

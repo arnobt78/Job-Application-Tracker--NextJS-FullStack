@@ -23,7 +23,7 @@ import { invalidateUserJobCaches } from '@/lib/invalidate-jobs-server';
 export const dynamic = 'force-dynamic';
 
 const RESEND_INBOUND_SECRET = process.env.RESEND_INBOUND_SECRET ?? '';
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:8000';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
 
 function verifyResendSignature(rawBody: string, signature: string): boolean {
