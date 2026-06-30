@@ -1,6 +1,13 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  createJobAction,
+  deleteJobAction,
+  getAllJobsAction,
+  getStatsAction,
+  trackJobFromDiscoverAction,
+  updateJobAction,
+} from '@/utils/actions';
 import { JobStatus, JobMode, type CreateAndEditJobType, type JobType } from '@/utils/types';
 import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
@@ -36,6 +43,7 @@ import {
   resolveDiscoverCompanyName,
   type DiscoverTrackPayload,
 } from '@/lib/discover/track-helpers';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 /** Prefetch default dashboard queries after create/track — warms cache before navigation. */
 function warmDashboardJobsCaches(
