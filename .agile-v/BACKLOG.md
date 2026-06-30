@@ -98,7 +98,9 @@
 | `searchBluedoorJobsAction` → `getCachedDiscoverSearch` | ✅ |
 | `getBluedoorFacetsAction` → `getCachedDiscoverFacets` | ✅ |
 | Remove unused `searchJobs` + `getDiscoverFacets` imports from actions.ts | ✅ |
-| lint ✓ typecheck ✓ test 58/58 ✓ | ✅ |
+| `discover-results-toolbar.tsx` — "—" badge + rate-limit subtitle when `total_matching_unavailable` | ✅ |
+| `discover-results.tsx` — rate-limit message instead of "No jobs found" | ✅ |
+| lint ✓ typecheck ✓ test 59/59 ✓ | ✅ |
 
 ---
 

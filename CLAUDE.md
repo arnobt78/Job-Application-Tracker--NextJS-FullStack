@@ -4,7 +4,7 @@
 Job application CRM + Bluedoor enrichment + discover + AI insights (FastAPI). Not a job board.
 
 ## Stack
-Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **58** · Playwright E2E · FastAPI (`python-ai-service/`)
+Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **59** · Playwright E2E · FastAPI (`python-ai-service/`)
 
 ## Auth
 - `proxy.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team`; `/jobs/*` → `/dashboard`

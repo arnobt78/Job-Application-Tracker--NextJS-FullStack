@@ -29,11 +29,16 @@ export function DiscoverResultsToolbar() {
   const firstPage = data?.pages[0];
   const jobs = firstPage?.data ?? [];
   const total = firstPage?.meta.total_matching;
-  const count =
-    total != null && !firstPage?.meta.total_matching_unavailable ? total : jobs.length;
+  // Rate-limited: Bluedoor returned 429 → cached empty result with total_matching_unavailable flag
+  const isRateLimited = firstPage?.meta.total_matching_unavailable === true && jobs.length === 0;
+  const count = !isRateLimited && total != null ? total : jobs.length;
 
   const countBadge = isFetching && !data ? (
     <Skeleton className="h-6 min-w-[2.5rem] rounded-full" />
+  ) : isRateLimited ? (
+    <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full bg-muted px-2.5 py-0.5 text-sm font-semibold tabular-nums text-muted-foreground">
+      —
+    </span>
   ) : (
     <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full bg-primary/15 px-2.5 py-0.5 text-sm font-semibold tabular-nums text-primary">
       {count.toLocaleString()}
@@ -52,6 +57,8 @@ export function DiscoverResultsToolbar() {
               <Loader2 className="h-3 w-3 animate-spin" />
               Fetching latest data…
             </span>
+          ) : isRateLimited ? (
+            'Live data temporarily unavailable — will refresh shortly'
           ) : (
             'Fresh from Greenhouse, Lever, Ashby, Workday and more'
           )
