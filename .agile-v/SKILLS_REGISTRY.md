@@ -2,9 +2,9 @@
 
 <!-- Load agile-v-core FIRST | SCOPE-V every task | Infinity Loop ON -->
 
-## Activation: **ACTIVE** @ 2026-06-28T20:30:00Z
+## Activation: **ACTIVE** @ 2026-06-30T11:30:00Z
 
-Cycle C1 · Git `7a648e3` · INT-0003 · **51 tests** · BL-0011 WIP
+Cycle C1 · Git `3551f1e` · INT-0003 · **51 tests** · BL-0009 VPS deploy ⏳
 
 ## Framework (6) — load core FIRST
 
@@ -23,11 +23,11 @@ requirement-architect · discovery-analyst · logic-gatekeeper · threat-modeler
 
 ## Apex — Synthesis (8)
 
-**build-agent-js** ⭐ (primary) · build-agent · build-agent-python (FastAPI) · test-designer · schematic-generator · build-agent-nestjs/embedded/dart (N/A)
+**build-agent-js** ⭐ (primary) · build-agent · **build-agent-python** (FastAPI/ARQ) · test-designer · schematic-generator · build-agent-nestjs/embedded/dart (N/A)
 
 ## Right V — Verification (5)
 
-red-team-verifier · compliance-auditor · documentation-agent · observability-planner · release-manager
+red-team-verifier · compliance-auditor · documentation-agent · observability-planner · release-manager · **deployment-expert** (Coolify)
 
 ## Project routing
 
@@ -40,8 +40,8 @@ red-team-verifier · compliance-auditor · documentation-agent · observability-
 | UX spec | ux-spec-author |
 | Verify (no self-verify) | red-team-verifier |
 | Docs sync | documentation-agent |
-| Coolify deploy | deployment-expert |
+| Coolify VPS deploy | deployment-expert + release-manager |
 
 ## Eval history
 
-EVAL-0014 PASS @ `59060a0` (Phase 3 partial) · EVAL-0015 FLAG (BL-0011 WIP typecheck)
+EVAL-0016 PASS (Discover SSR) · EVAL-0017 PASS @ `3551f1e` (pre-VPS audit) · Gate 2 `eval_gate_status` NOT_RUN

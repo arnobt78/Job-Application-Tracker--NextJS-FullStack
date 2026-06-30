@@ -7,8 +7,8 @@
 | Cycle | C1 |
 | Last Updated | 2026-06-30T11:30:00Z |
 | **eval_gate_status** | **NOT_RUN** |
-| **ui_slice_status** | **PASS** @ `7a648e3` |
-| Red Team | EVAL-0014 PASS · EVAL-0015 FLAG (BL-0011 WIP) |
+| **ui_slice_status** | **PASS** @ `3551f1e` |
+| Red Team | EVAL-0016 PASS · EVAL-0017 PASS |
 | Compliance Auditor | Pending |
 
 ## Eval Flywheel Record

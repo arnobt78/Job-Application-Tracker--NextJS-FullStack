@@ -3,35 +3,42 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 3 Synthesis — Phase 1+2+3-partial ✅ · BL-0011 WIP (typefix applied) |
-| Status | `ACTIVE` — EVAL-0015 partial PASS @ 2026-06-29 |
-| Last Updated | 2026-06-29T00:00:00Z |
-| Red Team | EVAL-0014 PASS · EVAL-0015 partial PASS (typefix applied 2026-06-29) |
+| Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009 deploy ⏳ |
+| Status | `ACTIVE` — EVAL-0017 PASS @ `3551f1e` |
+| Last Updated | 2026-06-30T11:30:00Z |
+| Red Team | EVAL-0016 PASS · EVAL-0017 PASS |
 
-## EVAL-0015 (BL-0011 WIP — 2026-06-29 updated)
+## EVAL-0017 (Pre-VPS audit — 2026-06-30)
 
 | Check | Result | Notes |
 |---|---|---|
-| `prisma db push` | **FIXED** | Team/TeamMember/extensionToken/inboundEmailAddress now in DB + client |
-| `skill-gap-tab.tsx` typefix | **FIXED** | `LLMSkillGapResult` explicit cast + import |
 | lint | PASS | 0 warnings |
-| typecheck | PASS | 0 errors (working tree) |
+| typecheck | PASS | 0 errors |
 | test | PASS 51/51 | Vitest |
 | build | PASS | all routes ƒ dynamic |
-| BL-0011 UI wiring | **FLAG** | Components exist but not all wired in `/profile` + `/dashboard` |
-| commit | **PENDING** | Wire remaining UI + manual QA before commit |
+| Discover SSR | PASS | `lib/discover/query-options.ts` server-safe |
+| AI port default | PASS | localhost:3000 aligned |
+| proxy.ts auth gate | PASS | Next.js 16 convention |
+| VPS deploy | **FLAG** | `jobify-ai-backend` + worker + Ollama pending |
+
+## EVAL-0015 (BL-0011 — 2026-06-29) — RESOLVED
+
+| Check | Result | Notes |
+|---|---|---|
+| BL-0011 commit | **DONE** | Committed 2026-06-29 |
+| lint/typecheck/test/build | PASS | 51/51 |
 
 ## Findings Summary
 
 ```
 Scope: Phase 1+2+3-partial | Traceability: REQ-0025–0028, REQ-0031, REQ-0032, REQ-0024, REQ-0001
-Findings: PASS: 22 / FAIL: 0 / FLAG: 2 (manual QA; Python deploy)
+Findings: PASS: 24 / FAIL: 0 / FLAG: 1 (VPS AI deploy pending)
 ```
 
 | Severity | Count | REQ-IDs | Notes |
 |---|---|---|---|
 | PASS | 22 | REQ-0001, REQ-0024…0028, REQ-0031, REQ-0032 | lint/typecheck/test(51)/build · AI fit chip · react-markdown · Framer Motion badge · PDF parser · Skill Gap · Salary Intel |
-| FLAG | 2 | REQ-0025, REQ-0027 | Manual: real ATS URL enrich · Python LLM keys + Coolify deploy |
+| FLAG | 1 | REQ-0027 | Coolify AI backend + ARQ worker + Ollama not deployed yet |
 | FAIL | 0 | — | — |
 
 ## EVAL-0014 Evidence (Phase 3 partial — 2026-06-28)

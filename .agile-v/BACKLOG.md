@@ -23,7 +23,7 @@
 | `app/api/internal/ai-complete/route.ts` | ✅ DONE |
 | `triggerInterviewPrepAction` + `publishNotification` on interview status | ✅ DONE |
 | `interview_prep_ready` notification type end-to-end | ✅ DONE |
-| `/team` in middleware + nav | ✅ DONE |
+| `/team` in proxy.ts + nav | ✅ DONE |
 | lint ✓ typecheck ✓ test 51/51 ✓ build ✓ | ✅ PASS (2026-06-29) |
 | Audit: dead code + CSS bug fixes (invite-member-form, triggerInterviewPrepAction) | ✅ DONE 2026-06-29 |
 | EVAL-0015 full pass → commit BL-0011 | ✅ COMMITTED 2026-06-29 |
@@ -38,9 +38,9 @@
 
 ---
 
-## BL-0009: Phase 2 Deploy
+## BL-0009: Phase 2 Deploy — **IN PROGRESS**
 
-**REQ:** REQ-0027 · **Status:** CODE ~90% — Coolify/Ollama/n8n **not deployed**
+**REQ:** REQ-0027 · **Status:** `jobify-redis` ✅ · `jobify-ai-backend` + ARQ worker + Ollama ⏳
 
 ---
 
@@ -66,7 +66,7 @@
 
 | Priority | BL | Status |
 |---|---|---|
-| 1 | **BL-0011** | **WIP** — finish + verify before commit |
-| 2 | BL-0009 | Deploy FastAPI + Ollama + n8n |
-| 3 | Gate 1 (INT-0001) | PENDING human approval |
-| 4 | BL-0003 | E2E CI wiring |
+| 1 | **BL-0009** | **IN PROGRESS** — finish AI backend deploy on Coolify |
+| 2 | Gate 1 (INT-0001) | PENDING human approval |
+| 3 | BL-0003 | E2E CI wiring |
+| 4 | n8n templates | Not deployed (`docs/n8n/`) |

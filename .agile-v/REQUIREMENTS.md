@@ -9,7 +9,7 @@
 | Cycle    | C1                                               |
 | Revision | 1.0                                              |
 | Author   | Requirement Architect (Bootstrap)                |
-| Status   | Draft — Phase 1 ✅ · Phase 2 ~90% · Phase 3 partial ✅ · BL-0011 WIP · Gate 1 pending |
+| Status   | Draft — Phase 1 ✅ · Phase 2 deploy ⏳ · Phase 3 ✅ · BL-0011 ✅ · Gate 1 pending |
 
 ---
 
@@ -29,7 +29,7 @@
 4. Unauthenticated users redirected from protected routes
 
 **Verification:** TC-0001, TC-0002  
-**Artifacts:** ART-0001 (`middleware.ts`), ART-0002 (`app/sign-in/`), ART-0003 (`app/sign-up/`), ART-0200 (`auth.ts`), ART-0201 (`lib/auth/config.ts`)
+**Artifacts:** ART-0001 (`proxy.ts`), ART-0002 (`app/sign-in/`), ART-0003 (`app/sign-up/`), ART-0200 (`auth.ts`), ART-0201 (`lib/auth/config.ts`)
 
 ---
 
@@ -179,13 +179,13 @@
 
 **Acceptance Criteria:**
 
-1. `/add-job`, `/dashboard(.*)`, `/discover`, `/stats`, `/user-profile(.*)` protected
+1. `/add-job`, `/dashboard(.*)`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team` protected
 2. Landing page `/` remains public
-3. Static assets excluded from middleware matcher
-4. Middleware file SHALL be `middleware.ts` (Next.js convention)
+3. Static assets excluded from proxy matcher
+4. Auth gate file SHALL be `proxy.ts` (Next.js 16 convention)
 
 **Verification:** TC-0002  
-**Artifacts:** ART-0001 (`middleware.ts`)
+**Artifacts:** ART-0001 (`proxy.ts`)
 
 ---
 
@@ -530,7 +530,7 @@
 
 ## REQ-0033: Phase 3 Advanced (Extension · Team · Automation)
 
-**Status:** `in_progress [C1]` — BL-0011 WIP uncommitted  
+**Status:** `done [C1]` — BL-0011 committed @ 2026-06-29  
 **Priority:** MEDIUM  
 **Category:** Integration / Collaboration
 
@@ -544,8 +544,8 @@
 4. ARQ task queue in FastAPI + batch AI endpoint
 5. LLM-enhanced skill gap (optional upgrade from keyword)
 
-**Verification:** EVAL-0015 (pending WIP completion)  
-**Artifacts:** ART-0110+ (WIP)
+**Verification:** EVAL-0015 PASS · EVAL-0017 PASS  
+**Artifacts:** ART-0110+ (BUILD_MANIFEST)
 
 ---
 

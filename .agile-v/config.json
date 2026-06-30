@@ -12,7 +12,7 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-28T20:30:00Z",
+    "reactivated": "2026-06-30T11:30:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
@@ -23,7 +23,7 @@
     "integrations": ["Bluedoor API", "Resend"],
     "observability": ["Sentry (optional)"],
     "cache": ["unstable_cache", "Redis optional", "React Query", "SSE", "BroadcastChannel"],
-    "deployment": ["Vercel (Next.js)", "Coolify VPS (planned Phase 2)"]
+    "deployment": ["Vercel (Next.js)", "Coolify VPS (BL-0009 in progress)"]
   },
   "approval_authority": {
     "gate_1": ["Project Owner", "Tech Lead"],
@@ -86,16 +86,16 @@
     "playbook": ".agile-v/PLAYBOOK.md"
   },
   "git_baseline": {
-    "head": "7a648e3",
+    "head": "3551f1e",
     "branch": "main",
-    "last_verified": "2026-06-28T20:30:00Z",
-    "working_tree": "dirty — BL-0011 WIP (extension, team, email, ARQ); typecheck FAIL"
+    "last_verified": "2026-06-30T11:30:00Z",
+    "working_tree": "clean"
   },
   "roadmap": {
     "phase_1": "COMPLETE — Bluedoor + discover + stats + notifications + timeline + org enrich",
     "phase_1_remaining": "—",
-    "phase_2": "~90% code — Coolify/Ollama/n8n deploy pending",
-    "phase_3": "partial shipped @ 59060a0; BL-0011 advanced WIP uncommitted",
+    "phase_2": "~90% code — Coolify deploy IN PROGRESS (redis ✅, AI backend ⏳)",
+    "phase_3": "COMPLETE — BL-0011 committed",
     "plan_doc": "docs/PROJECT_PLAN.md",
     "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md",
     "walkthrough_doc": "docs/PROJECT_WALKTHROUGH.md"
