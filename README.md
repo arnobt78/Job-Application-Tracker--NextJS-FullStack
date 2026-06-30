@@ -276,7 +276,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   ├── app/pipeline/agents/          # Extractor → Final Verifier
 │   ├── app/llm/router.py             # Ollama → Groq → OpenRouter → Anthropic
 │   └── docker-compose.yml
-├── middleware.ts                      # NextAuth middleware (auth + legacy redirects)
+├── proxy.ts                           # NextAuth JWT gate (Next.js 16; auth + legacy redirects)
 ├── vercel.json                       # Cron schedule + security headers
 ├── next.config.ts                    # Images, headers, Sentry wrapper
 ├── .env.example                      # Environment variable template
@@ -488,7 +488,7 @@ npm run lint && npm run typecheck && npm test && npm run build
 | `/stats`          | Protected | Stats cards, KPIs, 4 chart sections                |
 | `/profile`        | Protected | User profile (skills, target roles, resume for AI) |
 
-**Legacy redirects** (handled in `middleware.ts`):
+**Legacy redirects** (handled in `proxy.ts`):
 
 | Old URL            | Redirects to |
 | ------------------ | ------------ |
@@ -571,7 +571,7 @@ Prisma queries always include `userId` in `where` clauses so users cannot access
 
 ### NextAuth v5 integration
 
-- **Middleware:** `middleware.ts` — NextAuth JWT gate protects `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`
+- **Proxy:** `proxy.ts` — NextAuth JWT gate protects `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`
 - **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards, no hosted provider chrome
 - **OAuth:** `AuthOAuthButtons` — `signIn('google')` / `signIn('github')` from `next-auth/react`
 - **Demo login:** guest dropdown on sign-in page — `useGuestSignIn` → `signIn('credentials', { email, password })`
@@ -698,13 +698,13 @@ AiInsightsPanel (client)
 cd python-ai-service
 cp .env.example .env
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 3000
 ```
 
 Set in `.env.local`:
 
 ```env
-AI_SERVICE_URL=http://localhost:8000
+AI_SERVICE_URL=http://localhost:3000
 AI_SERVICE_SECRET=change-me-in-production
 ```
 
@@ -850,7 +850,7 @@ mutate({
 ### Protected middleware
 
 ```typescript
-// middleware.ts
+// proxy.ts
 import { auth } from '@/auth';
 const PROTECTED = ['/dashboard', '/discover', '/stats', '/timeline', '/profile'];
 

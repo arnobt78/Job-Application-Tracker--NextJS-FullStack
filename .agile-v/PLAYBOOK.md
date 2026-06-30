@@ -27,8 +27,8 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 · INT-0003 ACTIVE |
-| Git HEAD | `7a648e3` (clean) |
-| WIP | BL-0011 uncommitted — **do not commit** |
+| Git HEAD | `7caf223` (clean) |
+| WIP | VPS AI deploy in Coolify — code gates PASS |
 | P1 | ✅ · P2 ~90% · P3 partial ✅ |
 | Auth | NextAuth v5 |
 | Tests | **51/51** @ HEAD |

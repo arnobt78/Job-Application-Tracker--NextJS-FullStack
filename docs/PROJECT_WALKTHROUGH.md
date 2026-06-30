@@ -324,7 +324,7 @@ Discover, skill-gap, AI mutation, posting-events, and facet queries are **not** 
 | `RESEND_API_KEY` | optional | Email alerts (no-op if absent) |
 | `EMAIL_FROM` | optional | From address for Resend |
 | `NEXT_PUBLIC_APP_URL` | optional | Job deep-links in emails |
-| `AI_SERVICE_URL` | optional | Python AI service (default `http://localhost:8000`) |
+| `AI_SERVICE_URL` | optional | Python AI service (default `http://localhost:3000`; prod `https://ai.arnobmahmud.com`) |
 | `AI_SERVICE_SECRET` | optional | Shared secret for Next.js → Python + internal API (`X-Internal-Secret`) |
 | `NEXT_PUBLIC_POSTHOG_KEY` | optional | PostHog analytics (no-op if absent) |
 | `NEXT_PUBLIC_POSTHOG_HOST` | optional | PostHog API host (default us.i.posthog.com) |

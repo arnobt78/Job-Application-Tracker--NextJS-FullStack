@@ -121,7 +121,7 @@
 
 ## Deprecated / removed
 
-- `proxy.ts` — renamed to `middleware.ts` (AUDIT-0001)
+- `middleware.ts` — superseded by `proxy.ts` (Next.js 16, 2026-06-29)
 - `components/ChartsContainer.tsx` — replaced by `components/stats/application-trend-chart.tsx`
 
 - `components/JobsList.tsx`, `components/Navbar.tsx`, `components/Sidebar.tsx`

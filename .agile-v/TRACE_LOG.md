@@ -87,3 +87,4 @@
 | 2026-06-29T00:00:00Z | constrain | build-agent-js | REQ-0033 | `prisma db push --accept-data-loss` → client regenerated; `LLMSkillGapResult` explicit cast in skill-gap-tab.tsx | SUCCESS |
 | 2026-06-29T00:00:00Z | prove | red-team-verifier | REQ-0033, REQ-0024 | EVAL-0015 partial: lint ✓ · typecheck ✓ · 51/51 ✓ · build ✓ | PASS |
 | 2026-06-29T14:45:00Z | prove | red-team-verifier | REQ-0011 | Discover SSR fix: `lib/discover/query-options.ts`; `middleware.ts`→`proxy.ts`; EVAL-0016 lint/typecheck/test(51)/build PASS | SUCCESS |
+| 2026-06-30T11:30:00Z | prove | red-team-verifier | REQ-0024 | EVAL-0017 pre-VPS audit @ `7caf223`; AI port 3000; docs sync; gates PASS | SUCCESS |

@@ -53,7 +53,12 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 `/dashboard` · `/dashboard/[id]` (JobDetailPanels) · `/discover` · `/stats` · `/timeline` · `/profile` · `/team`
 
 ## Env
-`AUTH_SECRET` · `AUTH_GOOGLE_*` · `AUTH_GITHUB_*` · `DATABASE_URL` · `BLUEDOOR_WEBHOOK_SECRET` · `CRON_SECRET` · `RESEND_API_KEY` · `AI_SERVICE_URL` · `AI_SERVICE_SECRET` · `NEXT_PUBLIC_POSTHOG_KEY` (opt)
+`AUTH_SECRET` · `AUTH_GOOGLE_*` · `AUTH_GITHUB_*` · `DATABASE_URL` · `BLUEDOOR_WEBHOOK_SECRET` · `CRON_SECRET` · `RESEND_API_KEY` · `AI_SERVICE_URL` (local `http://localhost:3000` · prod `https://ai.arnobmahmud.com`) · `AI_SERVICE_SECRET` · `NEXT_PUBLIC_POSTHOG_KEY` (opt)
+
+## VPS (Coolify @ 77.42.71.87:8000) — in progress
+- `jobify-redis` ✅ internal only (ARQ queue; separate from Upstash on Vercel)
+- `jobify-ai-backend` ⏳ `python-ai-service/` · PORT **3000** · map **5007:3000** · domain `ai.arnobmahmud.com`
+- Pending: env vars · deploy · `/health` · ARQ worker app · Ollama on host (`host.docker.internal:11434`)
 
 ## Verify
 `npm run lint && npm run typecheck && npm run test && npm run build`

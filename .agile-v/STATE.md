@@ -7,8 +7,8 @@
 | **Status** | `ACTIVE` — Infinity Loop **ON** |
 | **Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
-| **Last Updated** | 2026-06-29 |
-| **Verify** | lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ |
+| **Last Updated** | 2026-06-30 |
+| **Verify** | lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓ @ `7caf223` |
 
 ## Recent fix (2026-06-29)
 - Discover SSR crash: `buildDiscoverQueryOptions` → `lib/discover/query-options.ts` (server-safe)
@@ -20,7 +20,7 @@
 - Vercel env synced (NextAuth, DB, Bluedoor, Resend, Sentry, Upstash)
 
 ## Backlog / not deployed
-- Coolify VPS + Ollama + AI service · n8n · E2E CI auth · Gate 1
+- Coolify: `jobify-redis` ✅ · `jobify-ai-backend` + ARQ worker + Ollama ⏳ · n8n · E2E CI auth · Gate 1
 
 ## Architecture rules
 `force-dynamic` · SSR prefetch · persist jobs/stats/charts/job only · `invalidateUserJobCaches`+SSE · Bluedoor API only
