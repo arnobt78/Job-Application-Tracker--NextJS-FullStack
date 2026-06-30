@@ -52,7 +52,7 @@
 | `lib/discover/track-helpers.ts` — company/location fallbacks | ✅ |
 | `JobActionResult` on `createJobAction` — no silent null | ✅ |
 | `useTrackDiscoverJobMutation` — optimistic + invalidateAll | ✅ |
-| Vitest track-helpers (54 total) | ✅ |
+| Vitest track-helpers + optimistic guard | ✅ |
 
 ---
 

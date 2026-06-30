@@ -32,6 +32,7 @@
 | EVAL-0016 | 2026-06-29 | Discover SSR + proxy.ts | lint/typecheck/test(51)/build | PASS | `lib/discover/query-options.ts` |
 | EVAL-0017 | 2026-06-30 | Pre-VPS audit @ `7caf223` | lint/typecheck/test(51)/build | PASS | AI localhost:3000 aligned; docs sync |
 | EVAL-0018 | 2026-06-30 | Discover track fix (BL-0012) | lint/typecheck/test(54)/build | PASS | trackJobFromDiscoverAction, JobActionResult |
+| EVAL-0019 | 2026-06-30 | Optimistic filter-options guard @ `63140e5` | lint/typecheck/test(54)/build | PASS | old.jobs crash on /discover track |
 | EVAL-0013 | 2026-06-27 | Agile V reactivation @ 0f2ea55 | lint/typecheck/test(49) | PASS | REQ-0024 |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 

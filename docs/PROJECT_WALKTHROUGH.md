@@ -2,7 +2,7 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
-**Last updated:** 2026-06-30 (Discover track fix + VPS deploy complete)  
+**Last updated:** 2026-06-30 (discover track + optimistic cache guard @ `63140e5`)  
 **Verification:** lint ✓ · typecheck ✓ · test **54/54** ✓ · build ✓
 
 ---
@@ -103,7 +103,7 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 | `app/(dashboard)/discover/page.tsx` | two-panel: `DiscoverSidebar` (lg+) + results; SSR prefetch via `lib/discover/query-options.ts` |
 | `lib/discover/query-options.ts` | SSR-safe `buildDiscoverQueryOptions` — shared by page prefetch + client hooks |
 | `lib/discover/track-helpers.ts` | Company/location mapping + `toDiscoverTrackPayload` for track action |
-| `hooks/useJobsMutation.ts` | `useCreateJobMutation` + `useTrackDiscoverJobMutation` — optimistic + `invalidateAllJobQueries` |
+| `hooks/useJobsMutation.ts` | `useCreateJobMutation` + `useTrackDiscoverJobMutation` — optimistic skips `filter-options` cache |
 | `components/discover/discover-sidebar.tsx` | Sticky left-rail filters with facet counts (desktop) |
 | `components/timeline/timeline-view.tsx` | Client timeline list — `getTimelineEventsAction` |
 | `lib/jobs/timeline.ts` | Derive events from Job + aiInsight (cached by jobsTag) |

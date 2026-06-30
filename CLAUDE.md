@@ -26,6 +26,7 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - Org intel: `getBluedoorOrg` → `companySize`/`companyIndustry`/`companyHq` on Job
 - Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · `lib/discover/query-options.ts` (SSR-safe) · not persisted
 - **Discover track:** `trackJobFromDiscoverAction` · `useTrackDiscoverJobMutation` · `lib/discover/track-helpers.ts` — pre-seeds `bluedoorJobId`, idempotent, `invalidateAllJobQueries` on success
+- Optimistic mutations skip `jobs.filterOptions` key (guard `isJobsListResult`) — prevents `old.jobs` crash on /discover track
 - `createJobAction` → `JobActionResult` (`success`/`error`) — no silent null
 - Notifications: SSE bell + React Email (Resend)
 

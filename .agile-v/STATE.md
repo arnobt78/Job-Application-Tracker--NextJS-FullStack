@@ -8,10 +8,11 @@
 | **Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
 | **Last Updated** | 2026-06-30 |
-| **Verify** | lint ✓ · typecheck ✓ · test **54/54** ✓ · build ✓ |
+| **Verify** | lint ✓ · typecheck ✓ · test **54/54** ✓ · build ✓ @ `63140e5` |
 
 ## Recent (2026-06-30)
-- **Discover track fix** — `trackJobFromDiscoverAction` + `JobActionResult` + `useTrackDiscoverJobMutation`
+- Optimistic fix: skip `jobs.filterOptions` in list patches (`63140e5`)
+- Discover track: `trackJobFromDiscoverAction` + `JobActionResult` (`e16f2bc`)
 - VPS deploy complete: redis + AI backend + ARQ worker @ `ai.arnobmahmud.com`
 - EVAL-0018 PASS (54 tests)
 

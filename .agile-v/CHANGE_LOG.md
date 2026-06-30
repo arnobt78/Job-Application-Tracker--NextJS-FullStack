@@ -16,6 +16,7 @@
 | UI-2026-06-16c | C1 | REQ-0014, REQ-0015, REQ-0019 | SSR hydrate + persist + body loading + nav avatar | Cache perf | — | Agent | Done `37f8525` |
 | UI-2026-06-16d | C1 | REQ-0015 | onSettled invalidateAllJobQueries choke-point | Invalidation | — | Agent | Done `66bc670` |
 | UI-2026-06-30 | C1 | REQ-0026 | Discover track: trackJobFromDiscoverAction + JobActionResult | Discover CRM | — | Agent | Done |
+| UI-2026-06-30b | C1 | REQ-0015 | Optimistic mutations skip jobs.filterOptions cache | Cache safety | — | Agent | Done `63140e5` |
 
 ## Change Request Template
 
