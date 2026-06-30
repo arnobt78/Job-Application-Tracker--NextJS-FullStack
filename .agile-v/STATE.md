@@ -11,6 +11,7 @@
 | **Verify** | lint ✓ · typecheck ✓ · test **58/58** ✓ · build ✓ @ HEAD |
 
 ## Recent (2026-06-30)
+- BL-0014 fix: Bluedoor 429 rate limit on /discover — added `lib/bluedoor/discover-cache.ts` (unstable_cache 60s/300s); actions use cached wrappers
 - BL-0013 fix: Redis SCAN miss → added default list key to fixedUserRedisKeys (RC-1)
 - BL-0013 fix: after() double-invalidation SCAN race → revalidateUserJobsDataCache (RC-2)
 - BL-0013 fix: idempotent track alreadyTracked flag + rollback + toast (RC-4)

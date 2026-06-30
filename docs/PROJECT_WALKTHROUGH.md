@@ -2,8 +2,8 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
-**Last updated:** 2026-06-30 (discover track + optimistic cache guard @ `63140e5`)  
-**Verification:** lint ✓ · typecheck ✓ · test **54/54** ✓ · build ✓
+**Last updated:** 2026-06-30 (BL-0013 cache sync fix @ `10bdb01`)  
+**Verification:** lint ✓ · typecheck ✓ · test **58/58** ✓ · build ✓
 
 ---
 
@@ -42,7 +42,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Email (React Email)** | PostingClosed, JdChanged, SalaryAdded, WeeklyDigest templates |
 | **Cron** | enrich 03:00 UTC · weekly-digest Sunday 09:00 UTC |
 | **Stats** | KPI row + 4 charts + weekly velocity |
-| **Discover** | `/discover` — two-panel layout, facet counts, infinite scroll, Details modal, **Track Application** → `trackJobFromDiscoverAction` (pre-seeds Bluedoor fields, idempotent) |
+| **Discover** | `/discover` — two-panel layout, facet counts, infinite scroll, Details modal, **Track Application** → `trackJobFromDiscoverAction` (pre-seeds Bluedoor fields, idempotent by `bluedoorJobId`); `alreadyTracked` toast + optimistic rollback; BL-0013 Redis SCAN fix ensures default list key always purged |
 | **Timeline** | `/timeline` — global activity feed from Job rows + `JobAIInsight` |
 | **User profile** | `/profile` — skills, target roles, experience level, resume text for AI context |
 | **AI — streaming** | `useStreamPipeline` → `/api/ai/pipeline/stream` → `PipelineProgress` (9 steps) |
@@ -61,7 +61,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 
 | Item | Notes |
 | --- | --- |
-| Coolify VPS deploy | FastAPI + Ollama + n8n on Hetzner — not in repo ops |
+| Coolify VPS deploy | ✅ DONE — `jobify-redis` · `jobify-ai-backend` · `jobify-arq-worker` @ `ai.arnobmahmud.com` |
 | n8n instance | JSON templates in `docs/n8n/`; import + run on VPS |
 | E2E in CI | Playwright specs exist; CI wiring optional |
 

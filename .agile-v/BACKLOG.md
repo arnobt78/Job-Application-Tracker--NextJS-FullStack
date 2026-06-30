@@ -88,6 +88,20 @@
 
 ---
 
+## BL-0014: Discover 429 Rate Limit Fix — **DONE** (2026-06-30)
+
+**REQ:** REQ-0026 · **Status:** COMPLETE
+
+| Item | Status |
+|---|---|
+| `lib/bluedoor/discover-cache.ts` — `getCachedDiscoverSearch` (60s TTL) + `getCachedDiscoverFacets` (300s TTL) using `unstable_cache` | ✅ |
+| `searchBluedoorJobsAction` → `getCachedDiscoverSearch` | ✅ |
+| `getBluedoorFacetsAction` → `getCachedDiscoverFacets` | ✅ |
+| Remove unused `searchJobs` + `getDiscoverFacets` imports from actions.ts | ✅ |
+| lint ✓ typecheck ✓ test 58/58 ✓ | ✅ |
+
+---
+
 ## Sprint Plan
 
 | Priority | BL | Status |

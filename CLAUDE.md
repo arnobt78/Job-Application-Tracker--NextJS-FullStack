@@ -4,7 +4,7 @@
 Job application CRM + Bluedoor enrichment + discover + AI insights (FastAPI). Not a job board.
 
 ## Stack
-Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **54** · Playwright E2E · FastAPI (`python-ai-service/`)
+Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **58** · Playwright E2E · FastAPI (`python-ai-service/`)
 
 ## Auth
 - `proxy.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team`; `/jobs/*` → `/dashboard`
@@ -26,7 +26,8 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - Org intel: `getBluedoorOrg` → `companySize`/`companyIndustry`/`companyHq` on Job
 - Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · `lib/discover/query-options.ts` (SSR-safe) · not persisted
 - **Discover track:** `trackJobFromDiscoverAction` · `useTrackDiscoverJobMutation` · `commitCreatedJobToClientCache` seeds default list + prefetch dashboard
-- `createJobAction` → `JobActionResult` (`success`/`error`) — no silent null
+- `createJobAction` → `JobActionResult` (`success`/`error`/`alreadyTracked?`) — no silent null; idempotent by `bluedoorJobId`
+- **BL-0013 cache fixes:** `fixedUserRedisKeys` includes default list key (`jobs:${userId}::all:all:all:1:10`); `revalidateUserJobsDataCache` used in `after()` (no SCAN race); `alreadyTracked` rollback + toast in `useTrackDiscoverJobMutation`
 - Notifications: SSE bell + React Email (Resend)
 
 ## Phase 2 ~90% · Phase 3 ✅ · BL-0011 ✅ COMMITTED

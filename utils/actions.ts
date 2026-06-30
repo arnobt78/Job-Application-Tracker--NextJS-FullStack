@@ -28,7 +28,8 @@ import {
   resolveTrackLocation,
   type DiscoverTrackPayload,
 } from "@/lib/discover/track-helpers";
-import { getDiscoverFacets, getJobDetail, getJobEvents, getBluedoorOrg, registerBluedoorWebhook, searchJobs, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
+import { getJobDetail, getJobEvents, getBluedoorOrg, registerBluedoorWebhook, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
+import { getCachedDiscoverSearch, getCachedDiscoverFacets } from "@/lib/bluedoor/discover-cache";
 import { computeSkillGap } from "@/lib/jobs/skill-gap";
 import type { SkillGapResult } from "@/lib/jobs/skill-gap";
 
@@ -652,7 +653,7 @@ export async function getBluedoorFacetsAction(
   await authenticateAndRedirect();
 
   try {
-    return await getDiscoverFacets(params);
+    return await getCachedDiscoverFacets(params);
   } catch {
     return { workplace_type: [], employment_type: [] };
   }
@@ -671,7 +672,7 @@ export async function searchBluedoorJobsAction(
   await authenticateAndRedirect();
 
   try {
-    return await searchJobs({
+    return await getCachedDiscoverSearch({
       q: params.q || undefined,
       country: params.country || "United States",
       workplace_type:
