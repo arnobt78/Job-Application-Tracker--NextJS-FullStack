@@ -60,7 +60,7 @@ export function DashboardNav() {
   const pathname = usePathname();
 
   return (
-    <NavShell>
+    <NavShell width="app">
       {/* Left — logo linked to /dashboard */}
       <Link
         href="/dashboard"
@@ -125,10 +125,8 @@ export function DashboardNav() {
 
         <NotificationBell />
         <ThemeToggle />
-        {/* Avatar with glow — UserProfileDropdown manages its own ring */}
-        <div className="rounded-full shadow-sm shadow-primary/20 ring-1 ring-primary/10">
-          <UserProfileDropdown />
-        </div>
+        {/* Avatar — single ring + glow in UserProfileDropdown */}
+        <UserProfileDropdown />
       </div>
     </NavShell>
   );

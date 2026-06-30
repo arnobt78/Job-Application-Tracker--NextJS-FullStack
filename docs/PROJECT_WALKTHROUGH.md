@@ -156,7 +156,10 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 | `components/jobs/posting-activity-tab.tsx` | Bluedoor event timeline — on-demand via `getBluedoorJobEventsAction` |
 | `components/jobs/job-detail-panels.tsx` | Tab wrapper: AI Insights + Posting Activity — `/dashboard/[id]` |
 | `components/pages/edit-job-dialog-page.tsx` | Client shell — passes `JobDetailPanels` as `aiPanel` to `EditJobDialog` |
-| `components/discover/discover-results.tsx` | `useInfiniteQuery` + `DiscoverCardShellGrid` + Load More |
+| `components/discover/discover-results.tsx` | `useInfiniteQuery` + `useQueryBodyLoading` spinner (cold) + Load More |
+| `components/ui/glass-filter-dropdown.tsx` | Shared status/mode dropdown — icons + `formatEnumLabel` |
+| `components/jobs/job-form-dialog-header.tsx` · `job-form-dialog-footer.tsx` | Add/Edit dialog chrome |
+| `lib/ui/job-dialog-dimensions.ts` | `JOB_DIALOG_PANEL_CLASS` 80vw×80vh |
 | `components/discover/discover-job-details-modal.tsx` | On-demand Bluedoor detail + AiInsightsPanel |
 | `components/discover/discover-page-header.tsx` | Static h1 (dashboard layout parity) |
 | `components/discover/discover-filter-section.tsx` | Subtitle + clear button + DiscoverFilters |
@@ -295,9 +298,9 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 
 - `useQueryBodyLoading` — no skeleton when SSR/hydrate/persist has data
 - `placeholderData` / `keepPreviousData` on jobs list + discover — no flash on filter change
-- `JobCardShell` / `DiscoverCardShell` — static chrome; skeleton only on text slots
-- Navbar avatar — pulse only when no SSR seed and session not loaded
-- `/discover/loading.tsx` — route-level skeleton matching dashboard parity layout
+- `JobCardShell` — static chrome; text skeletons cold only
+- Discover results — centered `Loader2` on cold cache only (no route `loading.tsx`)
+- Navbar avatar — single ring + glow; pulse only when no SSR seed
 
 ---
 

@@ -13,6 +13,7 @@ import { GlassAlertDialog } from '@/components/ui/glass-alert-dialog';
 import { Button } from '@/components/ui/button';
 import EditJobForm from '@/components/EditJobForm';
 import type { JobType } from '@/utils/types';
+import { JOB_DIALOG_PANEL_CLASS } from '@/lib/ui/job-dialog-dimensions';
 
 type EditJobDialogProps = {
   job: Pick<JobType, 'id' | 'position' | 'company'>;
@@ -99,26 +100,26 @@ export function EditJobDialog({
         />
       )}
 
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <GlassDialogContent>
-          <GlassCard variant="violet" className="flex h-full w-full flex-col overflow-hidden">
+      <Dialog modal open={open} onOpenChange={handleOpenChange}>
+        <GlassDialogContent description="Edit job application details">
+          <GlassCard variant="violet" className={JOB_DIALOG_PANEL_CLASS}>
             <DialogHeader className="sr-only">
               <DialogTitle>Edit Job</DialogTitle>
             </DialogHeader>
-            <div className="overlay-scroll min-h-0 flex-1 overflow-y-auto">
+            <div className="flex min-h-0 flex-1 flex-col">
               <EditJobForm
                 jobId={job.id}
                 standalone={false}
                 formLoading={formLoading}
                 onSuccess={() => handleOpenChange(false)}
+                onCancel={() => handleOpenChange(false)}
               />
-              {/* AI Insights panel — rendered only when full job data available (URL access) */}
-              {aiPanel && (
-                <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-                  {aiPanel}
-                </div>
-              )}
             </div>
+            {aiPanel && (
+              <div className="overlay-scroll max-h-[40vh] overflow-y-auto border-t border-white/10 px-4 pb-4 sm:px-6 sm:pb-6">
+                {aiPanel}
+              </div>
+            )}
           </GlassCard>
         </GlassDialogContent>
       </Dialog>

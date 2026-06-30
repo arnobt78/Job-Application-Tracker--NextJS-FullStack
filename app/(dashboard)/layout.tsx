@@ -25,7 +25,7 @@ async function DashboardLayout({ children }: PropsWithChildren) {
         <div className="app-shell-overlay" aria-hidden />
         <div className="relative z-10 flex min-h-screen flex-col">
           <DashboardNav />
-          <PageContainer className="flex-1 py-16 pt-[calc(3.5rem+2rem)]">
+          <PageContainer width="app" className="flex-1 py-16 pt-[calc(3.5rem+2rem)]">
             {children}
           </PageContainer>
         </div>

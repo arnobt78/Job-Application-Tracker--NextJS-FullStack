@@ -1,103 +1,22 @@
 "use client";
 
-import type { ReactNode } from "react";
-import {
-  Briefcase,
-  Calendar,
-  CalendarCheck,
-  Clock,
-  Filter,
-  XCircle,
-} from "lucide-react";
-import { JobMode } from "@/utils/types";
+import { Calendar } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import {
-  DropdownMenu,
-  DropdownMenuRadioGroup,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  GlassDropdownContent,
-  GlassDropdownRadioItem,
-  GlassDropdownTrigger,
-} from "@/components/ui/glass-dropdown-menu";
+  GlassFilterDropdown,
+  getJobModeOptionIcon,
+  getJobStatusOptionIcon,
+} from "@/components/ui/glass-filter-dropdown";
 import { GlassSearchInput } from "@/components/ui/glass-search-input";
 import {
   MODE_FILTER_OPTIONS,
   MONTH_ALL_OPTION,
   STATUS_FILTER_OPTIONS,
-  type FilterOption,
 } from "@/lib/jobs/filter-config";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { useJobFilterOptions } from "@/hooks/useJobFilterOptions";
 import { useJobsListParams } from "@/hooks/useJobsListParams";
 import { useState } from "react";
-
-const statusIcons: Record<string, ReactNode> = {
-  all: <Filter className="h-4 w-4" />,
-  pending: <Clock className="h-4 w-4 text-amber-400" />,
-  interview: <CalendarCheck className="h-4 w-4 text-emerald-400" />,
-  declined: <XCircle className="h-4 w-4 text-rose-400" />,
-};
-
-const modeIcons: Record<string, ReactNode> = {
-  all: <Briefcase className="h-4 w-4" />,
-  [JobMode.FullTime]: <Briefcase className="h-4 w-4" />,
-  [JobMode.PartTime]: <Clock className="h-4 w-4" />,
-  [JobMode.Internship]: <Briefcase className="h-4 w-4" />,
-};
-
-type FilterDropdownProps = {
-  value: string;
-  options: FilterOption[];
-  onChange: (value: string) => void;
-  triggerIcon: ReactNode;
-  triggerLabel: string;
-  align?: "start" | "center" | "end";
-  getOptionIcon?: (value: string) => ReactNode;
-};
-
-function FilterDropdown({
-  value,
-  options,
-  onChange,
-  triggerIcon,
-  triggerLabel,
-  align = "start",
-  getOptionIcon,
-}: FilterDropdownProps) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <GlassDropdownTrigger className="shadow-[0_12px_40px_rgba(2,132,199,0.15)]">
-          <span className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="shrink-0 text-muted-foreground">
-              {triggerIcon}
-            </span>
-            <span className="truncate">{triggerLabel}</span>
-          </span>
-        </GlassDropdownTrigger>
-      </DropdownMenuTrigger>
-      <GlassDropdownContent
-        align={align}
-        collisionPadding={8}
-        sideOffset={8}
-        className="w-[var(--radix-dropdown-menu-trigger-width)]"
-      >
-        <DropdownMenuRadioGroup value={value} onValueChange={onChange}>
-          {options.map((option) => (
-            <GlassDropdownRadioItem
-              key={option.value}
-              value={option.value}
-              label={option.label}
-              icon={getOptionIcon?.(option.value)}
-            />
-          ))}
-        </DropdownMenuRadioGroup>
-      </GlassDropdownContent>
-    </DropdownMenu>
-  );
-}
 
 /** Instant URL-driven search + glass filter dropdowns (clear button in JobsFilterSection) */
 export function JobsFilterBar() {
@@ -144,25 +63,25 @@ export function JobsFilterBar() {
           className="sm:col-span-2 lg:col-span-1"
         />
 
-        <FilterDropdown
+        <GlassFilterDropdown
           value={filters.jobStatus}
           options={STATUS_FILTER_OPTIONS}
           onChange={(jobStatus) => setFilters({ jobStatus })}
-          triggerIcon={statusIcons[filters.jobStatus] ?? statusIcons.all}
+          triggerIcon={getJobStatusOptionIcon(filters.jobStatus)}
           triggerLabel={statusLabel}
-          getOptionIcon={(v) => statusIcons[v]}
+          getOptionIcon={getJobStatusOptionIcon}
         />
 
-        <FilterDropdown
+        <GlassFilterDropdown
           value={filters.jobMode}
           options={MODE_FILTER_OPTIONS}
           onChange={(jobMode) => setFilters({ jobMode })}
-          triggerIcon={modeIcons[filters.jobMode] ?? modeIcons.all}
+          triggerIcon={getJobModeOptionIcon(filters.jobMode)}
           triggerLabel={modeLabel}
-          getOptionIcon={(v) => modeIcons[v]}
+          getOptionIcon={getJobModeOptionIcon}
         />
 
-        <FilterDropdown
+        <GlassFilterDropdown
           value={filters.monthYear}
           options={monthOptions}
           onChange={(monthYear) => setFilters({ monthYear })}

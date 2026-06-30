@@ -12,11 +12,11 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import CreateJobForm from '@/components/CreateJobForm';
 import { DASHBOARD_COPY } from '@/lib/ui/dashboard-copy';
+import { JOB_DIALOG_PANEL_CLASS } from '@/lib/ui/job-dialog-dimensions';
 
 /**
  * Glassmorphic Add Job dialog with trigger button.
- * Renders trigger inline; wraps CreateJobForm in Dialog + GlassCard chrome.
- * On successful create: dialog closes (handled via CreateJobForm onSuccess prop).
+ * Form owns scroll + footer layout so button glow is not clipped.
  */
 export function AddJobDialog() {
   const [open, setOpen] = useState(false);
@@ -31,15 +31,17 @@ export function AddJobDialog() {
         {DASHBOARD_COPY.addJob.cta}
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <GlassDialogContent>
-          <GlassCard variant="sky" className="flex h-full w-full flex-col overflow-hidden">
+      <Dialog modal open={open} onOpenChange={setOpen}>
+        <GlassDialogContent description="Add a new job application to your pipeline">
+          <GlassCard variant="sky" className={JOB_DIALOG_PANEL_CLASS}>
             <DialogHeader className="sr-only">
               <DialogTitle>Add New Job</DialogTitle>
             </DialogHeader>
-            <div className="overlay-scroll min-h-0 flex-1 overflow-y-auto">
-              <CreateJobForm standalone={false} onSuccess={() => setOpen(false)} />
-            </div>
+            <CreateJobForm
+              standalone={false}
+              onSuccess={() => setOpen(false)}
+              onCancel={() => setOpen(false)}
+            />
           </GlassCard>
         </GlassDialogContent>
       </Dialog>

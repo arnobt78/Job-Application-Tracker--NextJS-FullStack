@@ -1,15 +1,18 @@
-import { PageContainer } from "@/components/layout/page-container";
+import { PageContainer, type PageContainerWidth } from "@/components/layout/page-container";
 import { cn } from "@/lib/utils";
 import type { PropsWithChildren } from "react";
 
-type NavShellProps = PropsWithChildren<{ className?: string }>;
+type NavShellProps = PropsWithChildren<{
+  className?: string;
+  /** public = landing/auth nav | app = dashboard nav */
+  width?: PageContainerWidth;
+}>;
 
 /**
  * Shared nav chrome — fixed h-14, glass backdrop-blur, z-50.
  * Server component (no hooks). LandingNav, AuthNav, DashboardNav all compose this.
- * Wraps PageContainer for consistent max-w-9xl content width.
  */
-export function NavShell({ children, className }: NavShellProps) {
+export function NavShell({ children, className, width = "public" }: NavShellProps) {
   return (
     <header
       className={cn(
@@ -19,6 +22,7 @@ export function NavShell({ children, className }: NavShellProps) {
     >
       <PageContainer
         as="div"
+        width={width}
         className="pointer-events-auto flex h-full items-center justify-between gap-4 bg-transparent"
       >
         {children}

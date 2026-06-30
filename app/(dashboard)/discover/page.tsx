@@ -5,7 +5,7 @@ import { DiscoverPageHeader } from '@/components/discover/discover-page-header';
 import { DiscoverFilterSection } from '@/components/discover/discover-filter-section';
 import { DiscoverSidebar } from '@/components/discover/discover-sidebar';
 import { DiscoverResultsToolbar } from '@/components/discover/discover-results-toolbar';
-import { DiscoverResults, DiscoverCardShellGrid } from '@/components/discover/discover-results';
+import { DiscoverResults } from '@/components/discover/discover-results';
 import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import { SlidersHorizontal } from 'lucide-react';
@@ -85,7 +85,7 @@ async function DiscoverPage({ searchParams }: DiscoverPageProps) {
           </Suspense>
 
           {/* Results toolbar + grid — both use useSearchParams, share Suspense boundary */}
-          <Suspense fallback={<DiscoverCardShellGrid />}>
+          <Suspense fallback={null}>
             <DiscoverResultsToolbar />
             <DiscoverResults />
           </Suspense>

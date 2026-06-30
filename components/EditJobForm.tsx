@@ -9,36 +9,38 @@ import {
   createAndEditJobSchema,
   CreateAndEditJobType,
 } from '@/utils/types';
-import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { CustomFormField, CustomFormSelect } from './FormComponents';
+import { CustomFormField, CustomFormFilterDropdown } from './FormComponents';
+import {
+  JOB_FORM_MODE_OPTIONS,
+  JOB_FORM_STATUS_OPTIONS,
+} from '@/lib/jobs/filter-config';
+import {
+  getJobModeOptionIcon,
+  getJobStatusOptionIcon,
+} from '@/components/ui/glass-filter-dropdown';
 import { useQuery } from '@tanstack/react-query';
 import { getSingleJobAction } from '@/utils/actions';
 import { useUpdateJobMutation } from '@/hooks/useJobsMutation';
 import { queryKeys } from '@/lib/query-keys';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Pencil } from 'lucide-react';
+import { JobFormDialogHeader } from '@/components/jobs/job-form-dialog-header';
+import { JobFormDialogFooter } from '@/components/jobs/job-form-dialog-footer';
+import { JOB_FORM_COPY } from '@/lib/ui/job-form-copy';
 
 type EditJobFormProps = {
   jobId: string;
-  /** Parent SSR cold load — stable dialog chrome, skeleton on fields only */
   formLoading?: boolean;
-  /**
-   * Called after successful update.
-   * Used by EditJobDialog to close the dialog after save.
-   */
   onSuccess?: () => void;
-  /**
-   * When false, renders form content without outer GlassCard wrapper.
-   * Set to false when composing inside EditJobDialog.
-   */
+  onCancel?: () => void;
   standalone?: boolean;
 };
 
 function EditJobForm({
   jobId,
   onSuccess,
+  onCancel,
   standalone = true,
   formLoading = false,
 }: EditJobFormProps) {
@@ -68,27 +70,23 @@ function EditJobForm({
         location: data.location,
         status: data.status as JobStatus,
         mode: data.mode as JobMode,
-        // applyUrl may be null in DB — fall back to empty string for controlled input
         applyUrl: data.applyUrl ?? '',
       });
     }
   }, [data, form]);
 
   const { mutate, isPending } = useUpdateJobMutation(jobId);
+  const fields = JOB_FORM_COPY.fields;
+  const showFieldSkeleton = formLoading && !data;
+  const handleCancel = onCancel ?? (standalone ? () => form.reset() : undefined);
 
   function onSubmit(values: CreateAndEditJobType) {
-    // Pass onSuccess as per-call callback — runs after hook-level onSuccess (toast + invalidation)
     mutate(values, { onSuccess: () => onSuccess?.() });
   }
 
-  const showFieldSkeleton = formLoading && !data;
-
-  const formContent = showFieldSkeleton ? (
-    <div>
-      <h2 className="mb-6 flex items-center gap-2 text-4xl font-semibold capitalize">
-        <Pencil className="h-8 w-8 text-violet-400" />
-        Edit Job
-      </h2>
+  const formBody = showFieldSkeleton ? (
+    <div className="flex min-h-0 flex-1 flex-col px-4 pt-4 sm:px-6 sm:pt-6">
+      <JobFormDialogHeader mode="edit" />
       <div className="flex flex-col gap-4">
         <Skeleton className="h-10 w-full rounded-2xl" />
         <Skeleton className="h-10 w-full rounded-2xl" />
@@ -97,59 +95,87 @@ function EditJobForm({
           <Skeleton className="h-10 w-full rounded-2xl" />
           <Skeleton className="h-10 w-full rounded-2xl" />
         </div>
-        {/* applyUrl skeleton */}
-        <Skeleton className="h-10 w-full rounded-2xl" />
         <Skeleton className="h-10 w-full rounded-2xl" />
       </div>
     </div>
   ) : (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <h2 className="mb-6 flex items-center gap-2 text-4xl font-semibold capitalize">
-          <Pencil className="h-8 w-8 text-violet-400" />
-          Edit Job
-        </h2>
-        <div className="flex flex-col gap-4">
-          <CustomFormField name="position" control={form.control} required />
-          <CustomFormField name="company" control={form.control} required />
-          <CustomFormField name="location" control={form.control} required />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <CustomFormSelect
-              name="status"
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <div className="overlay-scroll flex-1 overflow-y-auto px-4 pt-4 sm:px-6 sm:pt-6">
+          <JobFormDialogHeader mode="edit" />
+          <div className="flex flex-col gap-4">
+            <CustomFormField
+              name="position"
               control={form.control}
-              labelText="job status"
-              items={Object.values(JobStatus)}
+              labelText={fields.position.label}
+              labelIcon={fields.position.icon}
+              labelIconClassName={fields.position.iconClass}
               required
             />
-            <CustomFormSelect
-              name="mode"
+            <CustomFormField
+              name="company"
               control={form.control}
-              labelText="job mode"
-              items={Object.values(JobMode)}
+              labelText={fields.company.label}
+              labelIcon={fields.company.icon}
+              labelIconClassName={fields.company.iconClass}
               required
+            />
+            <CustomFormField
+              name="location"
+              control={form.control}
+              labelText={fields.location.label}
+              labelIcon={fields.location.icon}
+              labelIconClassName={fields.location.iconClass}
+              required
+            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <CustomFormFilterDropdown
+                name="status"
+                control={form.control}
+                options={JOB_FORM_STATUS_OPTIONS}
+                getOptionIcon={getJobStatusOptionIcon}
+                labelText={fields.status.label}
+                labelIcon={fields.status.icon}
+                labelIconClassName={fields.status.iconClass}
+                required
+              />
+              <CustomFormFilterDropdown
+                name="mode"
+                control={form.control}
+                options={JOB_FORM_MODE_OPTIONS}
+                getOptionIcon={getJobModeOptionIcon}
+                labelText={fields.mode.label}
+                labelIcon={fields.mode.icon}
+                labelIconClassName={fields.mode.iconClass}
+                required
+              />
+            </div>
+            <CustomFormField
+              name="applyUrl"
+              control={form.control}
+              labelText={fields.applyUrl.label}
+              labelIcon={fields.applyUrl.icon}
+              labelIconClassName={fields.applyUrl.iconClass}
+              placeholder="https://jobs.lever.co/company/…"
             />
           </div>
-          {/* applyUrl — when changed, Bluedoor re-enrichment triggers automatically */}
-          <CustomFormField
-            name="applyUrl"
-            control={form.control}
-            labelText="apply URL (optional)"
-            placeholder="https://jobs.lever.co/company/…"
+        </div>
+        <div className="shrink-0 px-4 pb-5 pt-2 sm:px-6">
+          <JobFormDialogFooter
+            mode="edit"
+            isPending={isPending}
+            onCancel={handleCancel}
           />
-          <Button
-            type="submit"
-            className="w-full capitalize"
-            disabled={isPending}
-          >
-            {isPending ? 'Updating...' : 'Save Changes'}
-          </Button>
         </div>
       </form>
     </Form>
   );
 
-  if (!standalone) return formContent;
-  return <GlassCard variant="violet">{formContent}</GlassCard>;
+  if (!standalone) return formBody;
+  return <GlassCard variant="violet">{formBody}</GlassCard>;
 }
 
 export default EditJobForm;

@@ -57,7 +57,7 @@ export function GlassAlertDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="border-0 bg-transparent p-0 shadow-none sm:max-w-md">
+      <AlertDialogContent className="overflow-visible border-0 bg-transparent p-0 shadow-none sm:max-w-md">
         <GlassCard variant={glassVariant} className="p-0">
           <div className="flex gap-4 p-4 sm:p-6">
             <div

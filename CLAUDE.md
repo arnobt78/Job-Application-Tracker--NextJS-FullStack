@@ -4,7 +4,7 @@
 Job application CRM + Bluedoor enrichment + discover + AI insights (FastAPI). Not a job board.
 
 ## Stack
-Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **59** · Playwright E2E · FastAPI (`python-ai-service/`)
+Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **60** · Playwright E2E · FastAPI (`python-ai-service/`)
 
 ## Auth
 - `proxy.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team`; `/jobs/*` → `/dashboard`
@@ -67,6 +67,15 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 
 ## Do not
 `cacheComponents: true` · break SSE/invalidation · skeleton when cache warm · scrape Bluedoor · persist discover/ai · second SSE for notifications
+
+## UI (2026-06-30)
+- `PageContainer` width: `public` max-w-7xl (landing/auth) · `app` max-w-9xl (dashboard)
+- `GlassDialogContent` — opaque glass panel, × inside card, `modal` on job dialogs
+- `GlassFilterDropdown` + `CustomFormFilterDropdown` — same icons/labels as dashboard filters
+- `JOB_DIALOG_PANEL_CLASS` — 80vw×80vh Add/Edit dialogs
+- Discover: no `loading.tsx` · `useQueryBodyLoading` spinner cold only
+- Profile Experience Level: glass dropdown `modal={false}` (no scroll shift)
+- `scrollbar-gutter:stable` + `[data-scroll-locked]` zero padding (no layout shift)
 
 ## Docs
 `docs/PROJECT_WALKTHROUGH.md` · `docs/PROJECT_PLAN.md` · `docs/JOBIFY_TECH_STACK_ANALYSIS.md` · `.agile-v/STATE.md`

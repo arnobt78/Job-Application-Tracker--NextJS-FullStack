@@ -26,3 +26,17 @@ export const MONTH_ALL_OPTION: FilterOption = {
   value: 'all',
   label: 'All Months',
 };
+
+/** Job form status options — no "all", capitalized labels */
+export const JOB_FORM_STATUS_OPTIONS: FilterOption[] = [
+  { value: JobStatus.Pending, label: formatEnumLabel(JobStatus.Pending) },
+  { value: JobStatus.Interview, label: formatEnumLabel(JobStatus.Interview) },
+  { value: JobStatus.Declined, label: formatEnumLabel(JobStatus.Declined) },
+];
+
+/** Job form mode options — no "all", capitalized labels */
+export const JOB_FORM_MODE_OPTIONS: FilterOption[] = [
+  { value: JobMode.FullTime, label: formatEnumLabel(JobMode.FullTime) },
+  { value: JobMode.PartTime, label: formatEnumLabel(JobMode.PartTime) },
+  { value: JobMode.Internship, label: formatEnumLabel(JobMode.Internship) },
+];

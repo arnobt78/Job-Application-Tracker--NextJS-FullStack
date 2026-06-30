@@ -81,7 +81,7 @@
 | ART-0075 | C1 | Config | `vercel.json` (cron schedule) | REQ-0025 | Phase 1 |
 | ART-0076 | C1 | Component | `components/JobCard.tsx`, forms `applyUrl` | REQ-0025 | Phase 1 |
 | ART-0077 | C1 | Page | `app/(dashboard)/discover/page.tsx` | REQ-0026 | Phase 1 |
-| ART-0078 | C1 | Loading | `app/(dashboard)/discover/loading.tsx` | REQ-0026 | Phase 1 |
+| ART-0078 | C1 | Loading | ~~`discover/loading.tsx`~~ removed — `useQueryBodyLoading` in results | REQ-0026 | Phase 1 |
 | ART-0079 | C1 | Component | `components/discover/*` | REQ-0026 | Phase 1 |
 | ART-0080 | C1 | Nav | `components/layout/dashboard-nav.tsx` (Discover) | REQ-0026 | Phase 1 |
 | ART-0081 | C1 | Docs | `docs/PROJECT_PLAN.md`, `JOBIFY_TECH_STACK_ANALYSIS.md` | REQ-0027 | Planning |

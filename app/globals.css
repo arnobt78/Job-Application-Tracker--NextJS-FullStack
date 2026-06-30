@@ -148,7 +148,7 @@
 /* Removed glass-btn-primary — use Button default variant instead */
 
 .glass-input {
-  @apply bg-white/5 backdrop-blur-sm border border-white/20 placeholder:text-muted-foreground focus-visible:border-sky-400 focus-visible:ring-sky-500/50 shadow-[0_10px_30px_rgba(2,132,199,0.15)];
+  @apply bg-white/5 backdrop-blur-sm border border-white/20 placeholder:text-muted-foreground focus-visible:border-sky-400 focus-visible:ring-sky-500/50 shadow-[0_12px_40px_rgba(2,132,199,0.15)];
 }
 
 /*
@@ -163,6 +163,16 @@ html {
 
 body {
   scrollbar-gutter: stable;
+}
+
+/*
+ * react-remove-scroll (AlertDialog, Select) adds padding-right on lock.
+ * With scrollbar-gutter: stable above, that double-compensates and shifts layout.
+ */
+html[data-scroll-locked],
+body[data-scroll-locked] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
 }
 
 html:hover {

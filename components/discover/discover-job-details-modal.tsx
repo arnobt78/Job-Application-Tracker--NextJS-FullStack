@@ -255,9 +255,12 @@ export function DiscoverJobDetailsModal({
   onOpenChange,
 }: DiscoverJobDetailsModalProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <GlassDialogContent>
-        <GlassCard variant="sky" className="flex h-full w-full flex-col overflow-hidden">
+    <Dialog modal open={open} onOpenChange={onOpenChange}>
+      <GlassDialogContent description="View full job posting details">
+        <GlassCard
+          variant="sky"
+          className="flex h-[90vh] max-h-[90vh] w-[90vw] max-w-[90vw] flex-col overflow-hidden"
+        >
           <DialogHeader className="sr-only">
             <DialogTitle>Job Details</DialogTitle>
           </DialogHeader>

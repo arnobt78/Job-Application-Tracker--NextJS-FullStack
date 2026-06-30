@@ -8,9 +8,10 @@
 | **Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
 | **Last Updated** | 2026-06-30 |
-| **Verify** | lint ✓ · typecheck ✓ · test **59/59** ✓ · build ✓ @ HEAD |
+| **Verify** | lint ✓ · typecheck ✓ · test **60/60** ✓ · build ✓ |
 
 ## Recent (2026-06-30)
+- **UI polish:** dialog scroll-shift fix · page width 7xl/9xl · job form header/footer · `GlassFilterDropdown` parity · 80vw dialog · discover cold spinner only
 - BL-0014 fix: Bluedoor 429 UX — toolbar shows "—" badge + rate-limit subtitle; results show correct message (not "No jobs found")
 - BL-0014 fix: Bluedoor 429 rate limit on /discover — added `lib/bluedoor/discover-cache.ts` (unstable_cache 60s/300s); actions use cached wrappers
 - BL-0013 fix: Redis SCAN miss → added default list key to fixedUserRedisKeys (RC-1)

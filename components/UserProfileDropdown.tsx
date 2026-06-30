@@ -56,7 +56,7 @@ export default function UserProfileDropdown() {
           disabled={avatarLoading}
           aria-label="Account menu"
         >
-          <div className="relative h-9 w-9 overflow-hidden rounded-full border-2">
+          <div className="relative h-9 w-9 overflow-hidden rounded-full ring-2 ring-primary/40 shadow-[0_0_14px_rgba(59,130,246,0.45)]">
             {avatarUrl ? (
               <SafeImage
                 src={avatarUrl}

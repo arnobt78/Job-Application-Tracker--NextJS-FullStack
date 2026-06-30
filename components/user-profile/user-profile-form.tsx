@@ -16,12 +16,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuRadioGroup,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  GlassDropdownContent,
+  GlassDropdownRadioItem,
+  GlassDropdownTrigger,
+} from '@/components/ui/glass-dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { X, User, Briefcase, FileText, Sparkles } from 'lucide-react';
@@ -211,36 +214,53 @@ export function UserProfileForm() {
           <p className="text-xs text-muted-foreground">Roles the AI will optimise your cover letters for.</p>
         </div>
 
-        {/* Experience Level */}
+        {/* Experience Level — glass DropdownMenu (modal=false), same as dashboard filter row */}
         <FormField
           control={form.control}
           name="experienceLevel"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-1.5">
-                <User className="h-3.5 w-3.5 text-emerald-400" />
-                Experience Level
-              </FormLabel>
-              <Select
-                onValueChange={(v) => field.onChange(v)}
-                value={field.value ?? undefined}
-              >
+          render={({ field }) => {
+            const selectedLabel =
+              EXPERIENCE_LEVELS.find((level) => level.value === field.value)
+                ?.label ?? 'Select your level…';
+
+            return (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-emerald-400" />
+                  Experience Level
+                </FormLabel>
                 <FormControl>
-                  <SelectTrigger className="glass-input">
-                    <SelectValue placeholder="Select your level…" />
-                  </SelectTrigger>
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <GlassDropdownTrigger className="shadow-[0_12px_40px_rgba(2,132,199,0.15)]">
+                        <span className="truncate">{selectedLabel}</span>
+                      </GlassDropdownTrigger>
+                    </DropdownMenuTrigger>
+                    <GlassDropdownContent
+                      align="start"
+                      collisionPadding={8}
+                      sideOffset={8}
+                      className="w-[var(--radix-dropdown-menu-trigger-width)]"
+                    >
+                      <DropdownMenuRadioGroup
+                        value={field.value ?? ''}
+                        onValueChange={(value) => field.onChange(value || null)}
+                      >
+                        {EXPERIENCE_LEVELS.map((level) => (
+                          <GlassDropdownRadioItem
+                            key={level.value}
+                            value={level.value}
+                            label={level.label}
+                          />
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </GlassDropdownContent>
+                  </DropdownMenu>
                 </FormControl>
-                <SelectContent>
-                  {EXPERIENCE_LEVELS.map((level) => (
-                    <SelectItem key={level.value} value={level.value}>
-                      {level.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
 
         {/* Resume Text */}
