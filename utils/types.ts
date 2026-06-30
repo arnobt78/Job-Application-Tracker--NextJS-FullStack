@@ -231,7 +231,12 @@ export type CreateAndEditJobType = z.infer<typeof createAndEditJobSchema>;
 
 /** Structured server-action result — avoids silent null failures on the client. */
 export type JobActionResult =
-  | { success: true; job: JobType }
+  | {
+      success: true;
+      job: JobType;
+      /** True when trackJobFromDiscoverAction found an existing row — no new DB row created. */
+      alreadyTracked?: boolean;
+    }
   | { success: false; error: string; code?: string };
 
 /** Loose URL check — allows http and https, any host */

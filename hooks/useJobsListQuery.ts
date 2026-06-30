@@ -32,6 +32,9 @@ export function useJobsListQuery() {
         page: filters.page,
       }),
     placeholderData: keepPreviousData,
-    staleTime: 60_000,
+    // staleTime:0 + refetchOnMount:always ensures the SSR hydrated state is always refetched
+    // on dashboard mount, so a stale HydrationBoundary snapshot is overwritten by fresh DB data
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }

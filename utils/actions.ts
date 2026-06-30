@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
 import { JobType, CreateAndEditJobType, createAndEditJobSchema, JobStatus, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult, LLMSkillGapResult, TeamType, TeamMemberType, TeamRole, type JobActionResult } from "./types";
 import { redirect } from "next/navigation";
-import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
+import { invalidateUserJobCaches, revalidateUserJobsDataCache } from "@/lib/invalidate-jobs-server";
 import { publishNotification } from "@/lib/jobs-events";
 import {
   getCachedJobs,
@@ -129,7 +129,8 @@ export async function trackJobFromDiscoverAction(
       where: { userId, bluedoorJobId: payload.jobId },
     });
     if (existing) {
-      return { success: true, job: existing as JobType };
+      // Already tracked — return existing row without creating a duplicate
+      return { success: true, job: existing as JobType, alreadyTracked: true };
     }
 
     const parsed = createAndEditJobSchema.parse({
@@ -171,7 +172,9 @@ export async function trackJobFromDiscoverAction(
               companyHq: org.hq_location ?? null,
             },
           });
-          await invalidateUserJobCaches(userId, job.id);
+          // Lightweight invalidation only — Redis was already fully purged pre-response.
+          // A second SCAN here would race with freshly-repopulated cache keys.
+          await revalidateUserJobsDataCache(userId, job.id);
         }
 
         const subId = await registerBluedoorWebhook(payload.jobId);

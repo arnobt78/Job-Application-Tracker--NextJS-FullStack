@@ -8,13 +8,15 @@
 | **Checkpoint** | INT-0003 `c1-dev-20260612` |
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
 | **Last Updated** | 2026-06-30 |
-| **Verify** | lint ✓ · typecheck ✓ · test **54/54** ✓ · build ✓ @ `63140e5` |
+| **Verify** | lint ✓ · typecheck ✓ · test **58/58** ✓ · build ✓ @ HEAD |
 
 ## Recent (2026-06-30)
-- Optimistic fix: skip `jobs.filterOptions` in list patches (`63140e5`)
-- Discover track: `trackJobFromDiscoverAction` + `JobActionResult` (`e16f2bc`)
-- VPS deploy complete: redis + AI backend + ARQ worker @ `ai.arnobmahmud.com`
-- EVAL-0018 PASS (54 tests)
+- BL-0013 fix: Redis SCAN miss → added default list key to fixedUserRedisKeys (RC-1)
+- BL-0013 fix: after() double-invalidation SCAN race → revalidateUserJobsDataCache (RC-2)
+- BL-0013 fix: idempotent track alreadyTracked flag + rollback + toast (RC-4)
+- BL-0013 fix: debug log cleanup across 4 files + delete .cursor/debug-c5463b.log (RC-5)
+- Test count 54→58 (new redis-invalidation assertions)
+- Session sync: Agile V resumed @ `b41373c` (clean tree)
 
 ## Shipped
 - P1–P3 code · BL-0011 · BL-0009 VPS · discover track idempotent w/ Bluedoor pre-seed

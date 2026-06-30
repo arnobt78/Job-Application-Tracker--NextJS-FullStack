@@ -74,6 +74,20 @@
 
 ---
 
+## BL-0013: Discover → Dashboard Cache Sync Fix — **DONE** (2026-06-30)
+
+**REQ:** REQ-0026 · **Status:** COMPLETE · **EVAL-0019 PASS**
+
+| Item | Status |
+|---|---|
+| RC-1: `jobs:${userId}::all:all:all:1:10` added to `fixedUserRedisKeys` | ✅ |
+| RC-2: `revalidateUserJobsDataCache` (no SCAN) for `after()` callbacks | ✅ |
+| RC-4: `alreadyTracked` flag + `notifyAlreadyTracked` toast + optimistic rollback | ✅ |
+| RC-5: debug log code removed from 4 files + `.cursor/` deleted | ✅ |
+| lint ✓ typecheck ✓ test 58/58 ✓ build ✓ | ✅ |
+
+---
+
 ## Sprint Plan
 
 | Priority | BL | Status |

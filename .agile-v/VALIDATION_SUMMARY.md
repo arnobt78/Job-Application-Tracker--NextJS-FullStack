@@ -3,10 +3,22 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009 deploy ⏳ |
-| Status | `ACTIVE` — EVAL-0017 PASS @ `3551f1e` |
-| Last Updated | 2026-06-30T11:30:00Z |
-| Red Team | EVAL-0016 PASS · EVAL-0017 PASS |
+| Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009 ✅ · BL-0011 ✅ · BL-0012 ✅ |
+| Status | `ACTIVE` — EVAL-0018 PASS @ `b41373c` |
+| Last Updated | 2026-06-30T00:00:00Z |
+| Red Team | EVAL-0016 PASS · EVAL-0017 PASS · EVAL-0018 PASS |
+
+## EVAL-0018 (Session sync — 2026-06-30 @ `b41373c`)
+
+| Check | Result | Notes |
+|---|---|---|
+| git status | PASS | clean tree |
+| HEAD | PASS | `b41373c` — restore useJobsMutation imports |
+| test count | **54/54** | up from 51 (3 new: track-helpers + optimistic guard) |
+| VPS deploy | ✅ | `jobify-redis` + `jobify-ai-backend` + `jobify-arq-worker` LIVE |
+| Discover track | PASS | idempotent pre-seed, `JobActionResult`, dashboard seed |
+| Optimistic guard | PASS | skip `filterOptions` in list patches |
+| Backlog | INFO | Gate 1 PENDING · E2E CI pending · n8n pending |
 
 ## EVAL-0017 (Pre-VPS audit — 2026-06-30)
 

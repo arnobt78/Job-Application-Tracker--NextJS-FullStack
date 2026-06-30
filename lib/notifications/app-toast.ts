@@ -45,6 +45,14 @@ export function notifyJobCreated(job: JobType): void {
   });
 }
 
+/** Shown when Track Application is clicked for a posting that is already on the dashboard. */
+export function notifyAlreadyTracked(job: JobType): void {
+  toast.info('Already tracking', {
+    description: `${job.position} at ${job.company} is already on your dashboard.`,
+    duration: 3500,
+  });
+}
+
 export function notifyJobCreateError(
   position: string,
   company: string,

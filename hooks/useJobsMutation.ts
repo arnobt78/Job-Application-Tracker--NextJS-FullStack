@@ -12,6 +12,7 @@ import { JobStatus, JobMode, type CreateAndEditJobType, type JobType } from '@/u
 import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
 import {
+  notifyAlreadyTracked,
   notifyJobCreateError,
   notifyJobCreated,
   notifyJobDeleted,
@@ -45,15 +46,40 @@ import {
 } from '@/lib/discover/track-helpers';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-/** Prefetch default dashboard queries after create/track — warms cache before navigation. */
+import { DEFAULT_JOBS_LIST_FILTERS } from '@/lib/jobs/filter-types';
+
+/**
+ * Force-fetch default dashboard queries after create/track.
+ * Uses a stale guard: if server returns a lower count than what the client already has
+ * (e.g. Redis not yet purged), keep the client-side merged result from commitCreatedJobToClientCache.
+ */
 function warmDashboardJobsCaches(
   queryClient: ReturnType<typeof useQueryClient>
 ): void {
-  void queryClient.prefetchQuery({
-    queryKey: DEFAULT_JOBS_LIST_KEY,
-    queryFn: () => getAllJobsAction({ page: 1 }),
-  });
-  void queryClient.prefetchQuery({
+  const listParams = {
+    search: DEFAULT_JOBS_LIST_FILTERS.search,
+    jobStatus: DEFAULT_JOBS_LIST_FILTERS.jobStatus,
+    jobMode: DEFAULT_JOBS_LIST_FILTERS.jobMode,
+    monthYear: DEFAULT_JOBS_LIST_FILTERS.monthYear,
+    page: DEFAULT_JOBS_LIST_FILTERS.page,
+  };
+
+  void queryClient
+    .fetchQuery({
+      queryKey: DEFAULT_JOBS_LIST_KEY,
+      queryFn: () => getAllJobsAction(listParams),
+    })
+    .then((result) => {
+      // Never let a stale server response regress the count that commitCreatedJobToClientCache set
+      queryClient.setQueryData<JobsListCache>(DEFAULT_JOBS_LIST_KEY, (old) => {
+        if (!isJobsListResult(result)) return result;
+        if (!isJobsListResult(old)) return result;
+        if (result.count < old.count) return old;
+        return result;
+      });
+    });
+
+  void queryClient.fetchQuery({
     queryKey: queryKeys.stats.all,
     queryFn: () => getStatsAction(),
   });
@@ -160,17 +186,22 @@ export function useCreateJobMutation() {
 /**
  * Track a Bluedoor posting from /discover — pre-seeds enrichment + idempotent by bluedoorJobId.
  * Shares optimistic invalidation pattern with useCreateJobMutation.
+ *
+ * Idempotent path (same posting re-tracked):
+ *   - Server returns alreadyTracked:true with the existing job
+ *   - onSuccess rolls back the optimistic +1 and shows "Already tracking" toast
+ *   - No invalidation fires — cache is unchanged (correct)
  */
 export function useTrackDiscoverJobMutation() {
   const queryClient = useQueryClient();
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
-    mutationFn: async (payload: DiscoverTrackPayload) =>
-      unwrapJobActionResult(
-        await trackJobFromDiscoverAction(payload),
-        'Could not track application'
-      ),
+    mutationFn: async (payload: DiscoverTrackPayload) => {
+      const result = await trackJobFromDiscoverAction(payload);
+      if (!result.success) throw new Error(result.error || 'Could not track application');
+      return { job: result.job, alreadyTracked: result.alreadyTracked ?? false };
+    },
     onMutate: async (payload) => {
       const values: CreateAndEditJobType = {
         position: payload.title,
@@ -235,19 +266,36 @@ export function useTrackDiscoverJobMutation() {
         detail
       );
     },
-    onSuccess: (data) => {
-      commitCreatedJobToClientCache(queryClient, data);
-      notifyJobCreated(data);
-      invalidateAfterMutation(data.id);
+    onSuccess: ({ job, alreadyTracked }, _payload, context) => {
+      if (alreadyTracked) {
+        // Roll back the optimistic +1 — no new row was created
+        context?.previousJobs.forEach(([key, data]) => {
+          queryClient.setQueryData(key, data);
+        });
+        if (context?.previousStats !== undefined) {
+          queryClient.setQueryData(queryKeys.stats.all, context.previousStats);
+        }
+        if (context?.previousCharts !== undefined) {
+          queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
+        }
+        notifyAlreadyTracked(job);
+        return;
+      }
+
+      commitCreatedJobToClientCache(queryClient, job);
+      notifyJobCreated(job);
+      invalidateAfterMutation(job.id);
       warmDashboardJobsCaches(queryClient);
       trackEvent('job_created', {
-        status: data.status,
-        mode: data.mode,
+        status: job.status,
+        mode: job.mode,
         source: 'discover',
       });
     },
     onSettled: (data) => {
-      invalidateAllJobQueries(queryClient, data?.id ?? undefined, {
+      // Skip invalidation for idempotent returns — cache was already rolled back in onSuccess
+      if (data?.alreadyTracked) return;
+      invalidateAllJobQueries(queryClient, data?.job.id ?? undefined, {
         broadcast: false,
       });
     },
