@@ -37,6 +37,86 @@ import {
 
 type JobsListCache = JobsListResult | undefined;
 
+/** jobs.all prefix matches filter-options too — only patch real list caches. */
+function isJobsListResult(data: unknown): data is JobsListResult {
+  return (
+    !!data &&
+    typeof data === 'object' &&
+    Array.isArray((data as JobsListResult).jobs)
+  );
+}
+
+function isJobsListQueryKey(key: readonly unknown[]): boolean {
+  return key[0] === 'jobs' && key[1] !== 'filter-options';
+}
+
+function jobsListQueryFilter() {
+  return {
+    queryKey: queryKeys.jobs.all,
+    predicate: (query: { queryKey: readonly unknown[] }) =>
+      isJobsListQueryKey(query.queryKey),
+  };
+}
+
+function optimisticPrependJobList(
+  queryClient: ReturnType<typeof useQueryClient>,
+  optimisticJob: JobType
+): void {
+  queryClient.setQueriesData<JobsListCache>(
+    jobsListQueryFilter(),
+    (old) => {
+      if (!isJobsListResult(old)) return old;
+      return {
+        ...old,
+        jobs: [optimisticJob, ...old.jobs],
+        count: (old.count ?? old.jobs.length) + 1,
+      };
+    }
+  );
+}
+
+function optimisticPatchJobInLists(
+  queryClient: ReturnType<typeof useQueryClient>,
+  jobId: string,
+  patch: Partial<JobType>
+): void {
+  queryClient.setQueriesData<JobsListCache>(
+    jobsListQueryFilter(),
+    (old) => {
+      if (!isJobsListResult(old)) return old;
+      return {
+        ...old,
+        jobs: old.jobs.map((j) =>
+          j.id === jobId ? { ...j, ...patch, updatedAt: new Date() } : j
+        ),
+      };
+    }
+  );
+}
+
+function optimisticRemoveJobFromLists(
+  queryClient: ReturnType<typeof useQueryClient>,
+  jobId: string
+): JobType | undefined {
+  let removedJob: JobType | undefined;
+
+  queryClient.setQueriesData<JobsListCache>(
+    jobsListQueryFilter(),
+    (old) => {
+      if (!isJobsListResult(old)) return old;
+      const removed = old.jobs.find((j) => j.id === jobId);
+      removedJob = removed;
+      return {
+        ...old,
+        jobs: old.jobs.filter((j) => j.id !== jobId),
+        count: Math.max(0, (old.count ?? old.jobs.length) - 1),
+      };
+    }
+  );
+
+  return removedJob;
+}
+
 /** Unwrap JobActionResult — throws so TanStack onError + toast fire on failure. */
 async function unwrapJobActionResult(
   result: Awaited<ReturnType<typeof createJobAction>>,
@@ -94,17 +174,7 @@ export function useCreateJobMutation() {
         ...values,
       };
 
-      queryClient.setQueriesData<JobsListCache>(
-        { queryKey: queryKeys.jobs.all },
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            jobs: [optimisticJob, ...old.jobs],
-            count: old.count + 1,
-          };
-        }
-      );
+      optimisticPrependJobList(queryClient, optimisticJob);
 
       queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
         applyStatsCreate(old, values)
@@ -191,17 +261,7 @@ export function useTrackDiscoverJobMutation() {
         bluedoorJobId: payload.jobId,
       };
 
-      queryClient.setQueriesData<JobsListCache>(
-        { queryKey: queryKeys.jobs.all },
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            jobs: [optimisticJob, ...old.jobs],
-            count: old.count + 1,
-          };
-        }
-      );
+      optimisticPrependJobList(queryClient, optimisticJob);
 
       queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
         applyStatsCreate(old, values)
@@ -274,7 +334,9 @@ export function useUpdateJobMutation(jobId: string) {
       );
 
       const jobInList = previousJobs
-        .map(([, data]) => data?.jobs.find((j) => j.id === jobId))
+        .map(([, data]) =>
+          isJobsListResult(data) ? data.jobs.find((j) => j.id === jobId) : undefined
+        )
         .find((j): j is JobType => j !== undefined);
 
       const oldStatus = previousDetail?.status ?? jobInList?.status;
@@ -284,18 +346,7 @@ export function useUpdateJobMutation(jobId: string) {
         old ? { ...old, ...values, updatedAt: new Date() } : old
       );
 
-      queryClient.setQueriesData<JobsListCache>(
-        { queryKey: queryKeys.jobs.all },
-        (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            jobs: old.jobs.map((j) =>
-              j.id === jobId ? { ...j, ...values, updatedAt: new Date() } : j
-            ),
-          };
-        }
-      );
+      optimisticPatchJobInLists(queryClient, jobId, values);
 
       if (
         (oldStatus && oldStatus !== values.status) ||
@@ -364,22 +415,11 @@ export function useDeleteJobMutation(jobId: string) {
       let removedJob: JobType | undefined;
       let removedCreatedAt: Date | undefined;
 
-      queryClient.setQueriesData<JobsListCache>(
-        { queryKey: queryKeys.jobs.all },
-        (old) => {
-          if (!old) return old;
-          const removed = old.jobs.find((j) => j.id === jobId);
-          removedJob = removed;
-          removedCreatedAt = removed?.createdAt
-            ? new Date(removed.createdAt)
-            : undefined;
-          return {
-            ...old,
-            jobs: old.jobs.filter((j) => j.id !== jobId),
-            count: Math.max(0, old.count - 1),
-          };
-        }
-      );
+      const removed = optimisticRemoveJobFromLists(queryClient, jobId);
+      removedJob = removed;
+      removedCreatedAt = removed?.createdAt
+        ? new Date(removed.createdAt)
+        : undefined;
 
       if (removedJob) {
         queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
