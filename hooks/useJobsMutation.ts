@@ -1,12 +1,6 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  createJobAction,
-  deleteJobAction,
-  trackJobFromDiscoverAction,
-  updateJobAction,
-} from '@/utils/actions';
 import { JobStatus, JobMode, type CreateAndEditJobType, type JobType } from '@/utils/types';
 import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
@@ -19,7 +13,15 @@ import {
   notifyJobUpdateError,
 } from '@/lib/notifications/app-toast';
 import { trackEvent } from '@/lib/analytics/posthog';
-import type { JobsListResult } from '@/lib/jobs/queries';
+import {
+  commitCreatedJobToClientCache,
+  DEFAULT_JOBS_LIST_KEY,
+  isJobsListResult,
+  optimisticPatchJobInLists,
+  optimisticPrependJobList,
+  optimisticRemoveJobFromLists,
+  type JobsListCache,
+} from '@/lib/jobs/list-cache';
 import {
   bumpChartMonth,
   type ChartsCache,
@@ -35,86 +37,18 @@ import {
   type DiscoverTrackPayload,
 } from '@/lib/discover/track-helpers';
 
-type JobsListCache = JobsListResult | undefined;
-
-/** jobs.all prefix matches filter-options too — only patch real list caches. */
-function isJobsListResult(data: unknown): data is JobsListResult {
-  return (
-    !!data &&
-    typeof data === 'object' &&
-    Array.isArray((data as JobsListResult).jobs)
-  );
-}
-
-function isJobsListQueryKey(key: readonly unknown[]): boolean {
-  return key[0] === 'jobs' && key[1] !== 'filter-options';
-}
-
-function jobsListQueryFilter() {
-  return {
-    queryKey: queryKeys.jobs.all,
-    predicate: (query: { queryKey: readonly unknown[] }) =>
-      isJobsListQueryKey(query.queryKey),
-  };
-}
-
-function optimisticPrependJobList(
-  queryClient: ReturnType<typeof useQueryClient>,
-  optimisticJob: JobType
+/** Prefetch default dashboard queries after create/track — warms cache before navigation. */
+function warmDashboardJobsCaches(
+  queryClient: ReturnType<typeof useQueryClient>
 ): void {
-  queryClient.setQueriesData<JobsListCache>(
-    jobsListQueryFilter(),
-    (old) => {
-      if (!isJobsListResult(old)) return old;
-      return {
-        ...old,
-        jobs: [optimisticJob, ...old.jobs],
-        count: (old.count ?? old.jobs.length) + 1,
-      };
-    }
-  );
-}
-
-function optimisticPatchJobInLists(
-  queryClient: ReturnType<typeof useQueryClient>,
-  jobId: string,
-  patch: Partial<JobType>
-): void {
-  queryClient.setQueriesData<JobsListCache>(
-    jobsListQueryFilter(),
-    (old) => {
-      if (!isJobsListResult(old)) return old;
-      return {
-        ...old,
-        jobs: old.jobs.map((j) =>
-          j.id === jobId ? { ...j, ...patch, updatedAt: new Date() } : j
-        ),
-      };
-    }
-  );
-}
-
-function optimisticRemoveJobFromLists(
-  queryClient: ReturnType<typeof useQueryClient>,
-  jobId: string
-): JobType | undefined {
-  let removedJob: JobType | undefined;
-
-  queryClient.setQueriesData<JobsListCache>(
-    jobsListQueryFilter(),
-    (old) => {
-      if (!isJobsListResult(old)) return old;
-      const removed = old.jobs.find((j) => j.id === jobId);
-      removedJob = removed;
-      return {
-        ...old,
-        jobs: old.jobs.filter((j) => j.id !== jobId),
-        count: Math.max(0, (old.count ?? old.jobs.length) - 1),
-      };
-    }
-  );
-
-  return removedJob;
+  void queryClient.prefetchQuery({
+    queryKey: DEFAULT_JOBS_LIST_KEY,
+    queryFn: () => getAllJobsAction({ page: 1 }),
+  });
+  void queryClient.prefetchQuery({
+    queryKey: queryKeys.stats.all,
+    queryFn: () => getStatsAction(),
+  });
 }
 
 /** Unwrap JobActionResult — throws so TanStack onError + toast fire on failure. */
@@ -201,8 +135,10 @@ export function useCreateJobMutation() {
       notifyJobCreateError(values.position, values.company, detail);
     },
     onSuccess: (data) => {
+      commitCreatedJobToClientCache(queryClient, data);
       notifyJobCreated(data);
       invalidateAfterMutation(data.id);
+      warmDashboardJobsCaches(queryClient);
       trackEvent('job_created', { status: data.status, mode: data.mode });
     },
     onSettled: (data) => {
@@ -292,8 +228,10 @@ export function useTrackDiscoverJobMutation() {
       );
     },
     onSuccess: (data) => {
+      commitCreatedJobToClientCache(queryClient, data);
       notifyJobCreated(data);
       invalidateAfterMutation(data.id);
+      warmDashboardJobsCaches(queryClient);
       trackEvent('job_created', {
         status: data.status,
         mode: data.mode,

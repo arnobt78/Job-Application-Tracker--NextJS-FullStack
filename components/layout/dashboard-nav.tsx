@@ -64,6 +64,7 @@ export function DashboardNav() {
       {/* Left — logo linked to /dashboard */}
       <Link
         href="/dashboard"
+        prefetch={false}
         className="flex h-full shrink-0 items-center rounded-lg transition hover:opacity-90"
         aria-label="Go to dashboard"
       >
@@ -85,6 +86,7 @@ export function DashboardNav() {
             <Link
               key={link.href}
               href={link.href}
+              prefetch={false}
               className={cn(
                 'flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition',
                 isActive
@@ -112,7 +114,7 @@ export function DashboardNav() {
           <DropdownMenuContent align="start" sideOffset={10} className="w-44">
             {NAV_LINKS.map((link) => (
               <DropdownMenuItem key={link.href} asChild>
-                <Link href={link.href} className="flex items-center gap-2">
+                <Link href={link.href} prefetch={false} className="flex items-center gap-2">
                   {link.icon}
                   {link.label}
                 </Link>

@@ -13,7 +13,7 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 
 ## Data flow
 1. `force-dynamic` · per-page `prefetchQuery` / `prefetchInfiniteQuery` → `dehydrate`
-2. `PersistQueryClient` buster `v1` — jobs/stats/charts/charts-weekly/job(id) only — **not** discover/ai/aiInsight/timeline
+2. `PersistQueryClient` buster **`v2`** — jobs/stats/charts/charts-weekly/job(id) only — **not** discover/ai/filter-options
 3. `useQueryBodyLoading` — skeleton cold cache only
 4. Reads: `lib/jobs/queries.ts` (`unstable_cache` + tags + Redis)
 5. CRUD + AI save: `invalidateUserJobCaches` (server) · `invalidateAllJobQueries` (client + broadcast)
@@ -25,8 +25,7 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - `after()` enrich · webhook subscribe · cron enrich + weekly digest
 - Org intel: `getBluedoorOrg` → `companySize`/`companyIndustry`/`companyHq` on Job
 - Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · `lib/discover/query-options.ts` (SSR-safe) · not persisted
-- **Discover track:** `trackJobFromDiscoverAction` · `useTrackDiscoverJobMutation` · `lib/discover/track-helpers.ts` — pre-seeds `bluedoorJobId`, idempotent, `invalidateAllJobQueries` on success
-- Optimistic mutations skip `jobs.filterOptions` key (guard `isJobsListResult`) — prevents `old.jobs` crash on /discover track
+- **Discover track:** `trackJobFromDiscoverAction` · `useTrackDiscoverJobMutation` · `commitCreatedJobToClientCache` seeds default list + prefetch dashboard
 - `createJobAction` → `JobActionResult` (`success`/`error`) — no silent null
 - Notifications: SSE bell + React Email (Resend)
 
