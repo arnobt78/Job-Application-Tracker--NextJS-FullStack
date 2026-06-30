@@ -1,10 +1,11 @@
 "use server";
 
 import { after } from "next/server";
+import * as z from "zod";
 import prisma from "./db";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
-import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult, LLMSkillGapResult, TeamType, TeamMemberType, TeamRole } from "./types";
+import { JobType, CreateAndEditJobType, createAndEditJobSchema, JobStatus, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult, LLMSkillGapResult, TeamType, TeamMemberType, TeamRole, type JobActionResult } from "./types";
 import { redirect } from "next/navigation";
 import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
 import { publishNotification } from "@/lib/jobs-events";
@@ -20,7 +21,14 @@ import {
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
 import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
 import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse, DiscoverFacets, DiscoverSearchParams } from "@/lib/bluedoor/types";
-import { getDiscoverFacets, getJobDetail, getJobEvents, searchJobs, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
+import {
+  bluedoorEmploymentToJobMode,
+  buildEnrichmentPatchFromDiscoverPayload,
+  resolveDiscoverCompanyName,
+  resolveTrackLocation,
+  type DiscoverTrackPayload,
+} from "@/lib/discover/track-helpers";
+import { getDiscoverFacets, getJobDetail, getJobEvents, getBluedoorOrg, registerBluedoorWebhook, searchJobs, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
 import { computeSkillGap } from "@/lib/jobs/skill-gap";
 import type { SkillGapResult } from "@/lib/jobs/skill-gap";
 
@@ -31,6 +39,164 @@ async function authenticateAndRedirect(): Promise<string> {
     redirect("/sign-in");
   }
   return session.user.id;
+}
+
+/** Next.js navigation errors must propagate — never swallow as failed CRUD. */
+function isNextNavigationError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null || !("digest" in error)) {
+    return false;
+  }
+  const digest = String((error as { digest: unknown }).digest);
+  return digest.includes("NEXT_REDIRECT") || digest.includes("NEXT_NOT_FOUND");
+}
+
+/** Map server errors to user-safe messages for job mutations. */
+function jobActionErrorMessage(error: unknown): string {
+  if (error instanceof z.ZodError) {
+    return error.issues[0]?.message ?? "Invalid application data.";
+  }
+  if (error instanceof Error) {
+    if (error.message.includes("Foreign key constraint")) {
+      return "Your session is out of sync. Sign out and sign in again, then retry.";
+    }
+    return error.message;
+  }
+  return "Could not save application. Please try again.";
+}
+
+// ─────────────────────────────────────────────
+// Job CRUD
+// ─────────────────────────────────────────────
+
+export async function createJobAction(
+  values: CreateAndEditJobType
+): Promise<JobActionResult> {
+  try {
+    const userId = await authenticateAndRedirect();
+
+    const parsed = createAndEditJobSchema.parse({
+      ...values,
+      // Zod optional string rejects null — coerce before parse
+      applyUrl: values.applyUrl ?? undefined,
+    });
+
+    const job = await prisma.job.create({
+      data: {
+        position: parsed.position,
+        company: parsed.company,
+        location: parsed.location,
+        status: parsed.status,
+        mode: parsed.mode,
+        applyUrl: parsed.applyUrl ?? null,
+        userId,
+      },
+    });
+
+    await invalidateUserJobCaches(userId, job.id);
+
+    // Fire Bluedoor enrichment after response is sent — non-blocking
+    if (job.applyUrl) {
+      after(async () => {
+        await enrichJob(job.id, userId);
+      });
+    }
+
+    return { success: true, job: job as JobType };
+  } catch (error) {
+    if (isNextNavigationError(error)) throw error;
+
+    console.error("[createJobAction]", error);
+    return {
+      success: false,
+      error: jobActionErrorMessage(error),
+      code: "CREATE_FAILED",
+    };
+  }
+}
+
+/**
+ * Track a Bluedoor posting as a dashboard application.
+ * Pre-seeds bluedoorJobId + enrichment fields so badges appear without waiting on enrich.
+ * Idempotent — returns the existing row when the same bluedoorJobId is already tracked.
+ */
+export async function trackJobFromDiscoverAction(
+  payload: DiscoverTrackPayload
+): Promise<JobActionResult> {
+  try {
+    const userId = await authenticateAndRedirect();
+
+    const existing = await prisma.job.findFirst({
+      where: { userId, bluedoorJobId: payload.jobId },
+    });
+    if (existing) {
+      return { success: true, job: existing as JobType };
+    }
+
+    const parsed = createAndEditJobSchema.parse({
+      position: payload.title.trim(),
+      company: resolveDiscoverCompanyName(payload.orgId, payload.applyUrl),
+      location: resolveTrackLocation(payload.locationText, payload.country),
+      status: JobStatus.Pending,
+      mode: bluedoorEmploymentToJobMode(payload.employmentType),
+      applyUrl: payload.applyUrl?.trim() || undefined,
+    });
+
+    const enrichment = buildEnrichmentPatchFromDiscoverPayload(payload);
+
+    const job = await prisma.job.create({
+      data: {
+        position: parsed.position,
+        company: parsed.company,
+        location: parsed.location,
+        status: parsed.status,
+        mode: parsed.mode,
+        applyUrl: parsed.applyUrl ?? null,
+        userId,
+        ...enrichment,
+      },
+    });
+
+    await invalidateUserJobCaches(userId, job.id);
+
+    // Org metadata + webhook subscription — best-effort, post-response
+    after(async () => {
+      try {
+        const org = await getBluedoorOrg(payload.orgId);
+        if (org) {
+          await prisma.job.update({
+            where: { id: job.id, userId },
+            data: {
+              companySize: org.size ?? null,
+              companyIndustry: org.industry ?? null,
+              companyHq: org.hq_location ?? null,
+            },
+          });
+          await invalidateUserJobCaches(userId, job.id);
+        }
+
+        const subId = await registerBluedoorWebhook(payload.jobId);
+        if (subId) {
+          await prisma.job.update({
+            where: { id: job.id, userId },
+            data: { bluedoorWebhookSubId: subId },
+          });
+        }
+      } catch (err) {
+        console.error("[trackJobFromDiscoverAction:after]", err);
+      }
+    });
+
+    return { success: true, job: job as JobType };
+  } catch (error) {
+    if (isNextNavigationError(error)) throw error;
+
+    console.error("[trackJobFromDiscoverAction]", error);
+    return {
+      success: false,
+      error: jobActionErrorMessage(error),
+      code: "TRACK_FAILED",
+    };
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -59,43 +225,6 @@ export async function createUserAction(
     }
     console.error('[createUserAction] error:', err);
     return { success: false, error: 'Could not create account. Please try again.' };
-  }
-}
-
-// ─────────────────────────────────────────────
-// Job CRUD
-// ─────────────────────────────────────────────
-
-export async function createJobAction(
-  values: CreateAndEditJobType
-): Promise<JobType | null> {
-  const userId = await authenticateAndRedirect();
-
-  try {
-    createAndEditJobSchema.parse(values);
-    const job = await prisma.job.create({
-      data: {
-        ...values,
-        // Zod transform returns undefined for empty string — coerce to null for DB
-        applyUrl: values.applyUrl ?? null,
-        userId,
-      },
-    });
-
-    await invalidateUserJobCaches(userId, job.id);
-
-    // Fire Bluedoor enrichment after response is sent — non-blocking
-    // `after` is stable in Next.js 15+ (v16 here). Runs post-response.
-    if (job.applyUrl) {
-      after(async () => {
-        await enrichJob(job.id, userId);
-      });
-    }
-
-    return job as JobType;
-  } catch (error) {
-    console.error(error);
-    return null;
   }
 }
 

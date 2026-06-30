@@ -4,7 +4,7 @@
 Job application CRM + Bluedoor enrichment + discover + AI insights (FastAPI). Not a job board.
 
 ## Stack
-Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **51** · Playwright E2E · FastAPI (`python-ai-service/`)
+Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **54** · Playwright E2E · FastAPI (`python-ai-service/`)
 
 ## Auth
 - `proxy.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team`; `/jobs/*` → `/dashboard`
@@ -25,6 +25,8 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 - `after()` enrich · webhook subscribe · cron enrich + weekly digest
 - Org intel: `getBluedoorOrg` → `companySize`/`companyIndustry`/`companyHq` on Job
 - Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · `lib/discover/query-options.ts` (SSR-safe) · not persisted
+- **Discover track:** `trackJobFromDiscoverAction` · `useTrackDiscoverJobMutation` · `lib/discover/track-helpers.ts` — pre-seeds `bluedoorJobId`, idempotent, `invalidateAllJobQueries` on success
+- `createJobAction` → `JobActionResult` (`success`/`error`) — no silent null
 - Notifications: SSE bell + React Email (Resend)
 
 ## Phase 2 ~90% · Phase 3 ✅ · BL-0011 ✅ COMMITTED
@@ -55,10 +57,9 @@ Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · Pos
 ## Env
 `AUTH_SECRET` · `AUTH_GOOGLE_*` · `AUTH_GITHUB_*` · `DATABASE_URL` · `BLUEDOOR_WEBHOOK_SECRET` · `CRON_SECRET` · `RESEND_API_KEY` · `AI_SERVICE_URL` (local `http://localhost:3000` · prod `https://ai.arnobmahmud.com`) · `AI_SERVICE_SECRET` · `NEXT_PUBLIC_POSTHOG_KEY` (opt)
 
-## VPS (Coolify @ 77.42.71.87:8000) — in progress
-- `jobify-redis` ✅ internal only (ARQ queue; separate from Upstash on Vercel)
-- `jobify-ai-backend` ⏳ `python-ai-service/` · PORT **3000** · map **5007:3000** · domain `ai.arnobmahmud.com`
-- Pending: env vars · deploy · `/health` · ARQ worker app · Ollama on host (`host.docker.internal:11434`)
+## VPS (Coolify @ 77.42.71.87:8000) — ✅ deployed
+- `jobify-redis` ✅ · `jobify-ai-backend` ✅ `https://ai.arnobmahmud.com/health` · `jobify-arq-worker` ✅
+- PORT **3000** map **5007:3000** · Ollama on host optional (Groq/OpenRouter in env)
 
 ## Verify
 `npm run lint && npm run typecheck && npm run test && npm run build`

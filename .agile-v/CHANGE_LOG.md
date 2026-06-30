@@ -15,6 +15,7 @@
 | UI-2026-06-16b | C1 | REQ-0014, REQ-0012 | Shell skeletons + filter layout UX | Loading UX | — | Agent | Done `93cddf6` |
 | UI-2026-06-16c | C1 | REQ-0014, REQ-0015, REQ-0019 | SSR hydrate + persist + body loading + nav avatar | Cache perf | — | Agent | Done `37f8525` |
 | UI-2026-06-16d | C1 | REQ-0015 | onSettled invalidateAllJobQueries choke-point | Invalidation | — | Agent | Done `66bc670` |
+| UI-2026-06-30 | C1 | REQ-0026 | Discover track: trackJobFromDiscoverAction + JobActionResult | Discover CRM | — | Agent | Done |
 
 ## Change Request Template
 

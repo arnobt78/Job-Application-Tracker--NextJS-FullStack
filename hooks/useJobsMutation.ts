@@ -4,9 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createJobAction,
   deleteJobAction,
+  trackJobFromDiscoverAction,
   updateJobAction,
 } from '@/utils/actions';
-import type { CreateAndEditJobType, JobType } from '@/utils/types';
+import { JobStatus, JobMode, type CreateAndEditJobType, type JobType } from '@/utils/types';
 import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
 import {
@@ -29,8 +30,23 @@ import {
   applyStatsUpdate,
   type StatsCache,
 } from '@/lib/jobs/stats-optimistic';
+import {
+  resolveDiscoverCompanyName,
+  type DiscoverTrackPayload,
+} from '@/lib/discover/track-helpers';
 
 type JobsListCache = JobsListResult | undefined;
+
+/** Unwrap JobActionResult — throws so TanStack onError + toast fire on failure. */
+async function unwrapJobActionResult(
+  result: Awaited<ReturnType<typeof createJobAction>>,
+  fallbackLabel: string
+): Promise<JobType> {
+  if (!result.success) {
+    throw new Error(result.error || fallbackLabel);
+  }
+  return result.job;
+}
 
 /** Shared post-mutation invalidation — busts all job queries + cross-tab broadcast */
 export function useJobsInvalidation() {
@@ -49,7 +65,11 @@ export function useCreateJobMutation() {
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
-    mutationFn: (values: CreateAndEditJobType) => createJobAction(values),
+    mutationFn: async (values: CreateAndEditJobType) =>
+      unwrapJobActionResult(
+        await createJobAction(values),
+        'Could not add application'
+      ),
     onMutate: async (values) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
       await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
@@ -96,7 +116,7 @@ export function useCreateJobMutation() {
 
       return { previousJobs, previousStats, previousCharts };
     },
-    onError: (_err, values, context) => {
+    onError: (err, values, context) => {
       context?.previousJobs.forEach(([key, data]) => {
         queryClient.setQueryData(key, data);
       });
@@ -106,17 +126,121 @@ export function useCreateJobMutation() {
       if (context?.previousCharts !== undefined) {
         queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
       }
-      notifyJobCreateError(values.position, values.company);
+      const detail =
+        err instanceof Error && err.message ? err.message : undefined;
+      notifyJobCreateError(values.position, values.company, detail);
     },
     onSuccess: (data) => {
-      if (!data) return;
       notifyJobCreated(data);
       invalidateAfterMutation(data.id);
       trackEvent('job_created', { status: data.status, mode: data.mode });
-      // No navigation — Add Job is a dialog on /dashboard; caller handles close via mutate() onSuccess callback
     },
     onSettled: (data) => {
-      // Full bust incl. filterOptions — no second cross-tab ping (onSuccess already broadcast)
+      invalidateAllJobQueries(queryClient, data?.id ?? undefined, {
+        broadcast: false,
+      });
+    },
+  });
+}
+
+/**
+ * Track a Bluedoor posting from /discover — pre-seeds enrichment + idempotent by bluedoorJobId.
+ * Shares optimistic invalidation pattern with useCreateJobMutation.
+ */
+export function useTrackDiscoverJobMutation() {
+  const queryClient = useQueryClient();
+  const { invalidateAfterMutation } = useJobsInvalidation();
+
+  return useMutation({
+    mutationFn: async (payload: DiscoverTrackPayload) =>
+      unwrapJobActionResult(
+        await trackJobFromDiscoverAction(payload),
+        'Could not track application'
+      ),
+    onMutate: async (payload) => {
+      const values: CreateAndEditJobType = {
+        position: payload.title,
+        company: resolveDiscoverCompanyName(payload.orgId, payload.applyUrl),
+        location: payload.locationText ?? payload.country ?? 'Unknown',
+        status: JobStatus.Pending,
+        mode: JobMode.FullTime,
+        applyUrl: payload.applyUrl,
+      };
+
+      await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
+      await queryClient.cancelQueries({ queryKey: queryKeys.charts.all });
+
+      const previousJobs = queryClient.getQueriesData<JobsListCache>({
+        queryKey: queryKeys.jobs.all,
+      });
+      const previousStats = queryClient.getQueryData<StatsCache>(
+        queryKeys.stats.all
+      );
+      const previousCharts = queryClient.getQueryData<ChartsCache>(
+        queryKeys.charts.all
+      );
+
+      const now = new Date();
+      const optimisticJob: JobType = {
+        id: `optimistic-${Date.now()}`,
+        createdAt: now,
+        updatedAt: now,
+        userId: '',
+        ...values,
+        bluedoorJobId: payload.jobId,
+      };
+
+      queryClient.setQueriesData<JobsListCache>(
+        { queryKey: queryKeys.jobs.all },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            jobs: [optimisticJob, ...old.jobs],
+            count: old.count + 1,
+          };
+        }
+      );
+
+      queryClient.setQueryData<StatsCache>(queryKeys.stats.all, (old) =>
+        applyStatsCreate(old, values)
+      );
+
+      queryClient.setQueryData<ChartsCache>(queryKeys.charts.all, (old) =>
+        bumpChartMonth(old, now, 1)
+      );
+
+      return { previousJobs, previousStats, previousCharts, values };
+    },
+    onError: (err, payload, context) => {
+      context?.previousJobs.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      if (context?.previousStats !== undefined) {
+        queryClient.setQueryData(queryKeys.stats.all, context.previousStats);
+      }
+      if (context?.previousCharts !== undefined) {
+        queryClient.setQueryData(queryKeys.charts.all, context.previousCharts);
+      }
+      const detail =
+        err instanceof Error && err.message ? err.message : undefined;
+      notifyJobCreateError(
+        payload.title,
+        context?.values.company ?? payload.orgId,
+        detail
+      );
+    },
+    onSuccess: (data) => {
+      notifyJobCreated(data);
+      invalidateAfterMutation(data.id);
+      trackEvent('job_created', {
+        status: data.status,
+        mode: data.mode,
+        source: 'discover',
+      });
+    },
+    onSettled: (data) => {
       invalidateAllJobQueries(queryClient, data?.id ?? undefined, {
         broadcast: false,
       });

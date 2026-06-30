@@ -3,10 +3,9 @@
 /**
  * DiscoverJobCard — single Bluedoor job posting result card.
  *
- * "Track Application" uses useCreateJobMutation (same as CreateJobForm) so
- * invalidateAllJobQueries fires on success, updating the dashboard grid
- * immediately without navigation. cleanLocation strips semicolon-joined
- * multi-location strings returned by Bluedoor.
+ * "Track Application" uses useTrackDiscoverJobMutation so bluedoorJobId is
+ * pre-seeded and invalidateAllJobQueries fires on success — dashboard updates
+ * immediately without navigation.
  */
 
 import { useState } from 'react';
@@ -23,24 +22,18 @@ import {
   Search,
 } from 'lucide-react';
 import type { BluedoorJob } from '@/lib/bluedoor/types';
-import { JobStatus, JobMode } from '@/utils/types';
 import { cn } from '@/lib/utils';
-import { useCreateJobMutation } from '@/hooks/useJobsMutation';
+import { useTrackDiscoverJobMutation } from '@/hooks/useJobsMutation';
 import { DiscoverJobDetailsModal } from '@/components/discover/discover-job-details-modal';
 import { CompanyLogo } from '@/components/ui/company-logo';
 import { extractDomain } from '@/lib/ui/company-logo';
-
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-
-/**
- * Bluedoor returns semicolon-joined multi-location strings like
- * "Remote - TX, El Paso, TX; Remote - GA, GA". Return only the first entry.
- */
-function cleanLocation(text: string): string {
-  return text.split(';')[0].trim();
-}
+import {
+  cleanDiscoverLocation,
+  resolveDiscoverCompanyName,
+  toDiscoverTrackPayload,
+  workplaceLabel,
+  bluedoorEmploymentToJobMode,
+} from '@/lib/discover/track-helpers';
 
 function formatSalary(job: BluedoorJob): string | null {
   if (!job.salary_min && !job.salary_max) return null;
@@ -57,39 +50,6 @@ function formatSalary(job: BluedoorJob): string | null {
   return null;
 }
 
-/**
- * Humanize Bluedoor org_id (e.g. "stripe-greenhouse" → "Stripe") for display and tracking.
- * Strips ATS provider suffix, splits on hyphens, title-cases each word.
- */
-function formatOrgName(orgId: string): string {
-  return orgId
-    .replace(/-(greenhouse|lever|ashby|workday)$/, '')
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
-function workplaceLabel(type: string | null): string {
-  if (type === 'remote') return 'Remote';
-  if (type === 'hybrid') return 'Hybrid';
-  if (type === 'on_site') return 'On-site';
-  return '';
-}
-
-/** Derive a clean JobMode from Bluedoor employment_type string */
-function toJobMode(employment_type: string | null): JobMode {
-  const t = (employment_type ?? '').toLowerCase();
-  if (t.includes('part')) return JobMode.PartTime;
-  if (t.includes('contract') || t.includes('1099')) return JobMode.Internship; // closest available
-  if (t.includes('intern')) return JobMode.Internship;
-  if (t.includes('temp')) return JobMode.PartTime;
-  return JobMode.FullTime;
-}
-
-// ─────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────
-
 type DiscoverJobCardProps = {
   job: BluedoorJob;
 };
@@ -98,34 +58,19 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
   const salary = formatSalary(job);
   const workplace = workplaceLabel(job.workplace_type);
   const [tracked, setTracked] = useState(false);
+  const companyName = resolveDiscoverCompanyName(job.org_id, job.apply_url);
 
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const { mutate, isPending } = useCreateJobMutation();
+  const { mutate, isPending } = useTrackDiscoverJobMutation();
 
   function handleTrack() {
-    const rawLocation = job.location_text ?? job.country ?? 'Unknown';
-    mutate(
-      {
-        position: job.title,
-        // Format org_id to human-readable name (e.g. "stripe-greenhouse" → "Stripe")
-        company: formatOrgName(job.org_id),
-        location: cleanLocation(rawLocation),
-        status: JobStatus.Pending,
-        mode: toJobMode(job.employment_type),
-        applyUrl: job.apply_url,
-      },
-      {
-        // Runs after mutation's built-in invalidation + toast
-        onSuccess: (data) => {
-          if (data) setTracked(true);
-        },
-      }
-    );
+    mutate(toDiscoverTrackPayload(job), {
+      onSuccess: () => setTracked(true),
+    });
   }
 
-  // Display location — clean semicolon-joined multi-location strings
   const displayLocation = job.location_text
-    ? cleanLocation(job.location_text)
+    ? cleanDiscoverLocation(job.location_text)
     : null;
 
   return (
@@ -133,14 +78,12 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
       variant="neutral"
       className={cn('flex flex-col gap-3', tracked && 'opacity-70')}
     >
-      {/* Header */}
       <div>
         <div className="flex items-start justify-between gap-2">
           <h3 className="flex items-center gap-2 text-sm font-semibold leading-tight">
             <Briefcase className="h-4 w-4 shrink-0 text-primary" />
             {job.title}
           </h3>
-          {/* Workplace badge */}
           {workplace && (
             <span
               className={cn(
@@ -158,11 +101,10 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
           )}
         </div>
 
-        {/* Company + location */}
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <CompanyLogo domain={extractDomain(job.apply_url)} size={12} />
-            {formatOrgName(job.org_id)}
+            {companyName}
           </span>
           {job.department && (
             <span className="text-muted-foreground/60">{job.department}</span>
@@ -176,7 +118,6 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
         </div>
       </div>
 
-      {/* Salary */}
       {salary && (
         <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
           <DollarSign className="h-3.5 w-3.5" />
@@ -189,23 +130,19 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
         </div>
       )}
 
-      {/* Description preview — only when available (include=description was requested) */}
       {job.description_text && (
         <p className="line-clamp-2 text-xs text-muted-foreground">
           {job.description_text.slice(0, 280)}
         </p>
       )}
 
-      {/* Details modal */}
       <DiscoverJobDetailsModal
         jobId={job.job_id}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
       />
 
-      {/* Actions */}
       <div className="mt-auto flex items-center gap-2">
-        {/* View full details modal */}
         <button
           onClick={() => setDetailsOpen(true)}
           className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-white/5 px-3 text-xs font-medium text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
@@ -214,7 +151,6 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
           Details
         </button>
 
-        {/* View original posting */}
         <a
           href={job.apply_url}
           target="_blank"
@@ -225,7 +161,6 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
           Apply
         </a>
 
-        {/* Track button — creates job in tracker */}
         <Button
           size="sm"
           variant={tracked ? 'outline' : 'default'}

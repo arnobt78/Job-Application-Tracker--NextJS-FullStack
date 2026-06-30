@@ -2,8 +2,8 @@
 
 Demo: <https://jobify-tracker.vercel.app>
 
-**Last updated:** 2026-06-29 (BL-0011 — team mode, browser extension, email inbound, ARQ batch AI, LLM skill gap, interview prep)  
-**Verification:** lint ✓ · typecheck ✓ · test **51/51** ✓ · build ✓
+**Last updated:** 2026-06-30 (Discover track fix + VPS deploy complete)  
+**Verification:** lint ✓ · typecheck ✓ · test **54/54** ✓ · build ✓
 
 ---
 
@@ -19,7 +19,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Global timeline** | ✅ Complete — `/timeline` — job_created, enriched, posting_changed, ai_generated |
 | **Phase 2 — AI** | ✅ ~90% — FastAPI + streaming SSE + `PipelineProgress` + DB persist + `/profile` for UserProfile |
 | **Phase 2 — n8n / Coolify** | ⚠️ Partial — internal API + `docs/n8n/*.json` templates; no VPS deploy |
-| **Testing / analytics** | ⚠️ Partial — Vitest 51 + Playwright E2E scaffold + PostHog (optional) |
+| **Testing / analytics** | ⚠️ Partial — Vitest 54 + Playwright E2E scaffold + PostHog (optional) |
 | **Phase 3 — complete** | ✅ AI fit chip · react-markdown · Framer Motion · PDF parser · Skill Gap (keyword + LLM) · Salary Intel · Team mode · Browser extension · Email inbound · ARQ batch AI · Interview prep |
 
 **Roadmap detail:** `docs/PROJECT_PLAN.md` · **Stack decisions:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
@@ -42,7 +42,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Email (React Email)** | PostingClosed, JdChanged, SalaryAdded, WeeklyDigest templates |
 | **Cron** | enrich 03:00 UTC · weekly-digest Sunday 09:00 UTC |
 | **Stats** | KPI row + 4 charts + weekly velocity |
-| **Discover** | `/discover` — **two-panel layout** (`DiscoverSidebar` lg+), facet counts, infinite scroll, Details modal |
+| **Discover** | `/discover` — two-panel layout, facet counts, infinite scroll, Details modal, **Track Application** → `trackJobFromDiscoverAction` (pre-seeds Bluedoor fields, idempotent) |
 | **Timeline** | `/timeline` — global activity feed from Job rows + `JobAIInsight` |
 | **User profile** | `/profile` — skills, target roles, experience level, resume text for AI context |
 | **AI — streaming** | `useStreamPipeline` → `/api/ai/pipeline/stream` → `PipelineProgress` (9 steps) |
@@ -102,6 +102,8 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 | `app/(dashboard)/timeline/page.tsx` | SSR prefetch global activity feed |
 | `app/(dashboard)/discover/page.tsx` | two-panel: `DiscoverSidebar` (lg+) + results; SSR prefetch via `lib/discover/query-options.ts` |
 | `lib/discover/query-options.ts` | SSR-safe `buildDiscoverQueryOptions` — shared by page prefetch + client hooks |
+| `lib/discover/track-helpers.ts` | Company/location mapping + `toDiscoverTrackPayload` for track action |
+| `hooks/useJobsMutation.ts` | `useCreateJobMutation` + `useTrackDiscoverJobMutation` — optimistic + `invalidateAllJobQueries` |
 | `components/discover/discover-sidebar.tsx` | Sticky left-rail filters with facet counts (desktop) |
 | `components/timeline/timeline-view.tsx` | Client timeline list — `getTimelineEventsAction` |
 | `lib/jobs/timeline.ts` | Derive events from Job + aiInsight (cached by jobsTag) |

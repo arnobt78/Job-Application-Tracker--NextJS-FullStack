@@ -31,6 +31,7 @@
 | EVAL-0015 | 2026-06-28 | BL-0011 WIP audit | typecheck on dirty tree | **FLAG** | skill-gap-tab type errors; prisma client stale |
 | EVAL-0016 | 2026-06-29 | Discover SSR + proxy.ts | lint/typecheck/test(51)/build | PASS | `lib/discover/query-options.ts` |
 | EVAL-0017 | 2026-06-30 | Pre-VPS audit @ `7caf223` | lint/typecheck/test(51)/build | PASS | AI localhost:3000 aligned; docs sync |
+| EVAL-0018 | 2026-06-30 | Discover track fix (BL-0012) | lint/typecheck/test(54)/build | PASS | trackJobFromDiscoverAction, JobActionResult |
 | EVAL-0013 | 2026-06-27 | Agile V reactivation @ 0f2ea55 | lint/typecheck/test(49) | PASS | REQ-0024 |
 | — | — | Full baseline TC-0001…24 | Manual + automated | NOT_RUN | Gate 2 blocker |
 

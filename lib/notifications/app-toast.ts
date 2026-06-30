@@ -45,10 +45,16 @@ export function notifyJobCreated(job: JobType): void {
   });
 }
 
-export function notifyJobCreateError(position: string, company: string): void {
+export function notifyJobCreateError(
+  position: string,
+  company: string,
+  detail?: string
+): void {
   toast.error('Could not add application', {
-    description: `Failed to save ${position} at ${company}. Please try again.`,
-    duration: 4000,
+    description:
+      detail ??
+      `Failed to save ${position} at ${company}. Please try again.`,
+    duration: 5000,
   });
 }
 

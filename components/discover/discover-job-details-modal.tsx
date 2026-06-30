@@ -30,25 +30,21 @@ import {
 } from 'lucide-react';
 import { getBluedoorJobDetailsAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
-import { useCreateJobMutation } from '@/hooks/useJobsMutation';
+import { useTrackDiscoverJobMutation } from '@/hooks/useJobsMutation';
 import { AiInsightsPanel } from '@/components/jobs/ai-insights-panel';
-import { JobStatus, JobMode } from '@/utils/types';
+import { JobMode } from '@/utils/types';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import type { BluedoorJob } from '@/lib/bluedoor/types';
 import type { PipelineJobInput } from '@/lib/ai/pipeline-client';
 
-// ─────────────────────────────────────────────
-// Helpers (duplicated from discover-job-card to keep modal self-contained)
-// ─────────────────────────────────────────────
-
-function formatOrgName(orgId: string): string {
-  return orgId
-    .replace(/-(greenhouse|lever|ashby|workday)$/, '')
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
+import {
+  cleanDiscoverLocation,
+  resolveDiscoverCompanyName,
+  toDiscoverTrackPayload,
+  workplaceLabel,
+  bluedoorEmploymentToJobMode,
+} from '@/lib/discover/track-helpers';
 
 function formatSalary(job: BluedoorJob): string | null {
   if (!job.salary_min && !job.salary_max) return null;
@@ -66,22 +62,11 @@ function formatSalary(job: BluedoorJob): string | null {
 }
 
 function cleanLocation(text: string): string {
-  return text.split(';')[0].trim();
-}
-
-function workplaceLabel(type: string | null): string {
-  if (type === 'remote') return 'Remote';
-  if (type === 'hybrid') return 'Hybrid';
-  if (type === 'on_site') return 'On-site';
-  return '';
+  return cleanDiscoverLocation(text);
 }
 
 function toJobMode(employment_type: string | null): JobMode {
-  const t = (employment_type ?? '').toLowerCase();
-  if (t.includes('part')) return JobMode.PartTime;
-  if (t.includes('contract') || t.includes('1099')) return JobMode.Internship;
-  if (t.includes('intern')) return JobMode.Internship;
-  return JobMode.FullTime;
+  return bluedoorEmploymentToJobMode(employment_type);
 }
 
 /** Map BluedoorJob → PipelineJobInput for the AI pipeline (uses Bluedoor job_id). */
@@ -89,7 +74,7 @@ function toBluedoorPipelineInput(job: BluedoorJob): PipelineJobInput {
   return {
     job_id: job.job_id,
     position: job.title,
-    company: formatOrgName(job.org_id),
+    company: resolveDiscoverCompanyName(job.org_id, job.apply_url),
     location: job.location_text ? cleanLocation(job.location_text) : 'Unknown',
     status: 'pending', // not yet tracked in the user's pipeline
     mode: toJobMode(job.employment_type),
@@ -128,7 +113,7 @@ type ModalBodyProps = {
 
 function ModalBody({ jobId, onClose }: ModalBodyProps) {
   const [tracked, setTracked] = useState(false);
-  const { mutate, isPending } = useCreateJobMutation();
+  const { mutate, isPending } = useTrackDiscoverJobMutation();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.discover.detail(jobId),
@@ -147,29 +132,19 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
     );
   }
 
-  const salary = formatSalary(data);
-  const workplace = workplaceLabel(data.workplace_type);
-  const location = data.location_text ? cleanLocation(data.location_text) : null;
+  const job = data;
+  const salary = formatSalary(job);
+  const workplace = workplaceLabel(job.workplace_type);
+  const location = job.location_text ? cleanLocation(job.location_text) : null;
+  const companyName = resolveDiscoverCompanyName(job.org_id, job.apply_url);
 
   function handleTrack() {
-    mutate(
-      {
-        position: data!.title,
-        company: formatOrgName(data!.org_id),
-        location: location ?? 'Unknown',
-        status: JobStatus.Pending,
-        mode: toJobMode(data!.employment_type),
-        applyUrl: data!.apply_url,
+    mutate(toDiscoverTrackPayload(job), {
+      onSuccess: () => {
+        setTracked(true);
+        onClose();
       },
-      {
-        onSuccess: (created) => {
-          if (created) {
-            setTracked(true);
-            setTimeout(onClose, 1_200);
-          }
-        },
-      }
-    );
+    });
   }
 
   return (
@@ -178,12 +153,12 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
       <div>
         <h2 className="flex items-start gap-2 text-base font-semibold leading-snug">
           <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          {data.title}
+          {job.title}
         </h2>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Building2 className="h-3 w-3" />
-            {formatOrgName(data.org_id)}
+            {companyName}
           </span>
           {location && (
             <span className="flex items-center gap-1">
@@ -195,9 +170,9 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                data.workplace_type === 'remote' && 'bg-emerald-500/15 text-emerald-400',
-                data.workplace_type === 'hybrid' && 'bg-sky-500/15 text-sky-400',
-                data.workplace_type === 'on_site' && 'bg-amber-500/15 text-amber-400'
+                job.workplace_type === 'remote' && 'bg-emerald-500/15 text-emerald-400',
+                job.workplace_type === 'hybrid' && 'bg-sky-500/15 text-sky-400',
+                job.workplace_type === 'on_site' && 'bg-amber-500/15 text-amber-400'
               )}
             >
               {workplace}
@@ -211,17 +186,17 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
         <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-400">
           <DollarSign className="h-4 w-4" />
           {salary}
-          {data.salary_period && (
-            <span className="font-normal text-muted-foreground">/ {data.salary_period}</span>
+          {job.salary_period && (
+            <span className="font-normal text-muted-foreground">/ {job.salary_period}</span>
           )}
         </div>
       )}
 
       {/* Full description */}
-      {data.description_text ? (
+      {job.description_text ? (
         <div className="overlay-scroll max-h-64 overflow-y-auto rounded-lg border border-border bg-black/20 p-4">
           <pre className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-            {data.description_text}
+            {job.description_text}
           </pre>
         </div>
       ) : (
@@ -229,12 +204,12 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
       )}
 
       {/* AI Insights — on-demand fit score, cover letter, interview angles */}
-      <AiInsightsPanel job={toBluedoorPipelineInput(data)} />
+      <AiInsightsPanel job={toBluedoorPipelineInput(job)} />
 
       {/* Actions */}
       <div className="flex items-center gap-2">
         <a
-          href={data.apply_url}
+          href={job.apply_url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-4 text-sm font-medium text-primary transition hover:bg-primary/10 hover:border-primary/40"

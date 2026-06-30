@@ -229,6 +229,11 @@ export const createAndEditJobSchema = z.object({
 
 export type CreateAndEditJobType = z.infer<typeof createAndEditJobSchema>;
 
+/** Structured server-action result — avoids silent null failures on the client. */
+export type JobActionResult =
+  | { success: true; job: JobType }
+  | { success: false; error: string; code?: string };
+
 /** Loose URL check — allows http and https, any host */
 function isValidUrl(val: string): boolean {
   try {

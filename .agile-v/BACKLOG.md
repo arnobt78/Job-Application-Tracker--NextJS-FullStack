@@ -38,9 +38,21 @@
 
 ---
 
-## BL-0009: Phase 2 Deploy — **IN PROGRESS**
+## BL-0009: Phase 2 Deploy — **DONE**
 
-**REQ:** REQ-0027 · **Status:** `jobify-redis` ✅ · `jobify-ai-backend` + ARQ worker + Ollama ⏳
+**REQ:** REQ-0027 · **Status:** `jobify-redis` ✅ · `jobify-ai-backend` ✅ · `jobify-arq-worker` ✅ @ `ai.arnobmahmud.com`
+
+---
+
+## BL-0012: Discover Track Fix — **DONE** (2026-06-30)
+
+| Item | Status |
+|---|---|
+| `trackJobFromDiscoverAction` — pre-seed bluedoorJobId, idempotent | ✅ |
+| `lib/discover/track-helpers.ts` — company/location fallbacks | ✅ |
+| `JobActionResult` on `createJobAction` — no silent null | ✅ |
+| `useTrackDiscoverJobMutation` — optimistic + invalidateAll | ✅ |
+| Vitest track-helpers (54 total) | ✅ |
 
 ---
 
@@ -52,7 +64,7 @@
 
 ## BL-0003: Test Suite
 
-**REQ:** REQ-0021 · Vitest **51** ✓ · Playwright scaffold · E2E CI pending
+**REQ:** REQ-0021 · Vitest **54** ✓ · Playwright scaffold · E2E CI pending
 
 ---
 
@@ -66,7 +78,6 @@
 
 | Priority | BL | Status |
 |---|---|---|
-| 1 | **BL-0009** | **IN PROGRESS** — finish AI backend deploy on Coolify |
-| 2 | Gate 1 (INT-0001) | PENDING human approval |
-| 3 | BL-0003 | E2E CI wiring |
-| 4 | n8n templates | Not deployed (`docs/n8n/`) |
+| 1 | Gate 1 (INT-0001) | PENDING human approval |
+| 2 | BL-0003 | E2E CI wiring |
+| 3 | n8n templates | Not deployed (`docs/n8n/`) |

@@ -43,7 +43,7 @@ export async function enrichJob(
     const match = await findBluedoorMatch(job as JobType);
     if (!match) return;
 
-    const patch = buildEnrichmentPatch(match);
+    const patch = buildBluedoorEnrichmentPatch(match);
     await prisma.job.update({
       where: { id: jobId, userId },
       data: patch,
@@ -94,7 +94,7 @@ export async function resyncJob(
 ): Promise<boolean> {
   try {
     const fresh = await getJobDetail(bluedoorJobId);
-    const patch = buildEnrichmentPatch(fresh);
+    const patch = buildBluedoorEnrichmentPatch(fresh);
 
     const current = await prisma.job.findUnique({
       where: { id: jobId, userId },
@@ -291,7 +291,8 @@ async function matchByFuzzy(
 // Enrichment patch builder
 // ─────────────────────────────────────────────
 
-function buildEnrichmentPatch(job: BluedoorJob): JobEnrichmentPatch {
+/** Build Prisma patch from a Bluedoor job record — shared by enrich + discover track. */
+export function buildBluedoorEnrichmentPatch(job: BluedoorJob): JobEnrichmentPatch {
   return {
     bluedoorJobId: job.job_id,
     bluedoorOrgId: job.org_id,
