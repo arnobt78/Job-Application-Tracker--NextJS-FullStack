@@ -17,7 +17,8 @@
 | UI-2026-06-16d | C1 | REQ-0015 | onSettled invalidateAllJobQueries choke-point | Invalidation | — | Agent | Done `66bc670` |
 | UI-2026-06-30 | C1 | REQ-0026 | Discover track: trackJobFromDiscoverAction + JobActionResult | Discover CRM | — | Agent | Done |
 | UI-2026-06-30b | C1 | REQ-0015 | Optimistic mutations skip jobs.filterOptions cache | Cache safety | — | Agent | Done `63140e5` |
-| UI-2026-06-30c | C1 | REQ-0012, REQ-0014, REQ-0026 | Dialog/form UI polish: GlassFilterDropdown, 80vh dialog, page widths, scroll-shift | UX parity | ART-0078 | Agent | Done |
+| UI-2026-06-30c | C1 | REQ-0012, REQ-0014, REQ-0026 | Dialog/form UI polish: GlassFilterDropdown, 80vh dialog, page widths, scroll-shift | UX parity | ART-0078 | Agent | Done `148a49f` |
+| AV-2026-07-24 | C1 | REQ-0024 | Infinity Loop reactivate; `.agile-v/` sync @ `148a49f` | Resume INT-0003 | — | Agent | Done |
 
 ## Change Request Template
 

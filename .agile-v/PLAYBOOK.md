@@ -14,7 +14,7 @@
 |---|---|---|
 | 1 | Read state | `STATE.md` |
 | 2 | Check checkpoint | `CHECKPOINTS.md` |
-| 3 | Load skill | `agile-v-core` **FIRST** |
+| 3 | Load skill | `agile-v-core` **FIRST** → pipeline/lifecycle/compliance on demand |
 | 4 | Map → REQ | `REQUIREMENTS.md` |
 | 5 | SCOPE-V | Specify→Constrain→Orchestrate→Prove→Evolve→Verify |
 | 6 | Log | `TRACE_LOG.md`, `DECISION_LOG.md` |
@@ -27,12 +27,13 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 · INT-0003 ACTIVE |
-| Git HEAD | `3551f1e` (clean) |
-| WIP | BL-0009 Coolify VPS AI deploy |
-| P1 | ✅ · P2 ~90% deploy ⏳ · P3 ✅ |
+| Git HEAD | `148a49f` (clean) |
+| Stage | 3 Synthesis (code complete; Gate 1 PENDING) |
+| P1 / P2 / P3 | ✅ / ✅ VPS / ✅ |
 | Auth | NextAuth v5 |
-| Tests | **51/51** @ HEAD |
-| Gate 1 | PENDING |
+| Tests | **60/60** @ HEAD |
+| Gate 1 | PENDING (`Approve Gate 1`) |
+| Gate 2 | NOT_RUN |
 
 ## Task Routing
 
@@ -41,6 +42,7 @@
 | Bug fix | core → quality-gates → build-agent-js → red-team-verifier |
 | Feature | core → pipeline → requirement-architect → build-agent-js |
 | UI | core → ux-spec-author → build-agent-js |
+| FastAPI/ARQ | core → build-agent-python → red-team-verifier |
 | Deploy | core → deployment-expert → release-manager |
 | Sync only | core → documentation-agent |
 
@@ -50,11 +52,12 @@
 |---|---|
 | SSR | `force-dynamic` + `prefetchQuery` before `dehydrate` |
 | Skeletons | `useQueryBodyLoading` — cold cache only |
-| Persist | jobs/stats/charts/charts-weekly/job — **not** discover/ai/skill-gap/salary-intel |
-| Auth | `proxy.ts` NextAuth JWT (Next.js 16) |
+| Persist | jobs/stats/charts/charts-weekly/job — **not** discover/ai |
+| Auth | `proxy.ts` NextAuth JWT |
 | CRUD cache | `invalidateAllJobQueries` + `invalidateUserJobCaches` + SSE |
 | Cross-tab | `useJobsCacheSync` + `/api/jobs/events` |
-| Nav | `auth()` → `NavUserProvider` |
+| Dialogs | `GlassFilterDropdown` · `JOB_DIALOG_PANEL_CLASS` 80vw×80vh |
+| Page width | `public` max-w-7xl · `app` max-w-9xl |
 
 Full: `CLAUDE.md`
 
@@ -65,9 +68,8 @@ Full: `CLAUDE.md`
 | REQ-0001…0018 | C1 baseline CRM |
 | REQ-0024 | Agile V governance |
 | REQ-0025…0029 | Phase 1 Bluedoor + stats + notifications |
-| REQ-0027 | Phase 2 AI pipeline |
-| REQ-0031 | Phase 3 partial (shipped) |
-| REQ-0033 | Phase 3 advanced (WIP) |
+| REQ-0027 | Phase 2 AI pipeline (VPS ✅) |
+| REQ-0031…0033 | Phase 3 (shipped) |
 
 ## Verify
 
@@ -78,6 +80,6 @@ npm run lint && npm run typecheck && npm run test && npm run build
 ## Evidence Summary (template)
 
 ```
-Scope: [produced] | Traceability: [REQ-IDs] | Findings: PASS/FAIL/FLAG
-Decision: [TIMESTAMP | AGENT | DECISION | RATIONALE | REQ]
+Scope: [produced/validated] | Traceability: [REQ-IDs] | Findings: [PASS/FAIL/FLAG]
+Decision Points: [choices] | Log: [TIMESTAMP | AGENT_ID | DECISION | RATIONALE | LINKED_REQ]
 ```

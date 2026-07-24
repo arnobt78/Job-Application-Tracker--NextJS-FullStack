@@ -56,3 +56,5 @@
 | 2026-06-29T00:00:00Z | Build Agent (JS) | C1 | `prisma db push` instead of `prisma migrate dev` | Remote DB user lacks CREATE DATABASE permission → shadow DB fails; db push syncs schema without migration history | REQ-0033 |
 | 2026-06-29T00:00:00Z | Build Agent (JS) | C1 | Explicit `LLMSkillGapResult` cast in skill-gap-tab.tsx | TypeScript intersection bug with ternary union of two different `UseQueryResult<T>` types — `as LLMSkillGapResult` + explicit annotation resolves without changing runtime | REQ-0033 |
 | 2026-06-30T11:35:00Z | AQMS Orchestrator | C1 | Infinity Loop reactivate @ `3551f1e`; BL-0011 closed; sprint focus BL-0009 VPS | Pre-deploy bootstrap; all code gates PASS | REQ-0024, REQ-0027 |
+| 2026-06-30T14:00:00Z | Build Agent (JS) | C1 | UI dialog/filter polish; GlassFilterDropdown; 80vw dialog; no VPS file changes | UX parity; Vercel-only redeploy | REQ-0012, REQ-0014, REQ-0026 |
+| 2026-07-24T10:16:00Z | AQMS Orchestrator | C1 | Infinity Loop reactivate @ `148a49f`; sync STATE/PLAYBOOK/CHECKPOINTS/config | User `/agile-v-core` + `/agile-v-pipeline`; resume INT-0003 | REQ-0024 |

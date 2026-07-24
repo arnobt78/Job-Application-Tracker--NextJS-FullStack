@@ -104,10 +104,25 @@
 
 ---
 
-## Sprint Plan
+## BL-0015: UI Dialog / Filter Parity — **DONE** (2026-06-30 → `148a49f`)
+
+**REQ:** REQ-0012, REQ-0014, REQ-0026 · **Status:** COMPLETE · CR UI-2026-06-30c
+
+| Item | Status |
+|---|---|
+| GlassFilterDropdown shared + form status/mode icons + labels | ✅ |
+| JOB_DIALOG_PANEL_CLASS 80vw×80vh | ✅ |
+| PageContainer public 7xl / app 9xl | ✅ |
+| Scroll-shift + discover cold spinner | ✅ |
+| lint/typecheck/test 60/60/build | ✅ |
+
+---
+
+## Sprint Plan (2026-07-24)
 
 | Priority | BL | Status |
 |---|---|---|
 | 1 | Gate 1 (INT-0001) | PENDING human approval |
 | 2 | BL-0003 | E2E CI wiring |
 | 3 | n8n templates | Not deployed (`docs/n8n/`) |
+| 4 | Optional | Hetzner app migrate / Ollama on VPS |

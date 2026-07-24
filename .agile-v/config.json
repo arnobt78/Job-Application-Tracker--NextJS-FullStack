@@ -12,27 +12,27 @@
     "standard": "Agile V Infinity Loop",
     "regulatory_context": "non-regulated",
     "activated": "2026-06-11T10:25:44Z",
-    "reactivated": "2026-06-30T11:30:00Z",
+    "reactivated": "2026-07-24T10:16:00Z",
     "session_status": "ACTIVE",
     "infinity_loop": true
   },
   "stack": {
     "frontend": ["Next.js 16", "React 19", "Tailwind CSS", "shadcn/ui", "TanStack Query 5", "Sonner"],
-    "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL", "FastAPI (scaffolded)"],
+    "backend": ["Next.js Server Actions", "Prisma 6", "PostgreSQL", "FastAPI + ARQ"],
     "auth": ["NextAuth v5"],
     "integrations": ["Bluedoor API", "Resend"],
-    "observability": ["Sentry (optional)"],
-    "cache": ["unstable_cache", "Redis optional", "React Query", "SSE", "BroadcastChannel"],
-    "deployment": ["Vercel (Next.js)", "Coolify VPS (BL-0009 in progress)"]
+    "observability": ["Sentry (optional)", "PostHog (optional)"],
+    "cache": ["unstable_cache", "Redis", "React Query", "SSE", "BroadcastChannel"],
+    "deployment": ["Vercel (Next.js)", "Coolify VPS (redis + AI + ARQ ✅)"]
   },
   "approval_authority": {
     "gate_1": ["Project Owner", "Tech Lead"],
     "gate_2": ["Project Owner"]
   },
   "model_versions": {
-    "orchestrator": { "tier": "high", "last_validated": "2026-06-27", "validated_by": "infinity-loop-reactivate" },
-    "build_agent": { "tier": "medium", "last_validated": "2026-06-27", "validated_by": "infinity-loop-reactivate" },
-    "red_team": { "tier": "medium", "last_validated": "2026-06-27", "validated_by": "EVAL-0013" }
+    "orchestrator": { "tier": "high", "last_validated": "2026-07-24", "validated_by": "infinity-loop-reactivate" },
+    "build_agent": { "tier": "medium", "last_validated": "2026-07-24", "validated_by": "infinity-loop-reactivate" },
+    "red_team": { "tier": "medium", "last_validated": "2026-06-30", "validated_by": "EVAL-0019" }
   },
   "llm_provider_registry": [
     {
@@ -42,7 +42,7 @@
       "retention": "session",
       "api_data_usage": "per Cursor policy",
       "approved_for": ["source_code", "requirements", "non-PHI"],
-      "review_date": "2026-06-27"
+      "review_date": "2026-07-24"
     }
   ],
   "active_skills": {
@@ -62,12 +62,14 @@
       "ux-spec-author",
       "build-agent",
       "build-agent-js",
+      "build-agent-python",
       "test-designer",
       "red-team-verifier",
       "compliance-auditor",
       "documentation-agent",
       "observability-planner",
-      "release-manager"
+      "release-manager",
+      "deployment-expert"
     ],
     "domain_primary": "build-agent-js"
   },
@@ -86,16 +88,17 @@
     "playbook": ".agile-v/PLAYBOOK.md"
   },
   "git_baseline": {
-    "head": "3551f1e",
+    "head": "148a49f",
     "branch": "main",
-    "last_verified": "2026-06-30T11:30:00Z",
+    "last_verified": "2026-07-24T10:16:00Z",
     "working_tree": "clean"
   },
   "roadmap": {
-    "phase_1": "COMPLETE — Bluedoor + discover + stats + notifications + timeline + org enrich",
-    "phase_1_remaining": "—",
-    "phase_2": "~90% code — Coolify deploy IN PROGRESS (redis ✅, AI backend ⏳)",
-    "phase_3": "COMPLETE — BL-0011 committed",
+    "phase_1": "COMPLETE — Bluedoor + discover + stats + notifications + timeline",
+    "phase_2": "COMPLETE code + Coolify VPS (redis/AI/ARQ)",
+    "phase_3": "COMPLETE — BL-0011",
+    "ui_polish": "COMPLETE — UI-2026-06-30c @ 148a49f",
+    "next": "Gate 1 | E2E CI | n8n | optional Hetzner app migrate",
     "plan_doc": "docs/PROJECT_PLAN.md",
     "stack_doc": "docs/JOBIFY_TECH_STACK_ANALYSIS.md",
     "walkthrough_doc": "docs/PROJECT_WALKTHROUGH.md"

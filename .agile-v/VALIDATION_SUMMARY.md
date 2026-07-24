@@ -3,10 +3,24 @@
 | Field | Value |
 |---|---|
 | Cycle | C1 |
-| Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009 ✅ · BL-0011 ✅ · BL-0012 ✅ |
-| Status | `ACTIVE` — EVAL-0018 PASS @ `b41373c` |
-| Last Updated | 2026-06-30T00:00:00Z |
-| Red Team | EVAL-0016 PASS · EVAL-0017 PASS · EVAL-0018 PASS |
+| Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009…0015 ✅ · Gate 1 PENDING |
+| Status | `ACTIVE` — EVAL-0020 PASS @ `148a49f` |
+| Last Updated | 2026-07-24T10:16:00Z |
+| Red Team | EVAL-0016…0019 PASS · EVAL-0020 governance sync |
+| EvalGate (Gate 2) | NOT_RUN |
+
+## EVAL-0020 (Infinity Loop reactivate — 2026-07-24 @ `148a49f`)
+
+| Check | Result | Notes |
+|---|---|---|
+| git status | PASS | clean · `main` |
+| HEAD | PASS | `148a49f` UI polish |
+| Agile V bootstrap | PASS | STATE/PLAYBOOK/CHECKPOINTS/config/SKILLS synced |
+| Skills | PASS | 24 ACTIVE · core FIRST |
+| INT-0003 | ACTIVE | await next instruction |
+| Gate 1 INT-0001 | PENDING | reply `Approve Gate 1` |
+| VPS | INFO | no redeploy needed for UI-only commits |
+| Backlog next | INFO | Gate 1 · E2E CI · n8n |
 
 ## EVAL-0018 (Session sync — 2026-06-30 @ `b41373c`)
 
@@ -31,7 +45,7 @@
 | Discover SSR | PASS | `lib/discover/query-options.ts` server-safe |
 | AI port default | PASS | localhost:3000 aligned |
 | proxy.ts auth gate | PASS | Next.js 16 convention |
-| VPS deploy | **FLAG** | `jobify-ai-backend` + worker + Ollama pending |
+| VPS deploy | **FLAG** | then pending — now ✅ |
 
 ## EVAL-0015 (BL-0011 — 2026-06-29) — RESOLVED
 
