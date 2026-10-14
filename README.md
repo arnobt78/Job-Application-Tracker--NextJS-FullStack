@@ -225,7 +225,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   │   │   └── [id]/page.tsx         # /dashboard/[id] — edit dialog via URL
 │   │   ├── discover/
 │   │   │   ├── page.tsx              # /discover — Bluedoor job search
-│   │   │   └── loading.tsx           # Streaming skeleton (static card shells)
+│   │   │   └── loading.tsx           # Instant shell: same page view, cache-only queries
 │   │   └── stats/
 │   │       └── page.tsx              # /stats — analytics + charts
 │   ├── sign-in/[[...sign-in]]/       # Custom sign-in page

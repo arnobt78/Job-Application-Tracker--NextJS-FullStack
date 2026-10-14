@@ -299,7 +299,8 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 - `useQueryBodyLoading` — no skeleton when SSR/hydrate/persist has data
 - `placeholderData` / `keepPreviousData` on jobs list + discover — no flash on filter change
 - `JobCardShell` — static chrome; text skeletons cold only
-- Discover results — centered `Loader2` on cold cache only (no route `loading.tsx`)
+- Discover results — centered `Loader2` on cold cache only
+- Route `loading.tsx` (every dashboard route) renders the same `*-page-view.tsx` as `page.tsx` inside `RouteFallbackProvider`: snapshot of the app cache, queries `enabled: !isRouteFallback` (no requests), `inert` (no input lost on swap). Click → real layout in ~50–120 ms; nav uses `IntentLink` (prefetch on hover/focus/touch, no viewport prefetch) + `staleTimes.dynamic=30`
 - Navbar avatar — single ring + glow; pulse only when no SSR seed
 
 ---

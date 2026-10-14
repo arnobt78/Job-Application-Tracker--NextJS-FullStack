@@ -94,7 +94,8 @@ function EditJobForm({
 
   const { mutate, isPending } = useUpdateJobMutation(jobId);
   const fields = JOB_FORM_COPY.fields;
-  const showFieldSkeleton = formLoading && !data;
+  // The dialog portals outside the fallback's `inert` wrapper, so the fallback must never show live fields
+  const showFieldSkeleton = isRouteFallback || (formLoading && !data);
   const handleCancel = onCancel ?? (standalone ? () => form.reset() : undefined);
 
   function onSubmit(values: CreateAndEditJobType) {

@@ -19,7 +19,9 @@
 | Shell mirror | h1 bounding box shell vs final; screenshots light 1280 + dark 390 | PASS | identical on stats/discover/timeline/team/profile/dashboard · profile + team skeletons match final geometry |
 | Stability | CLS observer, console errors, dashboard search-param nav | PASS | CLS 0.0000 · 0 errors · search input keeps focus/value · fallback controls not focusable (`inert`) |
 | Requests | RSC/action counter per nav | PASS | 0 client actions from fallbacks (only pre-existing dashboard jobs refetch) |
-| Red Team | implementation-verifier | PASS w/ warnings → fixed | fallback mutations into snapshot cache → `inert`; salary edits on resync not invalidating cached salary intel → `salaryEdited` invalidation |
+| Red Team | implementation-verifier ×2 | PASS w/ warnings → fixed | fallback mutations into snapshot cache → `inert`; salary edits on resync not invalidating cached salary intel → `salaryEdited` invalidation; edit dialog portals outside `inert` → fallback always skeleton in `EditJobForm`; `revalidateTag(tag,'max')` is stale-while-revalidate (first read after CRUD returned old cache) → `{ expire: 0 }` in `invalidateUserJobCaches` / `revalidateUserJobsDataCache` |
+| Security | security-review (a46dca4..0116b9a) | PASS | no medium+ findings; server actions session-scoped; salary-intel cache keyed by userId |
+| Agent Review | IDE review (3 items) | 1 fixed · 2 false positive | `EditJobDialogPageFallback` guards missing `id`; team `currentUserId` "" only affects "(you)" marker (runtime: shell shows "(you)"); `IntentLink` ref forwarded via React 19 ref-as-prop (runtime: Radix item focus + Enter → /profile) |
 | Not verified | — | OPEN | CRUD timing re-test pending demo DB restore · first cold-server hit ~0.8–1.3 s before shell · without hover/focus prefetch the shell waits ~1 RTT · Bluedoor upstream 530 outage (external) during run |
 
 ## EVAL-0028 (BL-0016 ISSUE-0009 — responsive audit + A-Z runtime — 2026-10-14)

@@ -12,6 +12,12 @@ import { allUserTags } from '@/lib/cache-tags';
 import { invalidateUserRedisCaches } from '@/lib/redis';
 import { publishInvalidation } from '@/lib/jobs-events';
 
+/**
+ * Immediate expiry — the `'max'` profile is stale-while-revalidate, so the first read after a
+ * mutation would still get the old cached value (and SSR would hydrate it over fresh client data).
+ */
+const EXPIRE_NOW = { expire: 0 };
+
 /** Full purge after CRUD — revalidateTag + Redis SCAN delete + SSE. Call before returning response. */
 export async function invalidateUserJobCaches(
   userId: string,
@@ -26,7 +32,7 @@ export async function invalidateUserJobCaches(
   revalidatePath('/timeline');
 
   for (const tag of allUserTags(userId)) {
-    revalidateTag(tag, 'max');
+    revalidateTag(tag, EXPIRE_NOW);
   }
 
   await invalidateUserRedisCaches(userId);
@@ -51,7 +57,7 @@ export async function revalidateUserJobsDataCache(
   revalidatePath('/timeline');
 
   for (const tag of allUserTags(userId)) {
-    revalidateTag(tag, 'max');
+    revalidateTag(tag, EXPIRE_NOW);
   }
 
   await publishInvalidation(userId, jobId);

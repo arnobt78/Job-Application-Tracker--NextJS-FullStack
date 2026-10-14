@@ -1,5 +1,5 @@
 /**
- * Tagged server reads — unstable_cache + cache tags pair with updateTag on CRUD.
+ * Tagged server reads — unstable_cache + cache tags expired immediately on CRUD (`invalidateUserJobCaches`).
  * Compatible with force-dynamic pages. Optional Redis read-through when Upstash is configured.
  */
 
