@@ -130,6 +130,10 @@
 | ISSUE-0003 | Vercel Node 20 EOL notice | `engines.node` 24.x · `.nvmrc` 24 · `@types/node` 24 | REQ-0024 | DONE (EVAL-0024) · committed |
 | ISSUE-0004 | user · Redis_Sentry_PostHog guide §2A | Sentry: `instrumentation-client.ts` (Turbopack never loaded `sentry.client.config.ts`); `/api/monitoring` tunnel pinned to DSN host+project (SSRF fix), 1 MB cap, 10s timeout, rate-limit headers; prod-only + `VERCEL_ENV`; shared vs client-only `ignoreErrors` + `beforeSend` + `denyUrls`; `excludeDebugStatements`; `.npmrc fund=false`; `vitest.config.mts` | REQ-0024, REQ-0022 | DONE (EVAL-0024) · committed |
 | ISSUE-0005 | user · demo scope | Remove GitHub OAuth: button (`AuthOAuthButtons`), provider (`lib/auth/config.ts`), `.env.example`/README/walkthrough; keep `avatars.githubusercontent.com` for stored avatars | REQ-0001 | DONE (EVAL-0024) · committed |
+| ISSUE-0006 | user · Stats screenshot | Stats cards: two 3-card grids merged into one 6-card grid in `StatsContainer` (3+3 desktop · 2+2+2 tablet · 1 phone) · single stats query · `StatsKpiRow` → presentational `StatsKpiCards` | REQ-0012, REQ-0014 | DONE (EVAL-0025) |
+| ISSUE-0007 | user · light-mode audit | Light-mode phase 1: theme-aware glass tokens (`--glass-*`, `--accent-text`, `--app-glow-*`) in `globals.css` + tailwind `glass.*` colors; `.glass-nav/.glass-sidebar/.glass-input/.app-shell` + GlassCard, Button outline/secondary, glass dialog/dropdown/alert, dashboard/landing nav migrated; dark values identical | REQ-0014 | DONE (EVAL-0026) |
+| ISSUE-0008 | ISSUE-0007 follow-up | Light-mode phase 2: migrate remaining ~30 feature files' hardcoded `white/*`, `text-*-300`, `bg-black/*` to tokens; primary/destructive button `text-white/90` contrast on light gradient | REQ-0014 | TODO (needs plan + approval) |
+| ISSUE-0009 | user | Responsive audit 390/768/1280 across all routes | REQ-0014 | TODO (needs plan + approval) |
 
 ---
 

@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getStatsAction } from '@/utils/actions';
 import StatsCard from './StatsCard';
+import { StatsKpiCards } from '@/components/stats/stats-kpi-row';
 import { queryKeys } from '@/lib/query-keys';
 import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import type { GlassVariant } from '@/components/ui/glass-card';
@@ -17,6 +18,7 @@ const STAT_ITEMS: Array<{
   { title: 'jobs declined', variant: 'rose', key: 'declined' },
 ];
 
+/** All 6 stat cards share one grid (3 / 2 / 1 per row — 6 divides evenly, no orphan card) and one query */
 function StatsContainer() {
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.stats.all,
@@ -26,7 +28,7 @@ function StatsContainer() {
   const bodyLoading = useQueryBodyLoading(queryKeys.stats.all, isLoading);
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {STAT_ITEMS.map(({ title, variant, key }) => (
         <StatsCard
           key={title}
@@ -36,6 +38,7 @@ function StatsContainer() {
           isLoading={bodyLoading}
         />
       ))}
+      <StatsKpiCards stats={data} isLoading={bodyLoading} />
     </div>
   );
 }

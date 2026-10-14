@@ -24,6 +24,19 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+
+    /* Glass surface tokens — full colors (not HSL parts); consumed via tailwind `glass-*` colors */
+    --glass-border: rgb(15 23 42 / 0.1);
+    --glass-border-strong: rgb(15 23 42 / 0.18);
+    --glass-fill: rgb(15 23 42 / 0.04);
+    --glass-hover: rgb(15 23 42 / 0.06);
+    --glass-from: rgb(255 255 255 / 0.85);
+    --glass-via: rgb(255 255 255 / 0.6);
+    --glass-nav-shadow: rgb(15 23 42 / 0.08);
+    --accent-text: #0369a1;
+    --app-glow-a: rgb(59 130 246 / 0.1);
+    --app-glow-b: rgb(236 72 153 / 0.08);
+    --app-overlay: rgb(255 255 255 / 0.05);
   }
 
   .dark {
@@ -46,6 +59,19 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+
+    /* Dark values mirror the original hardcoded white-alpha classes — dark UI unchanged */
+    --glass-border: rgb(255 255 255 / 0.1);
+    --glass-border-strong: rgb(255 255 255 / 0.2);
+    --glass-fill: rgb(255 255 255 / 0.05);
+    --glass-hover: rgb(255 255 255 / 0.1);
+    --glass-from: rgb(255 255 255 / 0.1);
+    --glass-via: rgb(255 255 255 / 0.05);
+    --glass-nav-shadow: rgb(15 23 42 / 0.25);
+    --accent-text: #7dd3fc;
+    --app-glow-a: rgb(59 130 246 / 0.15);
+    --app-glow-b: rgb(236 72 153 / 0.12);
+    --app-overlay: rgb(255 255 255 / 0.05);
   }
 }
 
@@ -63,12 +89,12 @@
   @apply relative min-h-screen overflow-hidden;
   background: radial-gradient(
       circle at top,
-      rgba(59, 130, 246, 0.15),
+      var(--app-glow-a),
       transparent 55%
     ),
     radial-gradient(
       circle at bottom,
-      rgba(236, 72, 153, 0.12),
+      var(--app-glow-b),
       transparent 65%
     );
 }
@@ -77,17 +103,17 @@
   @apply pointer-events-none absolute inset-0;
   background: radial-gradient(
     circle at center,
-    rgba(255, 255, 255, 0.05),
+    var(--app-overlay),
     transparent 60%
   );
 }
 
 .glass-nav {
-  @apply border-b border-white/10 bg-background/85 backdrop-blur-2xl shadow-[0_10px_30px_rgba(15,23,42,0.25)];
+  @apply border-b border-glass-border bg-background/85 backdrop-blur-2xl shadow-[0_10px_30px_var(--glass-nav-shadow)];
 }
 
 .glass-sidebar {
-  @apply border-r border-white/10 bg-background/80 backdrop-blur-xl;
+  @apply border-r border-glass-border bg-background/80 backdrop-blur-xl;
 }
 
 /* Ripple click effect (RIPPLE_BUTTON_EFFECT.md) */
@@ -148,7 +174,7 @@
 /* Removed glass-btn-primary — use Button default variant instead */
 
 .glass-input {
-  @apply bg-white/5 backdrop-blur-sm border border-white/20 placeholder:text-muted-foreground focus-visible:border-sky-400 focus-visible:ring-sky-500/50 shadow-[0_12px_40px_rgba(2,132,199,0.15)];
+  @apply bg-glass-fill backdrop-blur-sm border border-glass-border-strong placeholder:text-muted-foreground focus-visible:border-sky-400 focus-visible:ring-sky-500/50 shadow-[0_12px_40px_rgba(2,132,199,0.15)];
 }
 
 /*

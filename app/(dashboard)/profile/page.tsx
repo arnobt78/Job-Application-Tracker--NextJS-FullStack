@@ -52,7 +52,7 @@ async function UserProfilePage() {
         {/* Side info panel */}
         <div className="flex flex-col gap-4">
           <GlassCard variant="sky">
-            <h3 className="mb-2 text-sm font-semibold text-sky-300">How it works</h3>
+            <h3 className="mb-2 text-sm font-semibold text-accent-text">How it works</h3>
             <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
               <li>• Add your skills so the AI can score how well you match each job</li>
               <li>• Target roles tell the AI what kind of cover letter tone to use</li>

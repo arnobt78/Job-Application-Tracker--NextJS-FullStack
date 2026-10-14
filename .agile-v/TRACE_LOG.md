@@ -101,3 +101,6 @@
 | 2026-10-14T12:00:00Z | verify | implementation-verifier | REQ-0024 | EVAL-0022: Sentry tunnel/client init/noise filters; lint/typecheck/test 69/69/build PASS; tunnel 403/400/413/200 smoke PASS | SUCCESS |
 | 2026-10-14T12:40:00Z | verify | implementation-verifier | REQ-0001 | EVAL-0023: GitHub OAuth removed; lint/typecheck/test 69/69/build PASS; providers = google,credentials | SUCCESS |
 | 2026-10-14T13:00:00Z | verify | implementation-verifier + security-review | REQ-0024, REQ-0001 | EVAL-0024 final gate: lint/typecheck/test/build/e2e 11/browser CRUD/tunnel PASS; verifier warnings fixed | SUCCESS |
+| 2026-10-14T13:20:00Z | build+verify | build-agent-js | REQ-0012 | ISSUE-0006 Stats grid md orphan → last-child col-span-2; lint/typecheck/build + 390/800/1280 layout PASS (EVAL-0025) | SUPERSEDED |
+| 2026-10-14T17:10:00Z | build+verify | build-agent-js | REQ-0012 | ISSUE-0006 revised: one 6-card grid + single stats query (`StatsKpiCards`); 390/800/1280 = 1/2+2+2/3+3 PASS (EVAL-0025) | SUCCESS |
+| 2026-10-14T17:10:00Z | build+verify | build-agent-js | REQ-0014 | ISSUE-0007 light-mode phase 1 tokens + shared primitives; dark parity via computed styles; light screenshots; 0 console errors; verifier PASS w/ warnings resolved (EVAL-0026) | SUCCESS |

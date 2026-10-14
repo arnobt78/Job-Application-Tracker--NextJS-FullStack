@@ -50,6 +50,16 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Theme-aware glass surfaces (globals.css :root / .dark) — opacity baked in, no /alpha modifier
+        glass: {
+          border: "var(--glass-border)",
+          "border-strong": "var(--glass-border-strong)",
+          fill: "var(--glass-fill)",
+          hover: "var(--glass-hover)",
+          from: "var(--glass-from)",
+          via: "var(--glass-via)",
+        },
+        "accent-text": "var(--accent-text)",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -151,7 +151,7 @@ export function GlassDropdownSeparator({
 }: React.ComponentProps<typeof DropdownMenuSeparator>) {
   return (
     <DropdownMenuSeparator
-      className={cn('my-1 bg-white/10', className)}
+      className={cn('my-1 bg-glass-border', className)}
       {...props}
     />
   );

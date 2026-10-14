@@ -91,7 +91,7 @@ export function DashboardNav() {
                 'flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition',
                 isActive
                   ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
-                  : 'text-foreground/75 hover:bg-white/10 hover:text-foreground'
+                  : 'text-foreground/75 hover:bg-glass-hover hover:text-foreground'
               )}
             >
               {link.icon}

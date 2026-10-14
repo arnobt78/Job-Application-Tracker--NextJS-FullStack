@@ -40,7 +40,7 @@ export function GlassDialogContent({
           className={cn(
             'absolute right-5 top-5 z-50 rounded-full p-1',
             'opacity-70 ring-offset-background transition-opacity',
-            'hover:bg-white/10 hover:opacity-100',
+            'hover:bg-glass-hover hover:opacity-100',
             'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
           )}
         >

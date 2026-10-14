@@ -14,9 +14,9 @@ const buttonVariants = cva(
         destructive:
           "border border-rose-400/30 bg-gradient-to-r from-rose-500/70 via-rose-500/50 to-rose-500/30 text-white/90 shadow-[0_15px_35px_rgba(225,29,72,0.45)] hover:from-rose-500/80 hover:via-rose-600/60 hover:to-rose-500/40 [&_svg]:text-white/90",
         outline:
-          "border border-white/10 bg-background/50 text-foreground/90 hover:bg-accent/50 hover:border-white/20 [&_svg]:text-foreground/90",
+          "border border-glass-border bg-background/50 text-foreground/90 hover:bg-accent/50 hover:border-glass-border-strong [&_svg]:text-foreground/90",
         secondary:
-          "bg-gradient-to-r from-secondary/70 via-secondary/50 to-secondary/30 text-white/80 border border-secondary/30 [&_svg]:text-white/80",
+          "bg-gradient-to-r from-secondary/70 via-secondary/50 to-secondary/30 text-secondary-foreground dark:text-white/80 border border-secondary/30 [&_svg]:text-secondary-foreground dark:[&_svg]:text-white/80",
         ghost:
           "text-foreground/90 hover:bg-accent/50 hover:text-accent-foreground [&_svg]:text-foreground/90",
         link: "text-primary underline-offset-4 hover:underline",

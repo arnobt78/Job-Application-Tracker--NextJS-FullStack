@@ -47,7 +47,7 @@ async function TimelinePage() {
         {/* Legend sidebar */}
         <div className="flex flex-col gap-4">
           <GlassCard variant="sky">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-sky-300">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-accent-text">
               Event types
             </h3>
             <ul className="flex flex-col gap-2.5 text-xs text-muted-foreground">

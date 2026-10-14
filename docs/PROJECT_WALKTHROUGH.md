@@ -205,7 +205,7 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 
 1. `PageSectionHeader` — Statistics (h1)
 2. `StatsContainer` — pending / interview / declined cards
-3. `StatsKpiRow` — response rate, interview rate, top job type
+3. `StatsKpiCards` (inside the `StatsContainer` 6-card grid) — response rate, interview rate, top job type
 4. `ApplicationTrendChart` — monthly bar + projected line (GlassCard sky)
 5. `WeeklyVelocityChart` — 12-week area chart (GlassCard violet)
 6. `StatusDistributionChart` + `ModeDistributionChart` — side-by-side (emerald / amber)

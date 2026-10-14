@@ -746,8 +746,8 @@ See `docs/PROJECT_PLAN.md` for Coolify VPS deployment and n8n automation roadmap
 
 | Component                 | Purpose                                       |
 | ------------------------- | --------------------------------------------- |
-| `StatsContainer`          | 3 status cards (pending, interview, declined) |
-| `StatsKpiRow`             | Response rate, interview rate, top job type   |
+| `StatsContainer`          | 6-card grid: 3 status cards + `StatsKpiCards` |
+| `StatsKpiCards`           | Response rate, interview rate, top job type   |
 | `ApplicationTrendChart`   | Monthly bar + projected line                  |
 | `WeeklyVelocityChart`     | 12-week area chart                            |
 | `StatusDistributionChart` | Donut chart                                   |

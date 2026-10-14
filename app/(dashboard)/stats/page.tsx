@@ -1,5 +1,4 @@
 import StatsContainer from '@/components/StatsContainer';
-import { StatsKpiRow } from '@/components/stats/stats-kpi-row';
 import { ApplicationTrendChart } from '@/components/stats/application-trend-chart';
 import { WeeklyVelocityChart } from '@/components/stats/weekly-velocity-chart';
 import { StatusDistributionChart } from '@/components/stats/status-distribution-chart';
@@ -68,9 +67,8 @@ async function StatsPage() {
         />
       </div>
 
-      {/* Main status cards + derived KPI row */}
+      {/* Status cards + derived KPI cards (single shared grid) */}
       <StatsContainer />
-      <StatsKpiRow />
 
       {/* Monthly trend — ComposedChart with 2-month projection */}
       <div className="mt-12">
@@ -108,13 +106,13 @@ async function StatsPage() {
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <GlassCard variant="emerald">
-            <h3 className="mb-4 text-center text-sm font-semibold text-emerald-300">
+            <h3 className="mb-4 text-center text-sm font-semibold text-emerald-700 dark:text-emerald-300">
               Status Distribution
             </h3>
             <StatusDistributionChart />
           </GlassCard>
           <GlassCard variant="amber">
-            <h3 className="mb-4 text-center text-sm font-semibold text-amber-300">
+            <h3 className="mb-4 text-center text-sm font-semibold text-amber-700 dark:text-amber-300">
               Job Type Breakdown
             </h3>
             <ModeDistributionChart />

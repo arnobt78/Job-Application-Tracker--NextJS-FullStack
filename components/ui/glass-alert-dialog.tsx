@@ -62,7 +62,7 @@ export function GlassAlertDialog({
           <div className="flex gap-4 p-4 sm:p-6">
             <div
               className={cn(
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-background/40",
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-glass-border bg-background/40",
                 variant === "destructive" && "text-rose-400",
                 variant === "sky" && "text-sky-400",
                 variant === "default" && "text-violet-400",
@@ -79,7 +79,7 @@ export function GlassAlertDialog({
               </AlertDialogDescription>
             </div>
           </div>
-          <div className="flex flex-col-reverse gap-2 border-t border-white/10 p-4 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 border-t border-glass-border p-4 sm:flex-row sm:justify-end">
             <AlertDialogCancel asChild>
               <Button variant="outline" className="gap-2" disabled={loading}>
                 {cancelIcon}

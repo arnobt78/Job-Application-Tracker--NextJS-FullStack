@@ -385,7 +385,7 @@ Coolify VPS (planned)
 | Glass filter dropdowns | `GlassDropdownTrigger` pattern | ✅ |
 | Static card shells | `JobCardShell`, `DiscoverCardShell` | ✅ |
 | Stats charts | Recharts (4 chart types) | ✅ |
-| KPI derived metrics | `StatsKpiRow` (no extra DB query) | ✅ |
+| KPI derived metrics | `StatsKpiCards` (no extra DB query) | ✅ |
 | Notification center | SSE + BroadcastChannel | ✅ |
 | Posting Activity timeline | `PostingActivityTab` on `/dashboard/[id]` | ✅ |
 | AI output display | `AiInsightsPanel` — DB cache + SSE streaming | ✅ |

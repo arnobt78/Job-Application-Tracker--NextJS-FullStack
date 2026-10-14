@@ -28,7 +28,11 @@
 - **Human-Action:** Vercel Firewall custom **Bypass** rule for `/api/internal`, `/api/cron`, `/api/email/inbound`, `/api/bluedoor/webhook`, `/api/extension` (Bot Protection Challenge would otherwise block machine callers) · Project Node.js = 24.x · Sentry env vars (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`) in Production + Preview · optional Sentry Inbound Filters (browser extensions, legacy browsers, web crawlers)
 - Local dev: `nvm use` (reads `.nvmrc`) before npm commands
 - ISSUE-0001..0005 **committed** (session files only); parallel edits remain unstaged in working tree
-- **Next exact action:** receive next BL-0016 item from user
+- **ISSUE-0006 DONE** — Stats 6-card grid (3+3 / 2+2+2 / 1) with one stats query: `components/StatsContainer.tsx`, `components/stats/stats-kpi-row.tsx` (`StatsKpiCards`), `app/(dashboard)/stats/page.tsx` (EVAL-0025)
+- **ISSUE-0007 DONE** — light-mode phase 1: tokens in `app/globals.css` + `tailwind.config.js` (`glass.*`, `accent-text`); primitives `components/ui/{glass-card,button,glass-alert-dialog,glass-dialog-content,glass-dropdown-menu}.tsx`, `components/layout/{dashboard-nav,landing-nav}.tsx`; `text-accent-text` on profile/timeline headings (EVAL-0026). Use `glass-*` / `accent-text` tokens for any new surface — never hardcode `white/*`
+- DB: `.env` `DATABASE_URL` is the demo DB used for both prod and local; GitHub OAuth was never configured (no GitHub accounts exist)
+- **Remaining:** ISSUE-0008 (light-mode phase 2: feature files + primary button contrast) · ISSUE-0009 (responsive audit) — each needs plan + approval
+- **Next exact action:** plan ISSUE-0008 (list files with `rg "white/|text-\w+-300|bg-black/" app components`) → wait for approval
 
 ## Recent (sync 2026-07-24)
 - Infinity Loop reactivated @ `148a49f` — full `.agile-v/` sync

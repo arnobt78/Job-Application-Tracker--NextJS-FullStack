@@ -40,7 +40,7 @@ export function LandingNav() {
             onClick={() => scrollToSection(section.id)}
             className={cn(
               'flex h-8 items-center rounded-full px-3 text-sm font-medium text-foreground/75',
-              'transition hover:bg-white/10 hover:text-foreground'
+              'transition hover:bg-glass-hover hover:text-foreground'
             )}
           >
             {section.label}

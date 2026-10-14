@@ -9,6 +9,25 @@
 | Red Team | EVAL-0016…0019 PASS · EVAL-0020 governance sync |
 | EvalGate (Gate 2) | NOT_RUN |
 
+## EVAL-0026 (BL-0016 ISSUE-0007 — light-mode phase 1 tokens — 2026-10-14)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Lint · Typecheck · Unit | `npm run lint` · `npm run typecheck` · `npm run test` | PASS | 0 problems · 69/69 |
+| Build | `npm run build` | PASS | exit 0 · `bg-glass-*`, `from-glass-from`, `hover:bg-glass-hover`, `text-accent-text`, `var(--glass-nav-shadow)` emitted in CSS |
+| Dark parity (`next start`, CDP computed styles) | `getComputedStyle` | PASS | `--glass-border` = `#ffffff1a`; neutral GlassCard border `rgba(255,255,255,0.1)`, gradient `0.1 → 0.05 → 0.05` = original classes |
+| Light visual | screenshots | PASS | landing · sign-in · dashboard · stats readable (borders/fills visible, secondary button + stats section headings contrast) |
+| Console | `console.error`/`window.error` collector over Stats → Dashboard → Profile → Stats client nav | PASS | 0 errors |
+| Red Team | implementation-verifier | PASS w/ warnings | `accent-text` now used (profile/timeline headings) · docs `StatsKpiRow` refs updated · remaining hardcoded `white/*` in feature files → ISSUE-0008 |
+
+## EVAL-0025 (BL-0016 ISSUE-0006 — Stats 6-card grid — 2026-10-14, revised)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Lint · Typecheck · Unit · Build | gate commands | PASS | 0 problems · 69/69 · exit 0 |
+| Layout (`next start`, test@user.com, `/stats`) | CDP rect measure | PASS | 390: 1+1+1+1+1+1 (374px) · 800: 2+2+2 (376px) · 1280: 3+3 (395px) · no horizontal scroll |
+| Data | code review | PASS | single `useQuery(queryKeys.stats.all)` in `StatsContainer`; `StatsKpiCards` presentational (props) · KPI math unchanged |
+
 ## EVAL-0024 (BL-0016 ISSUE-0001..0005 final gate — 2026-10-14, pre-commit on `6c48ba4`)
 
 | Check | Command | Result | Notes |
