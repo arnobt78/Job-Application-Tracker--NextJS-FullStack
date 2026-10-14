@@ -43,6 +43,8 @@ export default function UserProfileDropdown() {
     try {
       await signOut({ callbackUrl: '/' });
     } catch {
+      // Full reload fallback — guarantees session-bound client state is dropped if signOut fails
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign('/');
     }
   };

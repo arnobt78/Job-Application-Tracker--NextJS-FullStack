@@ -32,7 +32,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 
 | Area | What exists |
 | --- | --- |
-| **Auth** | NextAuth v5 (Google/GitHub/credentials), `proxy.ts` route protection (Next.js 16) |
+| **Auth** | NextAuth v5 (Google/credentials), `proxy.ts` route protection (Next.js 16) |
 | **Dashboard** | URL filters, glass filter bar, `JobCardShell` skeletons, pagination, download, CompanyLogo |
 | **CRUD** | Server Actions + `useJobsMutation` optimistic updates + cross-tab invalidation |
 | **Bluedoor enrich** | `lib/bluedoor/client.ts`, `enrich.ts`, ATS/URL/fuzzy match, `after()` on create/update |
@@ -321,7 +321,6 @@ Discover, skill-gap, AI mutation, posting-events, and facet queries are **not** 
 | --- | --- | --- |
 | `AUTH_SECRET` | yes | NextAuth JWT signing |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | optional | Google OAuth |
-| `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` | optional | GitHub OAuth |
 | `DATABASE_URL` / `DIRECT_URL` | yes | PostgreSQL |
 | `UPSTASH_REDIS_REST_URL` / `TOKEN` | optional | Redis cache + SSE streams |
 | `BLUEDOOR_WEBHOOK_SECRET` | optional | HMAC verify inbound Bluedoor webhooks |

@@ -118,10 +118,26 @@
 
 ---
 
-## Sprint Plan (2026-07-24)
+## BL-0016: UI Polish + Bug-Fix Intake — **OPEN** (2026-10-14)
+
+**REQ:** mapped per item (UI: REQ-0012/0014 · CRUD/cache: REQ-0026 · others as identified) · **Checkpoint:** INT-0004  
+**Process:** one user item at a time → plan → approval → implement → validate (lint/typecheck/test/build) → log
+
+| ISSUE | Source | Summary | REQ | Status |
+|---|---|---|---|---|
+| ISSUE-0001 | user · VERCEL_PRODUCTION_GUARDRAILS.md | Guardrails: shared `PROTECTED_PREFIXES` → proxy + robots; AI crawler list; image TTL 31d; Sentry silent/telemetry/sourcemap delete + `/config` import; `NEXT_TELEMETRY_DISABLED` | REQ-0024, REQ-0022 | DONE (EVAL-0024) · committed |
+| ISSUE-0002 | user · npm audit | In-major upgrades (next 16.4, next-auth beta.32, …), csv-parse 7, overrides, npm 11 `allowScripts`; 34 → 7 (RISK-0005 accepted) | REQ-0024, REQ-0021 | DONE (EVAL-0024) · committed |
+| ISSUE-0003 | Vercel Node 20 EOL notice | `engines.node` 24.x · `.nvmrc` 24 · `@types/node` 24 | REQ-0024 | DONE (EVAL-0024) · committed |
+| ISSUE-0004 | user · Redis_Sentry_PostHog guide §2A | Sentry: `instrumentation-client.ts` (Turbopack never loaded `sentry.client.config.ts`); `/api/monitoring` tunnel pinned to DSN host+project (SSRF fix), 1 MB cap, 10s timeout, rate-limit headers; prod-only + `VERCEL_ENV`; shared vs client-only `ignoreErrors` + `beforeSend` + `denyUrls`; `excludeDebugStatements`; `.npmrc fund=false`; `vitest.config.mts` | REQ-0024, REQ-0022 | DONE (EVAL-0024) · committed |
+| ISSUE-0005 | user · demo scope | Remove GitHub OAuth: button (`AuthOAuthButtons`), provider (`lib/auth/config.ts`), `.env.example`/README/walkthrough; keep `avatars.githubusercontent.com` for stored avatars | REQ-0001 | DONE (EVAL-0024) · committed |
+
+---
+
+## Sprint Plan (2026-10-14)
 
 | Priority | BL | Status |
 |---|---|---|
+| 0 | **BL-0016** UI polish + bug fixes | OPEN — intake from user |
 | 1 | Gate 1 (INT-0001) | PENDING human approval |
 | 2 | BL-0003 | E2E CI wiring |
 | 3 | n8n templates | Not deployed (`docs/n8n/`) |

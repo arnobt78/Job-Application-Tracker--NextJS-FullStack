@@ -9,19 +9,11 @@
  */
 import NextAuth from 'next-auth';
 import { authConfig } from '@/lib/auth/config';
+import { PROTECTED_PREFIXES } from '@/lib/auth/protected-routes';
 import { NextResponse } from 'next/server';
 
 // Lightweight NextAuth instance — no PrismaAdapter, edge-safe
 const { auth } = NextAuth(authConfig);
-
-const PROTECTED_PREFIXES = [
-  '/dashboard',
-  '/discover',
-  '/stats',
-  '/timeline',
-  '/profile',
-  '/team',
-];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -47,6 +39,10 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Exclude static files, _next internals, and the NextAuth API routes themselves
-  matcher: ['/((?!.*\\..*|_next|api/auth).*)', '/', '/(api|trpc)(.*)'],
+  // Exclude static files, _next internals, NextAuth API routes, and the public Sentry tunnel
+  matcher: [
+    '/((?!.*\\..*|_next|api/auth|api/monitoring).*)',
+    '/',
+    '/(api(?!/monitoring)|trpc)(.*)',
+  ],
 };

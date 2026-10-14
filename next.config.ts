@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from '@sentry/nextjs/config';
 import type { NextConfig } from 'next';
 
 const securityHeaders = [
@@ -11,6 +11,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   images: {
+    // 31 days — avatar URLs change when the image changes, so a long TTL is safe
+    // and stops bots from re-triggering Image Optimization transforms.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,7 +21,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        // OAuth provider avatars (Google, GitHub profile images)
+        // OAuth avatars: Google (active) + GitHub (login removed; kept for avatars already stored)
         protocol: 'https',
         hostname: '*.googleusercontent.com',
         pathname: '/**',
@@ -59,7 +62,17 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  silent: !process.env.CI,
+  // Vercel sets CI=1, so `silent: !process.env.CI` produced noisy build logs
+  silent: true,
+  telemetry: false,
   widenClientFileUpload: true,
+  sourcemaps: {
+    // Maps go to Sentry only — never served from public build artifacts
+    deleteSourcemapsAfterUpload: true,
+  },
+  // Strip SDK debug logger statements from the browser bundle
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+  },
   // tunnelRoute omitted — /api/monitoring owned in app/api/monitoring/route.ts
 });

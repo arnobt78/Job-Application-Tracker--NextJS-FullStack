@@ -6,6 +6,7 @@
 | RISK-0002 | C1 | Process | No automated test suite — verification relies on manual audit | High | Medium | High | REQ-0021 automated tests in C2; Red Team manual baseline audit for C1 | Test Designer | Open |
 | RISK-0003 | C1 | Security | Clerk keys in .env.local — must never commit | Low | High | Medium | .gitignore enforced; compliance review at Gate 2 | Compliance Auditor | Mitigated |
 | RISK-0004 | C1 | Technical | docs/AUTH_UI_IMPLEMENTATION_GUIDE.md references NextAuth; app uses Clerk — confusion risk | Medium | Low | Low | Mark guide as reference-only or adapt for Clerk in C2 (REQ-0019) | Product Owner | Open |
+| RISK-0005 | C1 | Security | `npm audit` 7 high: `braces` ≤3.0.3 (GHSA-vfj7-8cjw-p6xm, no patched release) via micromatch/fast-glob/chokidar → tailwindcss@3 + eslint-config-next@16. Build/lint tooling only; never shipped to browser or server runtime; needs attacker-controlled glob input | Low | Low | Low | Accepted 2026-10-14 (user). Re-run `npm audit` when braces patches; Tailwind 4 alone would not clear eslint-config-next chain | Build Agent | Accepted |
 
 ## Severity Matrix Reference
 

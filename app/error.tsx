@@ -35,6 +35,8 @@ export default function Error({
           <Button
             type="button"
             variant="outline"
+            // Hard navigation on purpose — discards the broken client tree/cache instead of soft-routing inside it
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
             onClick={() => (window.location.href = "/dashboard")}
           >
             Go to dashboard

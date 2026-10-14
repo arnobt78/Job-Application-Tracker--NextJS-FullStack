@@ -54,6 +54,8 @@ export function useSignUpForm() {
         }
 
         scheduleWelcomeAfterRedirect(firstName.trim() || displayName);
+        // Full document load so the new session cookie, SessionProvider and query cache start fresh
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = '/dashboard';
         return true;
       } catch {

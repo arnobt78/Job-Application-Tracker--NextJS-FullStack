@@ -3,7 +3,7 @@
  *   GET  /api/auth/session
  *   POST /api/auth/signin
  *   POST /api/auth/signout
- *   GET  /api/auth/callback/:provider  (Google, GitHub OAuth callbacks)
+ *   GET  /api/auth/callback/:provider  (Google OAuth callback)
  *   GET  /api/auth/csrf
  */
 import { handlers } from '@/auth';

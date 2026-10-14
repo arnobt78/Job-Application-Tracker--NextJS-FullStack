@@ -5,6 +5,7 @@
 | INT-0001 | C1 | Gate 1 | Human-Verify | PENDING | `c1-gate1-baseline-20260611` | 2026-06-11 | Approve REQ-0001…0033 baseline |
 | INT-0002 | C1 | — | Agent-Resume | RESOLVED | `ui-resume-20260612` | 2026-06-11 | BL-0006 UI polish — shipped |
 | INT-0003 | C1 | — | Dev-Active | **ACTIVE** | `c1-dev-20260612` | 2026-06-12 | C1 synthesis; await next instruction |
+| INT-0004 | C1 | — | Human-Decision | **PENDING** | `c1-bl0016-intake-20261014` | 2026-10-14 | BL-0016 intake; each item needs plan approval before code |
 
 ## Resume INT-0003 (active — every session)
 

@@ -96,3 +96,8 @@
 | 2026-06-30T14:00:00Z | orchestrate | build-agent-js | REQ-0012, REQ-0014, REQ-0026 | UI polish: GlassFilterDropdown · 80vh dialog · page widths · discover spinner · commit `148a49f` | SUCCESS |
 | 2026-07-24T10:16:00Z | bootstrap | agile-v-core | REQ-0024 | Infinity Loop ON; sync STATE/PLAYBOOK/CHECKPOINTS/SKILLS/config @ `148a49f`; 60 tests; Gate 1 PENDING | ACTIVE |
 | 2026-07-24T10:16:00Z | evolve | documentation-agent | REQ-0024 | Align PLAYBOOK/BACKLOG with shipped BL-0009…0015; next = Gate1 / E2E / n8n | SUCCESS |
+| 2026-10-14T09:16:00Z | bootstrap | agile-v-core | REQ-0024 | Resume @ `6c48ba4`; reconcile docs-only drift; open BL-0016 + INT-0004; no code changes | ACTIVE |
+| 2026-10-14T10:00:00Z | verify | implementation-verifier | REQ-0024 | EVAL-0021: lint/typecheck/test 60/60/build/prisma PASS on Node 24.21; audit 7 high accepted; smoke headers/robots/static/redirect/image PASS | SUCCESS |
+| 2026-10-14T12:00:00Z | verify | implementation-verifier | REQ-0024 | EVAL-0022: Sentry tunnel/client init/noise filters; lint/typecheck/test 69/69/build PASS; tunnel 403/400/413/200 smoke PASS | SUCCESS |
+| 2026-10-14T12:40:00Z | verify | implementation-verifier | REQ-0001 | EVAL-0023: GitHub OAuth removed; lint/typecheck/test 69/69/build PASS; providers = google,credentials | SUCCESS |
+| 2026-10-14T13:00:00Z | verify | implementation-verifier + security-review | REQ-0024, REQ-0001 | EVAL-0024 final gate: lint/typecheck/test/build/e2e 11/browser CRUD/tunnel PASS; verifier warnings fixed | SUCCESS |

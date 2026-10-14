@@ -24,7 +24,7 @@
 **Acceptance Criteria:**
 
 1. Sign-in at `/sign-in`, sign-up at `/sign-up` (custom UI — no hosted provider chrome)
-2. OAuth callback at `/api/auth/callback/google` and `/api/auth/callback/github`
+2. OAuth callback at `/api/auth/callback/google` (GitHub OAuth removed C1 BL-0016 ISSUE-0005)
 3. User profile accessible at `/profile` (custom — skills, target roles, resume for AI)
 4. Unauthenticated users redirected from protected routes
 

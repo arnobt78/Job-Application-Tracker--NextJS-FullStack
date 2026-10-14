@@ -91,7 +91,7 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 
 ### User Experience
 
-- **NextAuth v5 authentication** — credentials, Google/GitHub OAuth, guest demo sign-in dropdown
+- **NextAuth v5 authentication** — credentials, Google OAuth, guest demo sign-in dropdown
 - **Custom auth UI** — branded Sign In / Sign Up forms (no hosted provider chrome)
 - **Notification bell** — SSE + BroadcastChannel; unread badge + popover list
 - **Dark / light / system theme** — via `next-themes`
@@ -291,7 +291,7 @@ Before you start, install:
 
 | Requirement            | Notes                                |
 | ---------------------- | ------------------------------------ |
-| **Node.js 20+**        | LTS recommended                      |
+| **Node.js 24.x**       | Matches `engines` + `.nvmrc`         |
 | **npm** (or pnpm/yarn) | Package manager                      |
 | **PostgreSQL**         | Local Docker, Neon, Supabase, or VPS |
 | **PostgreSQL client**  | psql, TablePlus, or pgAdmin          |
@@ -370,13 +370,11 @@ Email:    test@user.com
 Password: 12345678
 ```
 
-**OAuth (optional)** — add these to enable Google / GitHub sign-in:
+**OAuth (optional)** — add these to enable Google sign-in:
 
 ```env
 AUTH_GOOGLE_ID=        # Google Cloud Console → OAuth 2.0 → callback: /api/auth/callback/google
 AUTH_GOOGLE_SECRET=
-AUTH_GITHUB_ID=        # GitHub → Settings → Developer settings → OAuth Apps → callback: /api/auth/callback/github
-AUTH_GITHUB_SECRET=
 ```
 
 **Example local PostgreSQL:**
@@ -573,7 +571,7 @@ Prisma queries always include `userId` in `where` clauses so users cannot access
 
 - **Proxy:** `proxy.ts` — NextAuth JWT gate protects `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`
 - **Custom UI:** `SignInForm.tsx`, `SignUpForm.tsx` — glassmorphic cards, no hosted provider chrome
-- **OAuth:** `AuthOAuthButtons` — `signIn('google')` / `signIn('github')` from `next-auth/react`
+- **OAuth:** `AuthOAuthButtons` — `signIn('google')` from `next-auth/react`
 - **Demo login:** guest dropdown on sign-in page — `useGuestSignIn` → `signIn('credentials', { email, password })`
 - **SSR user:** `dashboard/layout.tsx` → `auth()` → `NavUserProvider`
 
@@ -902,7 +900,6 @@ npm test   # 51 tests
 - [ ] `DATABASE_URL` + `DIRECT_URL` in Vercel env
 - [ ] `NEXT_PUBLIC_APP_URL` set to production domain (needed for webhook registration + email links)
 - [ ] Optional: `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google OAuth (callback: `/api/auth/callback/google`)
-- [ ] Optional: `AUTH_GITHUB_ID` / `AUTH_GITHUB_SECRET` — GitHub OAuth (callback: `/api/auth/callback/github`)
 - [ ] Optional: Upstash Redis for multi-instance cache/SSE
 - [ ] Optional: `CRON_SECRET` for nightly Bluedoor re-sync
 - [ ] Optional: `BLUEDOOR_WEBHOOK_SECRET` for live webhook events

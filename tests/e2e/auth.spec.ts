@@ -14,6 +14,7 @@ const PROTECTED_ROUTES = [
   '/discover',
   '/timeline',
   '/profile',
+  '/team',
 ];
 
 for (const route of PROTECTED_ROUTES) {
