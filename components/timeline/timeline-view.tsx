@@ -10,6 +10,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { useQueryBodyLoading } from '@/lib/query-body-loading';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 import { getTimelineAction } from '@/utils/actions';
 import { TimelineItem } from './timeline-item';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -82,15 +84,18 @@ function TimelineEmpty() {
 // ─────────────────────────────────────────────
 
 export function TimelineView() {
+  const isRouteFallback = useIsRouteFallback();
   const { data: events, isLoading } = useQuery({
     queryKey: queryKeys.timeline(),
     queryFn: getTimelineAction,
     staleTime: 30_000,
     // Not in localStorage persist scope — server is source of truth
     gcTime: 60_000,
+    enabled: !isRouteFallback,
   });
+  const bodyLoading = useQueryBodyLoading(queryKeys.timeline(), isLoading);
 
-  if (isLoading) return <TimelineSkeleton />;
+  if (bodyLoading) return <TimelineSkeleton />;
   if (!events || events.length === 0) return <TimelineEmpty />;
 
   const groups = groupByDate(events);

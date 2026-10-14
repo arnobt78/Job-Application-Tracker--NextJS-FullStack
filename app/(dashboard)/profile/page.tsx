@@ -3,14 +3,7 @@ import type { Metadata } from 'next';
 import { createPageMetadata } from '@/lib/site-metadata';
 import { queryKeys } from '@/lib/query-keys';
 import { getUserProfileAction } from '@/utils/actions';
-import { UserProfileForm } from '@/components/user-profile/user-profile-form';
-import { ResumeUpload } from '@/components/user-profile/resume-upload';
-import { BatchAnalysisTrigger } from '@/components/user-profile/batch-analysis-trigger';
-import { ExtensionConnect } from '@/components/user-profile/extension-connect';
-import { EmailInboundSetup } from '@/components/user-profile/email-inbound-setup';
-import { GlassCard } from '@/components/ui/glass-card';
-import { PageSectionHeader } from '@/components/ui/page-section-header';
-import { User } from 'lucide-react';
+import { ProfilePageView } from '@/components/user-profile/profile-page-view';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,65 +25,7 @@ async function UserProfilePage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="mb-6">
-        <PageSectionHeader
-          icon={User}
-          title="My Profile"
-          subtitle="Your AI personalisation profile — used to generate fit scores, cover letters, and interview angles"
-          headingLevel="h1"
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main form */}
-        <div className="lg:col-span-2">
-          <GlassCard variant="violet">
-            <UserProfileForm />
-          </GlassCard>
-        </div>
-
-        {/* Side info panel */}
-        <div className="flex flex-col gap-4">
-          <GlassCard variant="sky">
-            <h3 className="mb-2 text-sm font-semibold text-accent-text">How it works</h3>
-            <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
-              <li>• Add your skills so the AI can score how well you match each job</li>
-              <li>• Target roles tell the AI what kind of cover letter tone to use</li>
-              <li>• Pasting your resume unlocks personalised interview angle suggestions</li>
-              <li>• All data stays in your account — never shared or used for training</li>
-            </ul>
-          </GlassCard>
-
-          <GlassCard variant="emerald">
-            <h3 className="mb-2 text-sm font-semibold text-tone-emerald">Tips</h3>
-            <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
-              <li>• Skills: be specific (TypeScript, not just &ldquo;coding&rdquo;)</li>
-              <li>• Roles: include seniority (Senior, Staff, Principal)</li>
-              <li>• Resume: paste plain text — no formatting needed</li>
-            </ul>
-          </GlassCard>
-
-          {/* PDF upload — extracts text and auto-fills resumeText in the form below */}
-          <GlassCard variant="neutral">
-            <ResumeUpload />
-          </GlassCard>
-
-          {/* Bulk AI analysis — enqueue background fit scores for all unanalysed jobs */}
-          <GlassCard variant="violet">
-            <BatchAnalysisTrigger />
-          </GlassCard>
-
-          {/* Browser extension token — one-click job tracking from career pages */}
-          <GlassCard variant="neutral">
-            <ExtensionConnect />
-          </GlassCard>
-
-          {/* Auto-apply email detection — inbound email parsing via Resend */}
-          <GlassCard variant="sky">
-            <EmailInboundSetup />
-          </GlassCard>
-        </div>
-      </div>
+      <ProfilePageView />
     </HydrationBoundary>
   );
 }

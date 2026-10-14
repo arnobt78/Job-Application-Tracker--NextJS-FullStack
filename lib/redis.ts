@@ -82,6 +82,7 @@ export function fixedUserRedisKeys(userId: string): string[] {
     `charts:${userId}`,
     `charts-weekly:${userId}`,
     `job-filter-options:${userId}`,
+    `salary-intel:${userId}`,
     // Default dashboard view — search='', jobStatus/jobMode/monthYear='all', page=1, limit=10
     `jobs:${userId}::all:all:all:1:10`,
   ];

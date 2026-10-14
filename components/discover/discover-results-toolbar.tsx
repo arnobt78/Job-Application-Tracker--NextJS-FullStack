@@ -12,6 +12,7 @@ import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
 import { Layers, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 
 export function DiscoverResultsToolbar() {
   const searchParams = useSearchParams();
@@ -22,9 +23,11 @@ export function DiscoverResultsToolbar() {
   const employmentType = searchParams.get('employmentType') ?? '';
   const salaryExists = searchParams.get('salaryExists') === 'yes';
 
-  const { data, isFetching } = useInfiniteQuery(
-    buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
-  );
+  const isRouteFallback = useIsRouteFallback();
+  const { data, isFetching } = useInfiniteQuery({
+    ...buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists),
+    enabled: !isRouteFallback,
+  });
 
   const firstPage = data?.pages[0];
   const jobs = firstPage?.data ?? [];
@@ -33,7 +36,7 @@ export function DiscoverResultsToolbar() {
   const isRateLimited = firstPage?.meta.total_matching_unavailable === true && jobs.length === 0;
   const count = !isRateLimited && total != null ? total : jobs.length;
 
-  const countBadge = isFetching && !data ? (
+  const countBadge = (isFetching || isRouteFallback) && !data ? (
     <Skeleton className="h-6 min-w-[2.5rem] rounded-full" />
   ) : isRateLimited ? (
     <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full bg-muted px-2.5 py-0.5 text-sm font-semibold tabular-nums text-muted-foreground">

@@ -16,6 +16,7 @@ import {
   getCachedCharts,
   getCachedWeeklyCharts,
   getCachedJobFilterOptions,
+  getCachedSalaryIntel,
   type StatsResult,
 } from "@/lib/jobs/queries";
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
@@ -723,71 +724,7 @@ export async function getSalaryIntelligenceAction(): Promise<SalaryIntelResult |
   const userId = await authenticateAndRedirect();
 
   try {
-    // All jobs for total count
-    const total = await prisma.job.count({ where: { userId } });
-
-    // Jobs with at least one salary field
-    const jobsWithSalary = await prisma.job.findMany({
-      where: {
-        userId,
-        OR: [
-          { bluedoorSalaryMin: { not: null } },
-          { bluedoorSalaryMax: { not: null } },
-        ],
-      },
-      select: {
-        position: true,
-        bluedoorSalaryMin: true,
-        bluedoorSalaryMax: true,
-        bluedoorSalaryCurrency: true,
-      },
-    });
-
-    if (!jobsWithSalary.length) return null;
-
-    // Overall averages
-    let sumMin = 0, sumMax = 0, minCount = 0, maxCount = 0;
-    const currencyMap: Record<string, number> = {};
-
-    for (const j of jobsWithSalary) {
-      if (j.bluedoorSalaryMin != null) { sumMin += j.bluedoorSalaryMin; minCount++; }
-      if (j.bluedoorSalaryMax != null) { sumMax += j.bluedoorSalaryMax; maxCount++; }
-      const cur = j.bluedoorSalaryCurrency ?? 'USD';
-      currencyMap[cur] = (currencyMap[cur] ?? 0) + 1;
-    }
-
-    const avgMin = minCount > 0 ? Math.round(sumMin / minCount) : 0;
-    const avgMax = maxCount > 0 ? Math.round(sumMax / maxCount) : 0;
-    const currency = Object.entries(currencyMap).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'USD';
-
-    // Group by normalised position title (first 2 words — avoids 1-per-job explosion)
-    const roleMap: Record<string, { sumMin: number; sumMax: number; minC: number; maxC: number }> = {};
-
-    for (const j of jobsWithSalary) {
-      const role = j.position.split(/\s+/).slice(0, 3).join(' ');
-      if (!roleMap[role]) roleMap[role] = { sumMin: 0, sumMax: 0, minC: 0, maxC: 0 };
-      if (j.bluedoorSalaryMin != null) { roleMap[role].sumMin += j.bluedoorSalaryMin; roleMap[role].minC++; }
-      if (j.bluedoorSalaryMax != null) { roleMap[role].sumMax += j.bluedoorSalaryMax; roleMap[role].maxC++; }
-    }
-
-    const byRole = Object.entries(roleMap)
-      .map(([position, d]) => ({
-        position,
-        avgMin: d.minC > 0 ? Math.round(d.sumMin / d.minC) : 0,
-        avgMax: d.maxC > 0 ? Math.round(d.sumMax / d.maxC) : 0,
-        count: Math.max(d.minC, d.maxC),
-      }))
-      .sort((a, b) => b.avgMax - a.avgMax)
-      .slice(0, 5);
-
-    return {
-      count: jobsWithSalary.length,
-      total,
-      avgMin,
-      avgMax,
-      currency,
-      byRole,
-    };
+    return await getCachedSalaryIntel(userId);
   } catch {
     return null;
   }

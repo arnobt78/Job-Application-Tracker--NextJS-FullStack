@@ -10,6 +10,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Reuse visited dynamic pages for 30s on client navigation (instant revisit, zero server calls).
+    // Safe with CRUD: mutations call revalidatePath (clears this cache) and HydrationBoundary never
+    // overwrites newer TanStack data with an older payload.
+    staleTimes: { dynamic: 30 },
+  },
   images: {
     // 31 days — avatar URLs change when the image changes, so a long TTL is safe
     // and stops bots from re-triggering Image Optimization transforms.

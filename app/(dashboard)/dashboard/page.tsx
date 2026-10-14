@@ -1,13 +1,7 @@
-import { JobsFilterSection } from "@/components/jobs/jobs-filter-section";
-import { DashboardPageHeader } from "@/components/jobs/dashboard-page-header";
-import { JobsResultsToolbar } from "@/components/jobs/jobs-results-toolbar";
-import { JobsGrid } from "@/components/jobs/jobs-grid";
-import { JobsPagination } from "@/components/jobs/jobs-pagination";
-import { PageSectionHeader } from "@/components/ui/page-section-header";
+import { DashboardPageView } from "@/components/jobs/dashboard-page-view";
 import type { Metadata } from "next";
 import { createPageMetadata } from "@/lib/site-metadata";
 import { queryKeys } from "@/lib/query-keys";
-import { DASHBOARD_COPY } from "@/lib/ui/dashboard-copy";
 import {
   dehydrate,
   HydrationBoundary,
@@ -19,7 +13,6 @@ import {
   getStatsAction,
 } from "@/utils/actions";
 import { parseJobsListFiltersFromSearchParamsRecord } from "@/lib/jobs/filter-params";
-import { SlidersHorizontal } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -75,26 +68,9 @@ async function DashboardPage({ searchParams }: DashboardPageProps) {
     }),
   ]);
 
-  const filterCopy = DASHBOARD_COPY.filters;
-
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <DashboardPageHeader />
-
-      <PageSectionHeader
-        icon={SlidersHorizontal}
-        title={filterCopy.title}
-        className="mb-2"
-      />
-      <JobsFilterSection />
-
-      <JobsResultsToolbar />
-
-      <JobsGrid />
-
-      <div className="mt-8 flex w-full justify-center">
-        <JobsPagination />
-      </div>
+      <DashboardPageView />
     </HydrationBoundary>
   );
 }

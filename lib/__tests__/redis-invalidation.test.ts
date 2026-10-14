@@ -12,6 +12,7 @@ describe('redis invalidation keys', () => {
       'charts:user_abc',
       'charts-weekly:user_abc',
       'job-filter-options:user_abc',
+      'salary-intel:user_abc',
       // Default dashboard list key — always purged explicitly to avoid Upstash SCAN miss
       'jobs:user_abc::all:all:all:1:10',
     ]);

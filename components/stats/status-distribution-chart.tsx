@@ -15,8 +15,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { getStatsAction } from '@/utils/actions';
+import { useJobsPortfolioStats } from '@/hooks/useJobsPortfolioStats';
 import { queryKeys } from '@/lib/query-keys';
 import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,11 +27,7 @@ const STATUS_COLORS = {
 } as const;
 
 export function StatusDistributionChart() {
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-    staleTime: 60_000,
-  });
+  const { data, isLoading } = useJobsPortfolioStats();
   const bodyLoading = useQueryBodyLoading(queryKeys.stats.all, isLoading);
 
   if (bodyLoading) {

@@ -9,6 +9,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { DollarSign, TrendingUp, Briefcase } from "lucide-react";
 import { queryKeys } from "@/lib/query-keys";
+import { useQueryBodyLoading } from "@/lib/query-body-loading";
+import { useIsRouteFallback } from "@/components/providers/route-fallback-provider";
 import { getSalaryIntelligenceAction } from "@/utils/actions";
 import type { SalaryIntelResult } from "@/utils/types";
 
@@ -86,13 +88,16 @@ function RoleBar({
 }
 
 export function SalaryIntelligence() {
+  const isRouteFallback = useIsRouteFallback();
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.salaryIntel(),
     queryFn: () => getSalaryIntelligenceAction(),
     staleTime: 5 * 60 * 1000,
+    enabled: !isRouteFallback,
   });
+  const bodyLoading = useQueryBodyLoading(queryKeys.salaryIntel(), isLoading);
 
-  if (isLoading) {
+  if (bodyLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="flex flex-col items-center gap-2 text-muted-foreground/50">

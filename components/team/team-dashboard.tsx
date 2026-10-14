@@ -3,6 +3,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users2, AlertCircle, RefreshCw } from "lucide-react";
 import { queryKeys } from "@/lib/query-keys";
+import { useQueryBodyLoading } from "@/lib/query-body-loading";
+import { useInitialNavUser } from "@/context/nav-user-context";
+import { useIsRouteFallback } from "@/components/providers/route-fallback-provider";
 import { getTeamAction } from "@/utils/actions";
 import { CreateTeamForm } from "@/components/team/create-team-form";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
@@ -13,20 +16,26 @@ import { cn } from "@/lib/utils";
 import type { TeamRole } from "@/utils/types";
 
 type Props = {
-  userId: string;
+  /** Server session id; the route loading fallback omits it and uses the SSR nav-user snapshot */
+  userId?: string;
 };
 
 export function TeamDashboard({ userId }: Props) {
   const queryClient = useQueryClient();
+  const navUser = useInitialNavUser();
+  const currentUserId = userId ?? navUser?.id ?? "";
+  const isRouteFallback = useIsRouteFallback();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.team.current(),
     queryFn: () => getTeamAction(),
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+    enabled: !isRouteFallback,
   });
+  const bodyLoading = useQueryBodyLoading(queryKeys.team.current(), isLoading);
 
-  if (isLoading) {
+  if (bodyLoading) {
     return (
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -46,6 +55,21 @@ export function TeamDashboard({ userId }: Props) {
               ))}
             </div>
           </GlassCard>
+        </div>
+
+        {/* Right column mirrors the loaded layout: Team Info frame + static explainer */}
+        <div className="flex flex-col gap-4">
+          <GlassCard variant="emerald">
+            <div className="flex flex-col gap-3">
+              <TeamInfoHeading />
+              <div className="h-[62px] animate-pulse rounded-lg bg-muted/20" />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="h-[62px] animate-pulse rounded-lg bg-muted/20" />
+                <div className="h-[62px] animate-pulse rounded-lg bg-muted/20" />
+              </div>
+            </div>
+          </GlassCard>
+          <TeamModeExplainerCard />
         </div>
       </div>
     );
@@ -111,7 +135,7 @@ export function TeamDashboard({ userId }: Props) {
           </h3>
           <TeamMemberList
             members={members}
-            currentUserId={userId}
+            currentUserId={currentUserId}
             currentRole={role as TeamRole}
             teamId={team.id}
           />
@@ -122,12 +146,7 @@ export function TeamDashboard({ userId }: Props) {
       <div className="flex flex-col gap-4">
         <GlassCard variant="emerald">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Users2 className="h-4 w-4 text-ink-emerald" />
-              <h3 className="text-sm font-semibold text-tone-emerald">
-                Team Info
-              </h3>
-            </div>
+            <TeamInfoHeading />
 
             <div className="rounded-lg border border-border/20 bg-glass-inset px-4 py-3">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
@@ -166,18 +185,34 @@ export function TeamDashboard({ userId }: Props) {
           </div>
         </GlassCard>
 
-        <GlassCard variant="neutral">
-          <h3 className="mb-2 text-sm font-semibold">How team mode works</h3>
-          <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
-            <li>• Team members can see each other&apos;s job applications</li>
-            <li>• Admins and owners can invite or remove members</li>
-            <li>• Owners can delegate admin rights to trusted members</li>
-            <li>
-              • Each member&apos;s data stays private unless shared to the team
-            </li>
-          </ul>
-        </GlassCard>
+        <TeamModeExplainerCard />
       </div>
     </div>
+  );
+}
+
+function TeamInfoHeading() {
+  return (
+    <div className="flex items-center gap-2">
+      <Users2 className="h-4 w-4 text-ink-emerald" />
+      <h3 className="text-sm font-semibold text-tone-emerald">Team Info</h3>
+    </div>
+  );
+}
+
+/** Static explainer — shared by the loaded view and the loading skeleton */
+function TeamModeExplainerCard() {
+  return (
+    <GlassCard variant="neutral">
+      <h3 className="mb-2 text-sm font-semibold">How team mode works</h3>
+      <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
+        <li>• Team members can see each other&apos;s job applications</li>
+        <li>• Admins and owners can invite or remove members</li>
+        <li>• Owners can delegate admin rights to trusted members</li>
+        <li>
+          • Each member&apos;s data stays private unless shared to the team
+        </li>
+      </ul>
+    </GlassCard>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { getStatsAction } from '@/utils/actions';
+import { useJobsPortfolioStats } from '@/hooks/useJobsPortfolioStats';
 import StatsCard from './StatsCard';
 import { StatsKpiCards } from '@/components/stats/stats-kpi-row';
 import { queryKeys } from '@/lib/query-keys';
@@ -20,11 +19,7 @@ const STAT_ITEMS: Array<{
 
 /** All 6 stat cards share one grid (3 / 2 / 1 per row — 6 divides evenly, no orphan card) and one query */
 function StatsContainer() {
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-    staleTime: 60_000,
-  });
+  const { data, isLoading } = useJobsPortfolioStats();
   const bodyLoading = useQueryBodyLoading(queryKeys.stats.all, isLoading);
 
   return (

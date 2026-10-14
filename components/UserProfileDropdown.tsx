@@ -1,7 +1,7 @@
 'use client';
 
 import { signOut } from 'next-auth/react';
-import Link from 'next/link';
+import { IntentLink, LinkPendingIcon } from '@/components/layout/intent-link';
 import { useState } from 'react';
 import {
   DropdownMenu,
@@ -93,10 +93,12 @@ export default function UserProfileDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex cursor-pointer items-center">
-            <Settings className="mr-2 h-4 w-4" />
+          <IntentLink href="/profile" className="flex cursor-pointer items-center">
+            <span className="mr-2 flex">
+              <LinkPendingIcon icon={<Settings className="h-4 w-4" />} />
+            </span>
             Manage account
-          </Link>
+          </IntentLink>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
           <LogOut className="mr-2 h-4 w-4" />

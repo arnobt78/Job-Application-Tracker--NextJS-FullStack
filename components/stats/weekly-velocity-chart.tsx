@@ -21,12 +21,15 @@ import { getWeeklyChartsDataAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
 import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 
 export function WeeklyVelocityChart() {
+  const isRouteFallback = useIsRouteFallback();
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.chartsWeekly.all,
     queryFn: () => getWeeklyChartsDataAction(),
     staleTime: 60_000,
+    enabled: !isRouteFallback,
   });
   const bodyLoading = useQueryBodyLoading(queryKeys.chartsWeekly.all, isLoading);
 

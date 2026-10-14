@@ -26,6 +26,7 @@ import { getChartsDataAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
 import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 
 type DataPoint = { date: string; count: number; projected?: number };
 
@@ -38,10 +39,12 @@ function withProjection(data: Array<{ date: string; count: number }>): DataPoint
 }
 
 export function ApplicationTrendChart() {
+  const isRouteFallback = useIsRouteFallback();
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.charts.all,
     queryFn: () => getChartsDataAction(),
     staleTime: 60_000,
+    enabled: !isRouteFallback,
   });
   const bodyLoading = useQueryBodyLoading(queryKeys.charts.all, isLoading);
 

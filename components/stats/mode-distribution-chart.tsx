@@ -17,8 +17,7 @@ import {
   Cell,
   ResponsiveContainer,
 } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { getStatsAction } from '@/utils/actions';
+import { useJobsPortfolioStats } from '@/hooks/useJobsPortfolioStats';
 import { queryKeys } from '@/lib/query-keys';
 import { useQueryBodyLoading } from '@/lib/query-body-loading';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,11 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const MODE_COLORS = ['#2563eb', '#f59e0b', '#a855f7'];
 
 export function ModeDistributionChart() {
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-    staleTime: 60_000,
-  });
+  const { data, isLoading } = useJobsPortfolioStats();
   const bodyLoading = useQueryBodyLoading(queryKeys.stats.all, isLoading);
 
   if (bodyLoading) {

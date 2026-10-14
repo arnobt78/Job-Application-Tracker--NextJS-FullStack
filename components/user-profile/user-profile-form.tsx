@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 import * as z from 'zod';
 import { useState, KeyboardEvent } from 'react';
 import {
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/glass-dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { X, User, Briefcase, FileText, Sparkles } from 'lucide-react';
 import { queryKeys } from '@/lib/query-keys';
 import { getUserProfileAction } from '@/utils/actions';
@@ -49,6 +51,63 @@ const userProfileSchema = z.object({
 });
 
 type UserProfileFormValues = z.infer<typeof userProfileSchema>;
+
+/** Field labels + hints — shared by the form and its loading skeleton so both stay identical */
+const FIELD_COPY = {
+  skills: {
+    icon: <Sparkles className="h-3.5 w-3.5 text-ink-sky" />,
+    label: 'Skills',
+    hint: 'Press Enter or comma to add each skill.',
+  },
+  targetRoles: {
+    icon: <Briefcase className="h-3.5 w-3.5 text-ink-violet" />,
+    label: 'Target Roles',
+    hint: 'Roles the AI will optimise your cover letters for.',
+  },
+  experienceLevel: {
+    icon: <User className="h-3.5 w-3.5 text-ink-emerald" />,
+    label: 'Experience Level',
+  },
+  resumeText: {
+    icon: <FileText className="h-3.5 w-3.5 text-ink-amber" />,
+    label: 'Resume / CV Text',
+    hint: 'Plain text only — no formatting needed. This stays in your account and is never shared.',
+  },
+} as const;
+
+/** Same geometry as the loaded form (40px fields, 180px textarea) — labels stay visible, only fields pulse */
+function UserProfileFormSkeleton() {
+  return (
+    <div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading profile">
+      {[FIELD_COPY.skills, FIELD_COPY.targetRoles].map((field) => (
+        <div key={field.label} className="flex flex-col gap-2">
+          <p className="text-sm font-medium flex items-center gap-1.5">
+            {field.icon}
+            {field.label}
+          </p>
+          <Skeleton className="h-10 w-full rounded-md" />
+          <p className="text-xs text-muted-foreground">{field.hint}</p>
+        </div>
+      ))}
+      <div className="space-y-2">
+        <p className="flex items-center gap-1.5 text-sm font-medium leading-none">
+          {FIELD_COPY.experienceLevel.icon}
+          {FIELD_COPY.experienceLevel.label}
+        </p>
+        <Skeleton className="h-10 w-full rounded-md" />
+      </div>
+      <div className="space-y-2">
+        <p className="flex items-center gap-1.5 text-sm font-medium leading-none">
+          {FIELD_COPY.resumeText.icon}
+          {FIELD_COPY.resumeText.label}
+        </p>
+        <Skeleton className="h-[180px] w-full rounded-md" />
+        <p className="text-xs text-muted-foreground">{FIELD_COPY.resumeText.hint}</p>
+      </div>
+      <Skeleton className="h-10 w-full rounded-full sm:w-32 sm:self-end" />
+    </div>
+  );
+}
 
 /** Tag pill — shows a skill or role with remove button */
 function TagPill({ label, onRemove }: { label: string; onRemove: () => void }) {
@@ -121,10 +180,12 @@ function TagInput({
 
 /** UserProfile form — skills, target roles, experience level, resume paste */
 export function UserProfileForm() {
+  const isRouteFallback = useIsRouteFallback();
   const { data: profile, isLoading } = useQuery({
     queryKey: queryKeys.userProfile(),
     queryFn: getUserProfileAction,
     staleTime: 60_000,
+    enabled: !isRouteFallback,
   });
 
   const { mutate, isPending } = useUserProfileMutation();
@@ -168,12 +229,9 @@ export function UserProfileForm() {
     });
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-        Loading profile…
-      </div>
-    );
+  // Fallback never shows the editable form: input typed there would be lost when the page swaps in
+  if (isLoading || isRouteFallback) {
+    return <UserProfileFormSkeleton />;
   }
 
   return (
@@ -183,8 +241,8 @@ export function UserProfileForm() {
         {/* Skills */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-ink-sky" />
-            Skills
+            {FIELD_COPY.skills.icon}
+            {FIELD_COPY.skills.label}
           </label>
           <TagInput
             tags={skills}
@@ -194,14 +252,14 @@ export function UserProfileForm() {
             onRemove={(i) => setSkills((prev) => prev.filter((_, idx) => idx !== i))}
             placeholder="Type a skill and press Enter (e.g. TypeScript, React)"
           />
-          <p className="text-xs text-muted-foreground">Press Enter or comma to add each skill.</p>
+          <p className="text-xs text-muted-foreground">{FIELD_COPY.skills.hint}</p>
         </div>
 
         {/* Target Roles */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium flex items-center gap-1.5">
-            <Briefcase className="h-3.5 w-3.5 text-ink-violet" />
-            Target Roles
+            {FIELD_COPY.targetRoles.icon}
+            {FIELD_COPY.targetRoles.label}
           </label>
           <TagInput
             tags={targetRoles}
@@ -211,7 +269,7 @@ export function UserProfileForm() {
             onRemove={(i) => setTargetRoles((prev) => prev.filter((_, idx) => idx !== i))}
             placeholder="e.g. Senior Frontend Engineer, Staff Engineer"
           />
-          <p className="text-xs text-muted-foreground">Roles the AI will optimise your cover letters for.</p>
+          <p className="text-xs text-muted-foreground">{FIELD_COPY.targetRoles.hint}</p>
         </div>
 
         {/* Experience Level — glass DropdownMenu (modal=false), same as dashboard filter row */}
@@ -226,8 +284,8 @@ export function UserProfileForm() {
             return (
               <FormItem>
                 <FormLabel className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-ink-emerald" />
-                  Experience Level
+                  {FIELD_COPY.experienceLevel.icon}
+                  {FIELD_COPY.experienceLevel.label}
                 </FormLabel>
                 <FormControl>
                   <DropdownMenu modal={false}>
@@ -270,8 +328,8 @@ export function UserProfileForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-ink-amber" />
-                Resume / CV Text
+                {FIELD_COPY.resumeText.icon}
+                {FIELD_COPY.resumeText.label}
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -281,9 +339,7 @@ export function UserProfileForm() {
                   onChange={(e) => field.onChange(e.target.value || null)}
                 />
               </FormControl>
-              <p className="text-xs text-muted-foreground">
-                Plain text only — no formatting needed. This stays in your account and is never shared.
-              </p>
+              <p className="text-xs text-muted-foreground">{FIELD_COPY.resumeText.hint}</p>
               <FormMessage />
             </FormItem>
           )}

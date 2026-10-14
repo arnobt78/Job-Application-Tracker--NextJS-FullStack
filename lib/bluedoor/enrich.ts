@@ -103,6 +103,7 @@ export async function resyncJob(
         bluedoorDescHash: true,
         bluedoorSalaryMin: true,
         bluedoorSalaryMax: true,
+        bluedoorSalaryCurrency: true,
       },
     });
 
@@ -114,6 +115,11 @@ export async function resyncJob(
       (current.bluedoorSalaryMin == null || current.bluedoorSalaryMax == null) &&
       (patch.bluedoorSalaryMin != null || patch.bluedoorSalaryMax != null);
     const changed = statusChanged || descChanged || salaryAdded;
+    // Any salary edit (not only an addition) must refresh the cached stats-page salary intelligence
+    const salaryEdited =
+      current.bluedoorSalaryMin !== patch.bluedoorSalaryMin ||
+      current.bluedoorSalaryMax !== patch.bluedoorSalaryMax ||
+      current.bluedoorSalaryCurrency !== patch.bluedoorSalaryCurrency;
 
     // Need job metadata for email — only fetch if something changed
     const jobMeta = changed
@@ -132,9 +138,9 @@ export async function resyncJob(
       },
     });
 
-    if (changed) {
-      await invalidateUserJobCaches(userId, jobId);
+    if (changed || salaryEdited) await invalidateUserJobCaches(userId, jobId);
 
+    if (changed) {
       if (jobMeta) {
         const changeType = statusChanged && patch.bluedoorStatus === 'expired'
           ? 'posting_closed'

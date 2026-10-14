@@ -21,6 +21,7 @@ import {
   getJobStatusOptionIcon,
 } from '@/components/ui/glass-filter-dropdown';
 import { useQuery } from '@tanstack/react-query';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 import { getSingleJobAction } from '@/utils/actions';
 import { useUpdateJobMutation } from '@/hooks/useJobsMutation';
 import { queryKeys } from '@/lib/query-keys';
@@ -48,11 +49,13 @@ function EditJobForm({
   standalone = true,
   formLoading = false,
 }: EditJobFormProps) {
+  const isRouteFallback = useIsRouteFallback();
   const { data } = useQuery({
     queryKey: queryKeys.job.detail(jobId),
     queryFn: () => getSingleJobAction(jobId),
     staleTime: 60_000,
     placeholderData: seedJob?.id === jobId ? seedJob : undefined,
+    enabled: !isRouteFallback,
   });
 
   const form = useForm<CreateAndEditJobType>({

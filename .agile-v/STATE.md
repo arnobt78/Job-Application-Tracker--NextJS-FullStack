@@ -34,8 +34,8 @@
 - **ISSUE-0008 DONE** — light-mode phase 2 (EVAL-0027). Styling rules: `text-on-glass(-muted)` for text/icons on colored glass; `text-tone-X` replaces `text-X-300`, `text-ink-X` replaces `text-X-400` (no `/opacity` modifier on these — use `text-X-600/NN dark:text-X-400/NN`); `bg-glass-inset*` replaces `bg-black/10|20|30`; class maps in `lib/` are scanned by tailwind
 - **ISSUE-0009 DONE** — responsive 0 overflow; fixed `components/ui/company-logo.tsx` (Google s2), `components/EditJobForm.tsx` (seed + version-gated reset), `hooks/useJobsMutation.ts` (warm-up catch) (EVAL-0028)
 - **Human-Action (data):** audit cleanup hard-deleted the demo job "Senior Software Developer · Workforcenow" (test@user.com) — user restoring via DB point-in-time restore. Never run destructive UI automation on the shared demo DB; any future CRUD test must delete only rows it created (match by exact created id/name after filter settles)
-- **Remaining:** ISSUE-0010 (`/stats` nav waits on awaited server prefetches — streaming option) — needs plan + approval
-- **Next exact action:** confirm demo job restored → plan ISSUE-0010 or receive next BL-0016 item
+- **ISSUE-0010 DONE** — instant navigation (EVAL-0029). Pattern for any dashboard route: page JSX lives in `components/**/<x>-page-view.tsx`; `page.tsx` = prefetch + `HydrationBoundary` + view; `loading.tsx` = `<RouteFallbackProvider><View /></RouteFallbackProvider>`. Every data hook in a view MUST pass `enabled: !useIsRouteFallback()` (and use `useQueryBodyLoading` for skeletons). Nav links use `IntentLink` (no viewport prefetch). Salary intel cached via `getCachedSalaryIntel` (`salary-intel:${userId}` in `fixedUserRedisKeys`)
+- **Next exact action:** confirm demo job restored → re-run CRUD timing (create/edit/delete, delete only rows the test created) against the new navigation, or receive next BL-0016 item
 
 ## Recent (sync 2026-07-24)
 - Infinity Loop reactivated @ `148a49f` — full `.agile-v/` sync

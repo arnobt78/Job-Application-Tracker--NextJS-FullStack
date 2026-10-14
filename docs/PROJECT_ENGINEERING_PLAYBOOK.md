@@ -37,7 +37,7 @@ When working in **github-growth-bot**, these override soft global defaults. Full
 2. Every backend endpoint except `GET /api/health` MUST require `Authorization: Bearer <API_KEY>`.
 3. Endpoint paths MUST NEVER contain `analytics`, `analysis`, `tracking`, `performance`, or `metrics` — use `insights` / `snapshots` / `benchmarks` / `runs`.
 4. Browser MUST NEVER hold the backend API key — Next.js Route Handlers proxy server-side.
-5. Frontend: SSR prefetch in `page.tsx`; `"use client"` only when required; NEVER `loading.tsx`; shell instant + data-slot skeletons.
+5. Frontend: SSR prefetch in `page.tsx`; `"use client"` only when required; `loading.tsx` only as a mirrored page view (§6.2.6); shell instant + data-slot skeletons.
 6. Independent prefetches MUST use `Promise.all`; critical dehydrated queries MUST be `await`ed (never `void` + `dehydrate`).
 7. CRUD MUST invalidate via TanStack Query + SSE (`LiveEventsProvider` / `use-live-events`) so all open tabs update without refresh.
 8. Types MUST come from OpenAPI (`frontend/types/`) — never hand-duplicate DTOs.
@@ -175,7 +175,7 @@ Detect the mode from the repo. Do **not** apply Next-only rules (RSC, `force-dyn
 3. MUST add `"use client"` only for interaction, browser APIs, animations, forms, drag-and-drop, or client-only state.
 4. NEVER add `"use client"` “just in case.”
 5. Per-user / session dashboards SHOULD use `force-dynamic` (or equivalent). Perceived speed comes from cache + skeletons + SSE — not fake static HTML.
-6. NEVER add route-level `loading.tsx` that replaces the whole page shell on client navigation (unless the project explicitly standardized on it).
+6. NEVER add route-level `loading.tsx` that replaces the whole page shell on client navigation. Allowed: a `loading.tsx` that renders the SAME page view as `page.tsx` inside `RouteFallbackProvider` (cache-only queries, `inert`), so the fallback is the real layout.
 7. Keep shared `layout.tsx` mounted across sibling routes.
 8. Use Next `<Link>` for prefetchable navigation; NEVER fake nav with `<button>`/`<div>`.
 9. Warm React Query via SSR `dehydrate` / `HydrationBoundary` (see §7).

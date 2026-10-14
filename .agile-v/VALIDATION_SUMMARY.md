@@ -9,6 +9,19 @@
 | Red Team | EVAL-0016…0019 PASS · EVAL-0020 governance sync |
 | EvalGate (Gate 2) | NOT_RUN |
 
+## EVAL-0029 (BL-0016 ISSUE-0010 — instant navigation — 2026-10-14)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Gates | `npm run lint && npm run typecheck && npm run test && npm run build` (Node 24.21) | PASS | eslint clean · tsc clean · vitest 69/69 · build OK |
+| E2E | `npx playwright test` | PASS | 11 passed · 10 skipped (`E2E_COOKIE`) |
+| Nav timing | Playwright vs `next start`, light 1280, navigation only (no DB writes) | PASS | click→shell 46–118 ms all routes (was `/stats` 2.8–4.2 s) · revisit <30 s 49–58 ms with 0 RSC / 0 actions · hover-prefetched click after expiry 44–47 ms |
+| Shell mirror | h1 bounding box shell vs final; screenshots light 1280 + dark 390 | PASS | identical on stats/discover/timeline/team/profile/dashboard · profile + team skeletons match final geometry |
+| Stability | CLS observer, console errors, dashboard search-param nav | PASS | CLS 0.0000 · 0 errors · search input keeps focus/value · fallback controls not focusable (`inert`) |
+| Requests | RSC/action counter per nav | PASS | 0 client actions from fallbacks (only pre-existing dashboard jobs refetch) |
+| Red Team | implementation-verifier | PASS w/ warnings → fixed | fallback mutations into snapshot cache → `inert`; salary edits on resync not invalidating cached salary intel → `salaryEdited` invalidation |
+| Not verified | — | OPEN | CRUD timing re-test pending demo DB restore · first cold-server hit ~0.8–1.3 s before shell · without hover/focus prefetch the shell waits ~1 RTT · Bluedoor upstream 530 outage (external) during run |
+
 ## EVAL-0028 (BL-0016 ISSUE-0009 — responsive audit + A-Z runtime — 2026-10-14)
 
 | Check | Command | Result | Notes |

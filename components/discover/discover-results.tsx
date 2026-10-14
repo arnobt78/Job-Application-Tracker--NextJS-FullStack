@@ -17,6 +17,7 @@ import { DiscoverJobCard } from './discover-job-card';
 import { Button } from '@/components/ui/button';
 import { SearchX, Loader2 } from 'lucide-react';
 import { useQueryBodyLoading } from '@/lib/query-body-loading';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 
 export function DiscoverResults() {
   const searchParams = useSearchParams();
@@ -35,6 +36,7 @@ export function DiscoverResults() {
     employmentType,
     salaryExists,
   );
+  const isRouteFallback = useIsRouteFallback();
 
   const {
     data,
@@ -43,7 +45,7 @@ export function DiscoverResults() {
     hasNextPage,
     fetchNextPage,
     isError,
-  } = useInfiniteQuery(queryOptions);
+  } = useInfiniteQuery({ ...queryOptions, enabled: !isRouteFallback });
 
   const jobs = data?.pages.flatMap((page) => page.data) ?? [];
   const firstPage = data?.pages[0];
@@ -107,7 +109,7 @@ export function DiscoverResults() {
         ))}
       </div>
 
-      {hasNextPage && (
+      {hasNextPage && !isRouteFallback && (
         <div className="flex justify-center pt-2">
           <Button
             variant="outline"

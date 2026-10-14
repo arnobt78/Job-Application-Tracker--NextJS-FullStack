@@ -6,6 +6,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getAllJobsAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
 import { parseJobsListFilters } from '@/lib/jobs/filter-params';
+import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
 
 /** Shared jobs list query for dashboard count, pagination, and grid */
 export function useJobsListQuery() {
@@ -14,8 +15,10 @@ export function useJobsListQuery() {
     () => parseJobsListFilters(searchParams),
     [searchParams]
   );
+  const isRouteFallback = useIsRouteFallback();
 
   return useQuery({
+    enabled: !isRouteFallback,
     queryKey: queryKeys.jobs.list(
       filters.search,
       filters.jobStatus,

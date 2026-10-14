@@ -5,9 +5,7 @@ import { redirect } from 'next/navigation';
 import { createPageMetadata } from '@/lib/site-metadata';
 import { queryKeys } from '@/lib/query-keys';
 import { getTeamAction } from '@/utils/actions';
-import { TeamDashboard } from '@/components/team/team-dashboard';
-import { PageSectionHeader } from '@/components/ui/page-section-header';
-import { Users2 } from 'lucide-react';
+import { TeamPageView } from '@/components/team/team-page-view';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,16 +29,7 @@ async function TeamPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="mb-6">
-        <PageSectionHeader
-          icon={Users2}
-          title="Team"
-          subtitle="Collaborate on job tracking with colleagues — share applications, invite members, and support each other"
-          headingLevel="h1"
-        />
-      </div>
-
-      <TeamDashboard userId={session.user.id} />
+      <TeamPageView userId={session.user.id} />
     </HydrationBoundary>
   );
 }

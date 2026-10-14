@@ -16,14 +16,12 @@
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { GlassCard } from '@/components/ui/glass-card';
 import { GlassSearchInput } from '@/components/ui/glass-search-input';
 import { Button } from '@/components/ui/button';
 import { X, SlidersHorizontal } from 'lucide-react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
-import { queryKeys } from '@/lib/query-keys';
-import { getBluedoorFacetsAction } from '@/utils/actions';
+import { useDiscoverFacets } from '@/hooks/useDiscoverFacets';
 import { cn } from '@/lib/utils';
 import {
   WORKPLACE_OPTIONS,
@@ -156,15 +154,7 @@ export function DiscoverSidebar({ className }: DiscoverSidebarProps) {
     (!!salaryExists && salaryExists !== 'all');
 
   // Facet counts — same key as DiscoverFilters; hits SSR cache first
-  const { data: facets } = useQuery({
-    queryKey: queryKeys.discover.facets(
-      q || undefined,
-      country !== 'United States' ? country : undefined
-    ),
-    queryFn: () => getBluedoorFacetsAction({ q: q || undefined, country }),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+  const { data: facets } = useDiscoverFacets(q, country);
 
   const workplaceCounts = facets ? toFacetCounts(facets.workplace_type) : undefined;
   const employmentCounts = facets ? toFacetCounts(facets.employment_type) : undefined;

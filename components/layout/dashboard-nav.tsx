@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { IntentLink, LinkPendingIcon } from '@/components/layout/intent-link';
 import { NavShell } from '@/components/layout/nav-shell';
 import { SiteLogo } from '@/components/layout/site-logo';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -62,14 +62,13 @@ export function DashboardNav() {
   return (
     <NavShell width="app">
       {/* Left — logo linked to /dashboard */}
-      <Link
+      <IntentLink
         href="/dashboard"
-        prefetch={false}
         className="flex h-full shrink-0 items-center rounded-lg transition hover:opacity-90"
         aria-label="Go to dashboard"
       >
         <SiteLogo priority linked={false} />
-      </Link>
+      </IntentLink>
 
       {/* Center — pill nav links, visible md+ */}
       <nav
@@ -83,10 +82,9 @@ export function DashboardNav() {
               : pathname === link.href;
 
           return (
-            <Link
+            <IntentLink
               key={link.href}
               href={link.href}
-              prefetch={false}
               className={cn(
                 'flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium transition',
                 isActive
@@ -94,9 +92,9 @@ export function DashboardNav() {
                   : 'text-foreground/75 hover:bg-glass-hover hover:text-foreground'
               )}
             >
-              {link.icon}
+              <LinkPendingIcon icon={link.icon} />
               {link.label}
-            </Link>
+            </IntentLink>
           );
         })}
       </nav>
@@ -114,10 +112,10 @@ export function DashboardNav() {
           <DropdownMenuContent align="start" sideOffset={10} className="w-44">
             {NAV_LINKS.map((link) => (
               <DropdownMenuItem key={link.href} asChild>
-                <Link href={link.href} prefetch={false} className="flex items-center gap-2">
-                  {link.icon}
+                <IntentLink href={link.href} className="flex items-center gap-2">
+                  <LinkPendingIcon icon={link.icon} />
                   {link.label}
-                </Link>
+                </IntentLink>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
