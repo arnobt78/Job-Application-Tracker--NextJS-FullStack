@@ -1,81 +1,173 @@
-# Jobify — Agent Memory
+# CLAUDE.md
 
-## Product
-Job application CRM + Bluedoor enrichment + discover + AI insights (FastAPI). Not a job board.
+## Project Overview
 
-## Stack
-Next.js 16 · React 19 · **NextAuth v5** · Prisma 6 · TanStack Query 5 · PostgreSQL · Redis (opt) · Bluedoor · Resend · Sentry · PostHog (opt) · Vitest **60** · Playwright E2E · FastAPI (`python-ai-service/`)
+Project Name:
+Description:
 
-## Auth
-- `proxy.ts` — NextAuth JWT gate; protect `/dashboard`, `/discover`, `/stats`, `/timeline`, `/profile`, `/team`; `/jobs/*` → `/dashboard`
-- `auth.ts` + `lib/auth/config.ts` — Google/GitHub OAuth + credentials; Prisma adapter
-- Navbar: `dashboard/layout` `auth()` → `NavUserProvider` · `useNavUserSession`
+Current Status:
+Current Agile V Cycle:
+Current Gate:
 
-## Data flow
-1. `force-dynamic` · per-page `prefetchQuery` / `prefetchInfiniteQuery` → `dehydrate`
-2. `PersistQueryClient` buster **`v2`** — jobs/stats/charts/charts-weekly/job(id) only — **not** discover/ai/filter-options
-3. `useQueryBodyLoading` — skeleton cold cache only
-4. Reads: `lib/jobs/queries.ts` (`unstable_cache` + tags + Redis)
-5. CRUD + AI save: `invalidateUserJobCaches` (server) · `invalidateAllJobQueries` (client + broadcast)
-6. Cross-tab: `useJobsCacheSync` + `/api/jobs/events` (invalidate + notify)
-7. Optimistic: `stats-optimistic.ts` · `chart-optimistic.ts`
+---
 
-## Bluedoor (Phase 1 ✅)
-- `lib/bluedoor/client.ts` · `enrich.ts` · ATS → URL → fuzzy match
-- `after()` enrich · webhook subscribe · cron enrich + weekly digest
-- Org intel: `getBluedoorOrg` → `companySize`/`companyIndustry`/`companyHq` on Job
-- Discover: infinite scroll · facets · `DiscoverSidebar` (lg+) · `lib/discover/query-options.ts` (SSR-safe) · not persisted
-- **Discover track:** `trackJobFromDiscoverAction` · `useTrackDiscoverJobMutation` · `commitCreatedJobToClientCache` seeds default list + prefetch dashboard
-- `createJobAction` → `JobActionResult` (`success`/`error`/`alreadyTracked?`) — no silent null; idempotent by `bluedoorJobId`
-- **BL-0013 cache fixes:** `fixedUserRedisKeys` includes default list key (`jobs:${userId}::all:all:all:1:10`); `revalidateUserJobsDataCache` used in `after()` (no SCAN race); `alreadyTracked` rollback + toast in `useTrackDiscoverJobMutation`
-- Notifications: SSE bell + React Email (Resend)
+## Tech Stack
 
-## Phase 2 ~90% · Phase 3 ✅ · BL-0011 ✅ COMMITTED
-- FastAPI 9-agent pipeline · LLM: Ollama → Groq → OpenRouter → Haiku
-- `POST /api/ai/pipeline` + `/stream` · `useStreamPipeline` · `PipelineProgress`
-- `JobAIInsight` + `UserProfile` DB persist · `/profile` UI
-- Internal API: `GET /api/internal/jobs?userId=` · `POST /api/internal/notify` · `POST /api/internal/ai-complete` (`X-Internal-Secret`)
-- n8n JSON templates in `docs/n8n/` (not deployed)
-- **AI fit chip** `components/jobs/ai-fit-chip.tsx` — embedded in `getCachedJobs` include, shown on `JobCard`
-- **react-markdown** in `AiInsightsPanel` · **Framer Motion** on `JobEnrichmentBadge`
+Frontend:
+Backend:
+Database:
+Authentication:
+Infrastructure:
+Deployment:
+Testing:
 
-## Phase 3 ✅ COMPLETE
-- **Resume PDF parser**: `lib/pdf/extract-text.ts` (pdfjs-dist) · `uploadResumeAction` · `ResumeUpload` drag-drop on `/profile`
-- **Skill Gap**: keyword (`getSkillGapAction`) + LLM AI toggle (`getLLMSkillGapAction` → FastAPI `/skill-gap`) · `SkillGapTab`
-- **Salary Intel**: `getSalaryIntelligenceAction` · `SalaryIntelligence` on `/stats` · SSR-prefetched · invalidated on CRUD
-- **Team mode**: `/team` route · `getTeamAction/createTeamAction/inviteTeamMemberAction/removeTeamMemberAction` · `TeamDashboard`
-- **Browser extension**: `app/api/extension/token|jobs|verify` · `ExtensionConnect` on `/profile` · `browser-extension/` manifest+popup
-- **Email inbound**: `app/api/email/inbound` Resend webhook → FastAPI `/parse-email` → job create + SSE · `EmailInboundSetup` on `/profile`
-- **ARQ batch AI**: `app/api/ai/batch` → FastAPI `/enqueue` → `run_pipeline_task` → `app/api/internal/ai-complete` → upsert `JobAIInsight` + SSE · `BatchAnalysisTrigger` + `useAIBatch`
-- **Interview prep**: `triggerInterviewPrepAction` via `after()` on status→interview · FastAPI `/pipeline/interview-prep` · `interview_prep_ready` SSE notification
+---
 
-## Query keys
-`jobs.*` · `stats` · `charts` · `chartsWeekly` · `job(id)` · `discover.*` · `aiInsight.job(id)` · `timeline()` · `userProfile()` · `skillGap(jobId)` · `skillGapAI(jobId)` · `salaryIntel()` · `team.current()` · `team.members(teamId)`
+## Architecture
 
-## Routes
-`/dashboard` · `/dashboard/[id]` (JobDetailPanels) · `/discover` · `/stats` · `/timeline` · `/profile` · `/team`
+Follow the existing project architecture.
 
-## Env
-`AUTH_SECRET` · `AUTH_GOOGLE_*` · `AUTH_GITHUB_*` · `DATABASE_URL` · `BLUEDOOR_WEBHOOK_SECRET` · `CRON_SECRET` · `RESEND_API_KEY` · `AI_SERVICE_URL` (local `http://localhost:3000` · prod `https://ai.arnobmahmud.com`) · `AI_SERVICE_SECRET` · `NEXT_PUBLIC_POSTHOG_KEY` (opt)
+Do not introduce new architectural patterns unless explicitly approved.
 
-## VPS (Coolify @ 77.42.71.87:8000) — ✅ deployed
-- `jobify-redis` ✅ · `jobify-ai-backend` ✅ `https://ai.arnobmahmud.com/health` · `jobify-arq-worker` ✅
-- PORT **3000** map **5007:3000** · Ollama on host optional (Groq/OpenRouter in env)
+Preserve:
 
-## Verify
-`npm run lint && npm run typecheck && npm run test && npm run build`
+- folder structure
+- naming conventions
+- reusable components
+- reusable hooks
+- reusable libs
+- reusable utilities
+- reusable types
+- reusable services
 
-## Do not
-`cacheComponents: true` · break SSE/invalidation · skeleton when cache warm · scrape Bluedoor · persist discover/ai · second SSE for notifications
+Prefer extending existing implementations instead of creating parallel ones.
 
-## UI (2026-06-30)
-- `PageContainer` width: `public` max-w-7xl (landing/auth) · `app` max-w-9xl (dashboard)
-- `GlassDialogContent` — opaque glass panel, × inside card, `modal` on job dialogs
-- `GlassFilterDropdown` + `CustomFormFilterDropdown` — same icons/labels as dashboard filters
-- `JOB_DIALOG_PANEL_CLASS` — 80vw×80vh Add/Edit dialogs
-- Discover: no `loading.tsx` · `useQueryBodyLoading` spinner cold only
-- Profile Experience Level: glass dropdown `modal={false}` (no scroll shift)
-- `scrollbar-gutter:stable` + `[data-scroll-locked]` zero padding (no layout shift)
+---
 
-## Docs
-`docs/PROJECT_WALKTHROUGH.md` · `docs/PROJECT_PLAN.md` · `docs/JOBIFY_TECH_STACK_ANALYSIS.md` · `.agile-v/STATE.md`
+## Rendering Rules
+
+Prefer server-first architecture.
+
+Server components:
+
+- authentication
+- metadata
+- initial data loading
+- layouts
+- page shells
+- stable UI
+
+Client components:
+
+- interactivity
+- forms
+- mutations
+- dialogs
+- browser APIs
+
+Never convert an entire page into a client component because one section is interactive.
+
+---
+
+## State Management
+
+Single source of truth.
+
+Avoid duplicated state.
+
+Prefer the project's established query/cache strategy.
+
+Do not duplicate:
+
+- query keys
+- mutation logic
+- API calls
+- schemas
+
+---
+
+## Coding Rules
+
+Always:
+
+- TypeScript strict
+- reusable code
+- readable code
+- maintainable code
+- scalable code
+- production-ready code
+
+Avoid:
+
+- duplicated code
+- dead code
+- commented-out code
+- unnecessary abstractions
+- unrelated refactoring
+
+---
+
+## Validation
+
+Before considering work complete:
+
+- typecheck
+- lint
+- tests
+- build
+
+Record validation results in:
+
+.agile-v/VALIDATION_SUMMARY.md
+
+---
+
+## Project Memory
+
+Current project state is stored in:
+
+.agile-v/
+
+Always resume from:
+
+.agile-v/STATE.md
+
+---
+
+## Documentation
+
+Update only affected files.
+
+Never duplicate information across:
+
+- CLAUDE.md
+- AGENTS.md
+- .agile-v/\*
+- docs/
+
+---
+
+## Session Workflow
+
+Before coding:
+
+1. Analyze
+2. Plan
+3. Wait for approval
+
+After approval:
+
+1. Implement
+2. Validate
+3. Update project memory
+4. Write resume point
+
+---
+
+## Resume
+
+Always continue from
+
+.agile-v/STATE.md
+
+unless instructed otherwise.

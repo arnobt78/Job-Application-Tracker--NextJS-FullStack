@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { TryDemoAccountButton } from '@/components/TryDemoAccountButton';
-import { HeroVisualCarousel } from '@/components/layout/hero-visual-carousel';
-import { PageContainer } from '@/components/layout/page-container';
-import { SplitContentLayout } from '@/components/layout/split-content-layout';
-import { ScrollParallaxSection } from '@/components/ui/scroll-parallax-section';
-import { ScrollStagger } from '@/components/ui/scroll-stagger';
-import { RippleLink } from '@/components/ui/ripple-link';
-import { HERO_CTA_CLASS } from '@/lib/ui/marketing-assets';
-import { MARKETING_COPY } from '@/lib/ui/marketing-copy';
-import { Rocket } from 'lucide-react';
+import { TryDemoAccountButton } from "@/components/TryDemoAccountButton";
+import { HeroVisualCarousel } from "@/components/layout/hero-visual-carousel";
+import { PageContainer } from "@/components/layout/page-container";
+import { SplitContentLayout } from "@/components/layout/split-content-layout";
+import { ScrollParallaxSection } from "@/components/ui/scroll-parallax-section";
+import { ScrollStagger } from "@/components/ui/scroll-stagger";
+import { RippleLink } from "@/components/ui/ripple-link";
+import { HERO_CTA_CLASS } from "@/lib/ui/marketing-assets";
+import { MARKETING_COPY } from "@/lib/ui/marketing-copy";
+import { Rocket } from "lucide-react";
 
 const copy = MARKETING_COPY.hero;
 
@@ -24,9 +24,9 @@ export function HeroSection() {
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-primary/90">
                 {copy.eyebrow}
               </p>
-              <h1 className="mt-4 text-4xl font-bold capitalize sm:text-5xl lg:text-7xl">
-                {copy.titleLead}{' '}
-                <span className="text-primary">{copy.titleHighlight}</span>{' '}
+              <h1 className="mt-4 text-4xl font-semibold capitalize sm:text-5xl lg:text-7xl">
+                {copy.titleLead}{" "}
+                <span className="text-primary">{copy.titleHighlight}</span>{" "}
                 {copy.titleTail}
               </h1>
               <p className="mt-6 max-w-2xl leading-relaxed text-muted-foreground">

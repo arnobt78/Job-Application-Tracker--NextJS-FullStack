@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * AiInsightsPanel — per-job AI analysis card.
@@ -13,21 +13,26 @@
  *   - saveAIInsightAction (persist result after generation)
  */
 
-import { useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { GlassCard } from '@/components/ui/glass-card';
-import { useStreamPipeline } from '@/hooks/useAIPipeline';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/lib/query-keys';
-import { getAIInsightAction, saveAIInsightAction } from '@/utils/actions';
-import type { PipelineJobInput, PipelineUserProfile, PipelineResponse, InterviewAngle } from '@/lib/ai/pipeline-client';
-import type { AIInsightType } from '@/utils/types';
-import { PipelineProgress } from '@/components/jobs/pipeline-progress';
-import { trackEvent } from '@/lib/analytics/posthog';
-import { cn } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { useState } from "react";
+import { Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/glass-card";
+import { useStreamPipeline } from "@/hooks/useAIPipeline";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
+import { getAIInsightAction, saveAIInsightAction } from "@/utils/actions";
+import type {
+  PipelineJobInput,
+  PipelineUserProfile,
+  PipelineResponse,
+  InterviewAngle,
+} from "@/lib/ai/pipeline-client";
+import type { AIInsightType } from "@/utils/types";
+import { PipelineProgress } from "@/components/jobs/pipeline-progress";
+import { trackEvent } from "@/lib/analytics/posthog";
+import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type AiInsightsPanelProps = {
   job: PipelineJobInput;
@@ -36,12 +41,19 @@ type AiInsightsPanelProps = {
 
 function FitScoreBadge({ score }: { score: number }) {
   const color =
-    score >= 75 ? 'bg-emerald-500/15 text-emerald-400' :
-    score >= 50 ? 'bg-amber-500/15 text-amber-400' :
-    'bg-red-500/15 text-red-400';
+    score >= 75
+      ? "bg-emerald-500/15 text-emerald-400"
+      : score >= 50
+        ? "bg-amber-500/15 text-amber-400"
+        : "bg-red-500/15 text-red-400";
 
   return (
-    <span className={cn('rounded-full px-3 py-1 text-sm font-bold tabular-nums', color)}>
+    <span
+      className={cn(
+        "rounded-full px-3 py-1 text-sm font-semibold tabular-nums",
+        color,
+      )}
+    >
       {score}/100
     </span>
   );
@@ -56,7 +68,11 @@ function CoverLetterSection({ text }: { text: string }) {
         onClick={() => setOpen((v) => !v)}
       >
         Cover Letter
-        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        {open ? (
+          <ChevronUp className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5" />
+        )}
       </button>
       {open && (
         <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-black/20 p-3">
@@ -75,16 +91,22 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
     <div className="flex flex-col gap-3">
       {data.summary && (
         <div className="prose prose-invert prose-sm max-w-none text-sm text-muted-foreground [&_p]:my-1">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{data.summary}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {data.summary}
+          </ReactMarkdown>
         </div>
       )}
 
       {data.fit_score && (
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Fit Score</span>
+          <span className="text-xs font-medium text-muted-foreground">
+            Fit Score
+          </span>
           <FitScoreBadge score={data.fit_score.score} />
           {data.fit_score.reasoning && (
-            <span className="text-xs text-muted-foreground">{data.fit_score.reasoning}</span>
+            <span className="text-xs text-muted-foreground">
+              {data.fit_score.reasoning}
+            </span>
           )}
         </div>
       )}
@@ -95,10 +117,15 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
 
       {data.interview_angles.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-xs font-semibold text-muted-foreground">Interview Angles</p>
+          <p className="text-xs font-semibold text-muted-foreground">
+            Interview Angles
+          </p>
           <ul className="flex flex-col gap-2">
             {data.interview_angles.map((a: InterviewAngle, i: number) => (
-              <li key={i} className="rounded-lg border border-border bg-black/10 p-2.5 text-xs">
+              <li
+                key={i}
+                className="rounded-lg border border-border bg-black/10 p-2.5 text-xs"
+              >
                 <p className="font-medium">{a.question}</p>
                 <p className="mt-0.5 text-muted-foreground">{a.angle}</p>
               </li>
@@ -113,16 +140,21 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
 /** Convert DB insight to PipelineResponse shape for unified rendering. */
 function dbInsightToPipelineResponse(insight: AIInsightType): PipelineResponse {
   const angles: InterviewAngle[] = insight.interviewAngles.map((raw) => {
-    const sep = raw.indexOf(': ');
+    const sep = raw.indexOf(": ");
     return sep !== -1
       ? { question: raw.slice(0, sep), angle: raw.slice(sep + 2) }
-      : { question: raw, angle: '' };
+      : { question: raw, angle: "" };
   });
 
   return {
     job_id: insight.jobId,
-    fit_score: insight.fitScore != null ? { score: insight.fitScore, reasoning: insight.fitLabel ?? '' } : null,
-    cover_letter: insight.coverLetter ? { text: insight.coverLetter, word_count: 0 } : null,
+    fit_score:
+      insight.fitScore != null
+        ? { score: insight.fitScore, reasoning: insight.fitLabel ?? "" }
+        : null,
+    cover_letter: insight.coverLetter
+      ? { text: insight.coverLetter, word_count: 0 }
+      : null,
     interview_angles: angles,
     summary: insight.summary,
     meta: {},
@@ -131,15 +163,17 @@ function dbInsightToPipelineResponse(insight: AIInsightType): PipelineResponse {
 
 /** Convert PipelineResponse to DB insight shape for saving. */
 function pipelineResponseToDbInsight(
-  data: PipelineResponse
-): Partial<Omit<AIInsightType, 'id' | 'jobId' | 'userId' | 'generatedAt' | 'updatedAt'>> {
+  data: PipelineResponse,
+): Partial<
+  Omit<AIInsightType, "id" | "jobId" | "userId" | "generatedAt" | "updatedAt">
+> {
   return {
     fitScore: data.fit_score?.score ?? null,
     fitLabel: data.fit_score?.reasoning ?? null,
     summary: data.summary ?? null,
     coverLetter: data.cover_letter?.text ?? null,
-    interviewAngles: data.interview_angles.map(
-      (a) => a.angle ? `${a.question}: ${a.angle}` : a.question
+    interviewAngles: data.interview_angles.map((a) =>
+      a.angle ? `${a.question}: ${a.angle}` : a.question,
     ),
     redFlags: [],
   };
@@ -149,7 +183,9 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
   const queryClient = useQueryClient();
   const insightKey = queryKeys.aiInsight.job(job.job_id);
 
-  const [streamResult, setStreamResult] = useState<PipelineResponse | null>(null);
+  const [streamResult, setStreamResult] = useState<PipelineResponse | null>(
+    null,
+  );
   const [streamError, setStreamError] = useState<string | null>(null);
 
   // Load persisted insight — staleTime Infinity since it only changes on explicit regenerate
@@ -170,14 +206,20 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
       {
         job,
         user: user ?? {},
-        include: ['fit_score', 'cover_letter', 'interview_angles', 'summary'],
+        include: ["fit_score", "cover_letter", "interview_angles", "summary"],
       },
       {
         onSuccess: async (result) => {
           setStreamResult(result);
-          trackEvent('ai_insights_generated', { job_id: job.job_id, fit_score: result.fit_score?.score });
+          trackEvent("ai_insights_generated", {
+            job_id: job.job_id,
+            fit_score: result.fit_score?.score,
+          });
           // Persist to DB so next panel open is instant
-          const saved = await saveAIInsightAction(job.job_id, pipelineResponseToDbInsight(result));
+          const saved = await saveAIInsightAction(
+            job.job_id,
+            pipelineResponseToDbInsight(result),
+          );
           if (saved) {
             queryClient.setQueryData(insightKey, saved);
           }
@@ -185,7 +227,7 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
         onError: (message) => {
           setStreamError(message);
         },
-      }
+      },
     );
   }
 
@@ -194,11 +236,12 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
     setStreamResult(null);
     setStreamError(null);
     queryClient.setQueryData(insightKey, null);
-    trackEvent('ai_insights_regenerated', { job_id: job.job_id });
+    trackEvent("ai_insights_regenerated", { job_id: job.job_id });
   }
 
   // Show streaming result (just generated) or persisted DB result
-  const displayData = streamResult ?? (dbInsight ? dbInsightToPipelineResponse(dbInsight) : null);
+  const displayData =
+    streamResult ?? (dbInsight ? dbInsightToPipelineResponse(dbInsight) : null);
   const hasResult = !!displayData;
   const isFromDb = !streamResult && !!dbInsight;
 
@@ -251,17 +294,14 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
         />
       )}
 
-      {streamError && (
-        <p className="text-xs text-destructive">
-          {streamError}
-        </p>
-      )}
+      {streamError && <p className="text-xs text-destructive">{streamError}</p>}
 
       {displayData && <InsightsResult data={displayData} />}
 
       {!displayData && !isPending && !streamError && !dbLoading && (
         <p className="text-xs text-muted-foreground">
-          Get AI-powered fit score, cover letter, and interview coaching for this role.
+          Get AI-powered fit score, cover letter, and interview coaching for
+          this role.
         </p>
       )}
     </GlassCard>

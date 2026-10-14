@@ -31,7 +31,7 @@ export function PageSectionHeader({
   const Heading = headingLevel;
   const titleSize =
     headingLevel === "h1"
-      ? "text-2xl font-bold sm:text-3xl"
+      ? "text-2xl font-semibold sm:text-3xl"
       : "text-lg font-semibold sm:text-xl";
 
   return (

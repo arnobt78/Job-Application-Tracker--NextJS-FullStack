@@ -124,9 +124,9 @@ export default function SignInForm({
   return (
     <div className="w-full max-w-md">
       <GlassCard variant="sky">
-        <div className="space-y-2 mb-6">
-          <h1 className="text-xl font-bold">Welcome back</h1>
-          <p className="text-muted-foreground">Sign in to your account</p>
+        <div className="mb-4">
+          <h1 className="text-xl font-semibold">Welcome back!</h1>
+          <p className="text-muted-foreground">Sign in to your account to continue.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

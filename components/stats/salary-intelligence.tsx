@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * SalaryIntelligence — aggregated salary data from the user's Bluedoor-enriched jobs.
@@ -6,16 +6,16 @@
  * NOT persisted in localStorage (changes when jobs are enriched).
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { DollarSign, TrendingUp, Briefcase } from 'lucide-react';
-import { queryKeys } from '@/lib/query-keys';
-import { getSalaryIntelligenceAction } from '@/utils/actions';
-import type { SalaryIntelResult } from '@/utils/types';
+import { useQuery } from "@tanstack/react-query";
+import { DollarSign, TrendingUp, Briefcase } from "lucide-react";
+import { queryKeys } from "@/lib/query-keys";
+import { getSalaryIntelligenceAction } from "@/utils/actions";
+import type { SalaryIntelResult } from "@/utils/types";
 
 function formatSalary(value: number, currency: string): string {
   try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency,
       maximumFractionDigits: 0,
     }).format(value);
@@ -24,11 +24,23 @@ function formatSalary(value: number, currency: string): string {
   }
 }
 
-function KpiCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function KpiCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
   return (
     <div className="flex flex-col gap-1 rounded-xl border border-border/20 bg-black/20 px-4 py-3">
-      <p className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wide">{label}</p>
-      <p className="text-xl font-bold tabular-nums text-foreground">{value}</p>
+      <p className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+        {label}
+      </p>
+      <p className="text-xl font-semibold tabular-nums text-foreground">
+        {value}
+      </p>
       {sub && <p className="text-[10px] text-muted-foreground/60">{sub}</p>}
     </div>
   );
@@ -40,18 +52,22 @@ function RoleBar({
   currency,
   globalMax,
 }: {
-  role: SalaryIntelResult['byRole'][number];
+  role: SalaryIntelResult["byRole"][number];
   currency: string;
   globalMax: number;
 }) {
-  const widthPct = globalMax > 0 ? Math.round((role.avgMax / globalMax) * 100) : 0;
+  const widthPct =
+    globalMax > 0 ? Math.round((role.avgMax / globalMax) * 100) : 0;
   const minFmt = role.avgMin > 0 ? formatSalary(role.avgMin, currency) : null;
   const maxFmt = formatSalary(role.avgMax, currency);
 
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between text-xs">
-        <span className="max-w-[55%] truncate font-medium" title={role.position}>
+        <span
+          className="max-w-[55%] truncate font-medium"
+          title={role.position}
+        >
           {role.position}
         </span>
         <span className="text-muted-foreground tabular-nums">
@@ -102,7 +118,8 @@ export function SalaryIntelligence() {
         <div>
           <p className="text-sm font-medium">No salary data yet</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Salary ranges appear here once Bluedoor enriches your jobs. Add apply links to jobs to trigger enrichment.
+            Salary ranges appear here once Bluedoor enriches your jobs. Add
+            apply links to jobs to trigger enrichment.
           </p>
         </div>
       </div>
@@ -119,7 +136,11 @@ export function SalaryIntelligence() {
       <div className="grid grid-cols-3 gap-3">
         <KpiCard
           label="Avg Salary Range"
-          value={avgMin > 0 ? `${formatSalary(avgMin, currency)} – ${formatSalary(avgMax, currency)}` : formatSalary(avgMax, currency)}
+          value={
+            avgMin > 0
+              ? `${formatSalary(avgMin, currency)} – ${formatSalary(avgMax, currency)}`
+              : formatSalary(avgMax, currency)
+          }
           sub={currency}
         />
         <KpiCard
@@ -143,7 +164,12 @@ export function SalaryIntelligence() {
           </div>
           <div className="flex flex-col gap-3">
             {byRole.map((role) => (
-              <RoleBar key={role.position} role={role} currency={currency} globalMax={globalMax} />
+              <RoleBar
+                key={role.position}
+                role={role}
+                currency={currency}
+                globalMax={globalMax}
+              />
             ))}
           </div>
         </div>

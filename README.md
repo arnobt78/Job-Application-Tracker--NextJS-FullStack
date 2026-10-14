@@ -1,4 +1,4 @@
-# Job Application Tracker & Discovery — Next.js, TypeScript, NextAuth v5, Prisma, PostgreSQL, Bluedoor API (+ FastAPI AI Pipeline) FullStack Project
+# Job Application Tracker & Discovery — Next.js, TypeScript, Prisma, PostgreSQL, Bluedoor API (+ FastAPI AI Pipeline) FullStack Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -133,17 +133,17 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 
 ### Backend & Data
 
-| Library                    | Version  | What it does                                                |
-| -------------------------- | -------- | ----------------------------------------------------------- |
-| **Next.js Server Actions** | —        | Type-safe server functions (`"use server"`)                 |
-| **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations                   |
-| **PostgreSQL**             | —        | Relational database for job records                         |
+| Library                    | Version  | What it does                                                      |
+| -------------------------- | -------- | ----------------------------------------------------------------- |
+| **Next.js Server Actions** | —        | Type-safe server functions (`"use server"`)                       |
+| **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations                         |
+| **PostgreSQL**             | —        | Relational database for job records                               |
 | **NextAuth v5**            | 5.x      | Authentication — JWT session, Prisma adapter, OAuth + credentials |
-| **Bluedoor API**           | —        | Free job postings API — enrichment + discover (no auth key) |
-| **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams               |
-| **Resend**                 | optional | Email alerts when postings change                           |
-| **exceljs / papaparse**    | —        | Excel/CSV export generation                                 |
-| **dayjs**                  | —        | Date formatting in exports and charts                       |
+| **Bluedoor API**           | —        | Free job postings API — enrichment + discover (no auth key)       |
+| **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams                     |
+| **Resend**                 | optional | Email alerts when postings change                                 |
+| **exceljs / papaparse**    | —        | Excel/CSV export generation                                       |
+| **dayjs**                  | —        | Date formatting in exports and charts                             |
 
 ### Phase 2 — Python AI Service
 
@@ -356,11 +356,11 @@ Create `.env.local` in the project root (never commit it). A full template lives
 
 ### Required
 
-| Variable       | Description                                 | How to get it                                              |
-| -------------- | ------------------------------------------- | ---------------------------------------------------------- |
-| `AUTH_SECRET`  | JWT signing secret for NextAuth sessions    | `openssl rand -base64 32`                                  |
-| `DATABASE_URL` | PostgreSQL connection string                | Neon, Supabase, local Postgres…                            |
-| `DIRECT_URL`   | Direct DB URL for Prisma migrations         | Usually same as `DATABASE_URL`                             |
+| Variable       | Description                              | How to get it                   |
+| -------------- | ---------------------------------------- | ------------------------------- |
+| `AUTH_SECRET`  | JWT signing secret for NextAuth sessions | `openssl rand -base64 32`       |
+| `DATABASE_URL` | PostgreSQL connection string             | Neon, Supabase, local Postgres… |
+| `DIRECT_URL`   | Direct DB URL for Prisma migrations      | Usually same as `DATABASE_URL`  |
 
 **Demo credentials** (pre-seeded for local dev):
 
@@ -778,7 +778,7 @@ Both forms accept a **`standalone`** prop:
 | `useJobsListBodyLoading` | `useJobsListBodyLoading.ts` | Skeleton only on cold cache         |
 | `useAIPipeline`          | `useAIPipeline.ts`          | AI insights mutation                |
 | `useGuestSignIn`         | `useGuestSignIn.ts`         | Demo account login flow             |
-| `useNavUserSession`      | `useNavUserSession.ts`      | SSR avatar + NextAuth useSession     |
+| `useNavUserSession`      | `useNavUserSession.ts`      | SSR avatar + NextAuth useSession    |
 
 **Reuse `useJobsMutation` in another project:**
 
@@ -849,14 +849,22 @@ mutate({
 
 ```typescript
 // proxy.ts
-import { auth } from '@/auth';
-const PROTECTED = ['/dashboard', '/discover', '/stats', '/timeline', '/profile'];
+import { auth } from "@/auth";
+const PROTECTED = [
+  "/dashboard",
+  "/discover",
+  "/stats",
+  "/timeline",
+  "/profile",
+];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  const isProtected = PROTECTED.some(p => pathname === p || pathname.startsWith(p + '/'));
+  const isProtected = PROTECTED.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
   if (isProtected && !req.auth) {
-    return NextResponse.redirect(new URL('/sign-in', req.url));
+    return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 });
 ```

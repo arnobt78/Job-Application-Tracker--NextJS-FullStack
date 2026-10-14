@@ -1,49 +1,55 @@
-'use client';
+"use client";
 
 /**
  * Notification bell — shows unread badge + popover list of enrichment alerts.
  * Consumes useNotifications() from NotificationsProvider (dashboard layout).
  */
 
-import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useNotifications, type AppNotification } from '@/context/notifications-context';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import {
+  useNotifications,
+  type AppNotification,
+} from "@/context/notifications-context";
+import { cn } from "@/lib/utils";
 
-const NOTIFICATION_LABELS: Record<AppNotification['notificationType'], string> = {
-  posting_closed: 'Posting closed',
-  jd_changed: 'Job description changed',
-  salary_added: 'Salary disclosed',
-  posting_reopened: 'Posting reopened',
-  interview_prep_ready: 'Interview prep ready',
-};
+const NOTIFICATION_LABELS: Record<AppNotification["notificationType"], string> =
+  {
+    posting_closed: "Posting closed",
+    jd_changed: "Job description changed",
+    salary_added: "Salary disclosed",
+    posting_reopened: "Posting reopened",
+    interview_prep_ready: "Interview prep ready",
+  };
 
 function NotificationItem({ notification }: { notification: AppNotification }) {
-  const label = NOTIFICATION_LABELS[notification.notificationType] ?? 'Update';
+  const label = NOTIFICATION_LABELS[notification.notificationType] ?? "Update";
   const time = new Date(notification.timestamp).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   return (
     <div
       className={cn(
-        'flex flex-col gap-0.5 px-3 py-2 text-sm',
-        !notification.read && 'bg-primary/5'
+        "flex flex-col gap-0.5 px-3 py-2 text-sm",
+        !notification.read && "bg-primary/5",
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">{label}</span>
         <span className="shrink-0 text-xs text-muted-foreground">{time}</span>
       </div>
-      <p className="line-clamp-2 text-muted-foreground">{notification.message}</p>
+      <p className="line-clamp-2 text-muted-foreground">
+        {notification.message}
+      </p>
     </div>
   );
 }
@@ -58,12 +64,12 @@ export function NotificationBell() {
           variant="ghost"
           size="icon"
           className="relative h-8 w-8"
-          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-              {unreadCount > 9 ? '9+' : unreadCount}
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </Button>

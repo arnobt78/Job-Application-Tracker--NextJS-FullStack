@@ -28,7 +28,7 @@ export function StatsPromoSection() {
     <ScrollParallaxSection id="highlights" className="relative z-10 py-20">
       <PageContainer>
         <ScrollStagger staggerMs={100} className="text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">
+          <h2 className="text-3xl font-semibold sm:text-4xl">
             {copy.heading}{" "}
             <span className="text-primary">{copy.headingHighlight}</span>{" "}
             {copy.headingTail}

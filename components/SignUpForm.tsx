@@ -66,9 +66,9 @@ export default function SignUpForm() {
   return (
     <div className="w-full max-w-md">
       <GlassCard variant="sky">
-        <div className="mb-6 space-y-2">
-          <h1 className="text-xl font-bold text-foreground">
-            {pendingVerification ? "Verify your email" : "Create your account"}
+        <div className="mb-4">
+          <h1 className="text-xl font-semibold text-foreground">
+            {pendingVerification ? "Verify your email" : "Create your account!"}
           </h1>
           <p className="text-muted-foreground">
             {pendingVerification

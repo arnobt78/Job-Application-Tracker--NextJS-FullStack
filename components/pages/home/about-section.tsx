@@ -14,7 +14,7 @@ export function AboutSection() {
     <ScrollParallaxSection id="about" className="relative z-10 py-20">
       <PageContainer className="grid w-full gap-10 sm:grid-cols-2 sm:items-center">
         <ScrollStagger staggerMs={110}>
-          <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
+          <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
             {copy.heading}{" "}
             <span className="text-primary">{copy.headingHighlight}</span>
           </h2>
