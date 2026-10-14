@@ -2,12 +2,13 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   JobStatus,
   JobMode,
   createAndEditJobSchema,
   CreateAndEditJobType,
+  type JobType,
 } from '@/utils/types';
 import { Form } from '@/components/ui/form';
 import { CustomFormField, CustomFormFilterDropdown } from './FormComponents';
@@ -31,6 +32,8 @@ import { JOB_FORM_COPY } from '@/lib/ui/job-form-copy';
 
 type EditJobFormProps = {
   jobId: string;
+  /** List-cache job used as placeholder so fields are filled the moment the dialog opens */
+  seedJob?: JobType;
   formLoading?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -39,6 +42,7 @@ type EditJobFormProps = {
 
 function EditJobForm({
   jobId,
+  seedJob,
   onSuccess,
   onCancel,
   standalone = true,
@@ -48,6 +52,7 @@ function EditJobForm({
     queryKey: queryKeys.job.detail(jobId),
     queryFn: () => getSingleJobAction(jobId),
     staleTime: 60_000,
+    placeholderData: seedJob?.id === jobId ? seedJob : undefined,
   });
 
   const form = useForm<CreateAndEditJobType>({
@@ -62,17 +67,26 @@ function EditJobForm({
     },
   });
 
+  // Re-apply server data only when the record version changes: a same-version refetch must not
+  // reset the form (reset clears submit state mid-validation and drops the save).
+  // keepDirtyValues: a newer version fills untouched fields only — never overwrites what the user typed.
+  const appliedVersion = useRef<string | null>(null);
   useEffect(() => {
-    if (data) {
-      form.reset({
+    if (!data) return;
+    const version = `${data.id}:${new Date(data.updatedAt).getTime()}`;
+    if (appliedVersion.current === version) return;
+    appliedVersion.current = version;
+    form.reset(
+      {
         position: data.position,
         company: data.company,
         location: data.location,
         status: data.status as JobStatus,
         mode: data.mode as JobMode,
         applyUrl: data.applyUrl ?? '',
-      });
-    }
+      },
+      { keepDirtyValues: true },
+    );
   }, [data, form]);
 
   const { mutate, isPending } = useUpdateJobMutation(jobId);

@@ -105,7 +105,7 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | Static card shell skeletons | ✅ | `DiscoverCardShellGrid` |
 | Live facet counts | ✅ | `getDiscoverFacets` + `queryKeys.discover.facets` — sidebar + mobile filters |
 | Two-panel facet sidebar | ✅ | `DiscoverSidebar` sticky left rail on `lg+`; mobile uses top filter bar |
-| Company logos | ✅ | `CompanyLogo` — Clearbit `logo.clearbit.com` + Building2 fallback on `JobCard` + discover cards |
+| Company logos | ✅ | `CompanyLogo` — Google s2 favicons + Building2 fallback on `JobCard` + discover cards |
 
 ### 1.4 Stats & Analytics Overhaul ✅
 
@@ -390,7 +390,7 @@ n8n (planned)
 13. ✅ Bluedoor facet API — live counts in `DiscoverFilters`
 14. ✅ Auto webhook subscription registration + unsubscribe on delete
 15. ✅ Weekly email digest cron (`/api/cron/weekly-digest`)
-16. ✅ Company logos (`CompanyLogo` — Clearbit)
+16. ✅ Company logos (`CompanyLogo` — Google s2 favicons)
 
 ### Phase 2
 

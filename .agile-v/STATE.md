@@ -31,8 +31,11 @@
 - **ISSUE-0006 DONE** — Stats 6-card grid (3+3 / 2+2+2 / 1) with one stats query: `components/StatsContainer.tsx`, `components/stats/stats-kpi-row.tsx` (`StatsKpiCards`), `app/(dashboard)/stats/page.tsx` (EVAL-0025)
 - **ISSUE-0007 DONE** — light-mode phase 1: tokens in `app/globals.css` + `tailwind.config.js` (`glass.*`, `accent-text`); primitives `components/ui/{glass-card,button,glass-alert-dialog,glass-dialog-content,glass-dropdown-menu}.tsx`, `components/layout/{dashboard-nav,landing-nav}.tsx`; `text-accent-text` on profile/timeline headings (EVAL-0026). Use `glass-*` / `accent-text` tokens for any new surface — never hardcode `white/*`
 - DB: `.env` `DATABASE_URL` is the demo DB used for both prod and local; GitHub OAuth was never configured (no GitHub accounts exist)
-- **Remaining:** ISSUE-0008 (light-mode phase 2: feature files + primary button contrast) · ISSUE-0009 (responsive audit) — each needs plan + approval
-- **Next exact action:** plan ISSUE-0008 (list files with `rg "white/|text-\w+-300|bg-black/" app components`) → wait for approval
+- **ISSUE-0008 DONE** — light-mode phase 2 (EVAL-0027). Styling rules: `text-on-glass(-muted)` for text/icons on colored glass; `text-tone-X` replaces `text-X-300`, `text-ink-X` replaces `text-X-400` (no `/opacity` modifier on these — use `text-X-600/NN dark:text-X-400/NN`); `bg-glass-inset*` replaces `bg-black/10|20|30`; class maps in `lib/` are scanned by tailwind
+- **ISSUE-0009 DONE** — responsive 0 overflow; fixed `components/ui/company-logo.tsx` (Google s2), `components/EditJobForm.tsx` (seed + version-gated reset), `hooks/useJobsMutation.ts` (warm-up catch) (EVAL-0028)
+- **Human-Action (data):** audit cleanup hard-deleted the demo job "Senior Software Developer · Workforcenow" (test@user.com) — user restoring via DB point-in-time restore. Never run destructive UI automation on the shared demo DB; any future CRUD test must delete only rows it created (match by exact created id/name after filter settles)
+- **Remaining:** ISSUE-0010 (`/stats` nav waits on awaited server prefetches — streaming option) — needs plan + approval
+- **Next exact action:** confirm demo job restored → plan ISSUE-0010 or receive next BL-0016 item
 
 ## Recent (sync 2026-07-24)
 - Infinity Loop reactivated @ `148a49f` — full `.agile-v/` sync

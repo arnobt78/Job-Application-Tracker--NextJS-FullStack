@@ -77,13 +77,23 @@ function warmDashboardJobsCaches(
         if (result.count < old.count) return old;
         return result;
       });
-    });
+    })
+    .catch(ignoreWarmupFailure);
 
-  void queryClient.fetchQuery({
-    queryKey: queryKeys.stats.all,
-    queryFn: () => getStatsAction(),
-  });
+  void queryClient
+    .fetchQuery({
+      queryKey: queryKeys.stats.all,
+      queryFn: () => getStatsAction(),
+    })
+    .catch(ignoreWarmupFailure);
 }
+
+/**
+ * Warm-up is best-effort: a follow-up mutation's cancelQueries rejects these with CancelledError,
+ * and real fetch errors resurface through the mounted useQuery. Without a handler both become
+ * unhandled rejections (Sentry noise).
+ */
+function ignoreWarmupFailure(): void {}
 
 /** Unwrap JobActionResult — throws so TanStack onError + toast fire on failure. */
 async function unwrapJobActionResult(

@@ -10,7 +10,10 @@ type CompanyLogoProps = {
   className?: string;
 };
 
-/** Clearbit logo with Building2 fallback on error or missing domain. */
+/**
+ * Company favicon via Google's s2 service (Clearbit's logo API was retired — its host no longer resolves).
+ * Building2 fallback on error or missing domain.
+ */
 export function CompanyLogo({ domain, size = 20, className }: CompanyLogoProps) {
   const [err, setErr] = useState(false);
 
@@ -25,8 +28,10 @@ export function CompanyLogo({ domain, size = 20, className }: CompanyLogoProps) 
 
   return (
     <img
-      src={`https://logo.clearbit.com/${domain}`}
+      src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`}
       alt=""
+      loading="lazy"
+      decoding="async"
       width={size}
       height={size}
       className={cn('shrink-0 rounded-sm object-contain', className)}

@@ -16,7 +16,8 @@ import type { JobType } from '@/utils/types';
 import { JOB_DIALOG_PANEL_CLASS } from '@/lib/ui/job-dialog-dimensions';
 
 type EditJobDialogProps = {
-  job: Pick<JobType, 'id' | 'position' | 'company'>;
+  /** Full JobType (JobCard) seeds the form instantly; the id-only shape waits for the detail query */
+  job: JobType | Pick<JobType, 'id' | 'position' | 'company'>;
   /** When true, form body shows loading shell (SSR/hydration cold load) */
   formLoading?: boolean;
   /**
@@ -109,6 +110,7 @@ export function EditJobDialog({
             <div className="flex min-h-0 flex-1 flex-col">
               <EditJobForm
                 jobId={job.id}
+                seedJob={'updatedAt' in job ? job : undefined}
                 standalone={false}
                 formLoading={formLoading}
                 onSuccess={() => handleOpenChange(false)}
@@ -116,7 +118,7 @@ export function EditJobDialog({
               />
             </div>
             {aiPanel && (
-              <div className="overlay-scroll max-h-[40vh] overflow-y-auto border-t border-white/10 px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="overlay-scroll max-h-[40vh] overflow-y-auto border-t border-glass-border px-4 pb-4 sm:px-6 sm:pb-6">
                 {aiPanel}
               </div>
             )}

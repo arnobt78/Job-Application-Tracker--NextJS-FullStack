@@ -9,6 +9,28 @@
 | Red Team | EVAL-0016…0019 PASS · EVAL-0020 governance sync |
 | EvalGate (Gate 2) | NOT_RUN |
 
+## EVAL-0028 (BL-0016 ISSUE-0009 — responsive audit + A-Z runtime — 2026-10-14)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Responsive | Playwright vs `next start`, 10 routes × 390/768/1280 × light/dark | PASS | `scrollWidth == clientWidth` everywhere · no element past viewport · create/edit/delete dialogs fit at 390/768 |
+| CRUD (light + dark) | Playwright, test@user.com | PASS | create card 267–296 ms · edit card 54–325 ms · delete card 280–321 ms · Stats pending +1 after create · back/forward OK · Discover/Timeline/Team/Profile render |
+| Console / network | page `console.error` + `pageerror` + responses ≥400 | PASS | 0 errors · 0 failed first-party (was: Clearbit `ERR_NAME_NOT_RESOLVED` per card, 4× `CancelledError`) · aborted RSC prefetches on hard nav only |
+| Sentry envelopes | `/api/monitoring` request types | PASS | `session` + `transaction` only · 0 `event` (was 4 from unhandled `CancelledError`) |
+| Edit form | 390 + 1280 | PASS | fields filled on open (list-job placeholder) · fast submit saves (was: empty form, validation focus on `company`, no POST) |
+| E2E | `npx playwright test` | PASS | 11 passed · 10 skipped (`E2E_COOKIE`) |
+| Perf finding | RSC timing | NOTE | `/stats` nav ~2.8–4.3 s locally (4 awaited prefetches over remote DB) → ISSUE-0010 |
+| Data incident | — | HUMAN-ACTION | audit cleanup hard-deleted demo job "Senior Software Developer · Workforcenow" (test@user.com); user restoring via DB point-in-time restore |
+
+## EVAL-0027 (BL-0016 ISSUE-0008 — light-mode phase 2 — 2026-10-14)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Lint · Typecheck · Unit · Build | gate commands | PASS | 0 problems · 69/69 · exit 0 · `text-ink-*`, `text-tone-*`, `hover:text-tone-violet` (+ `:is(.dark *)`), `bg-glass-inset*`, `text-on-glass` emitted |
+| Sweep | `rg "white/\|text-X-300\|text-X-400\|bg-black/" app components lib` | PASS | remaining: `dark:`-prefixed originals, dialog overlay `dark:bg-black/80`, ripple `bg-white/30`, button secondary `dark:text-white/80` |
+| Visual | screenshots light + dark (landing, sign-in, dashboard, stats, dialogs 390) | PASS | light: dark-slate button text, visible secondary, opaque dialog panels, colored form icons · dark unchanged |
+| Red Team | implementation-verifier | PASS after fixes | found `text-ink-violet/80` (no opacity on layered utility) → `text-violet-600/80 dark:text-violet-400/80`; `lib/` not in tailwind `content` (icon maps lost color) → added + migrated to `text-ink-*` |
+
 ## EVAL-0026 (BL-0016 ISSUE-0007 — light-mode phase 1 tokens — 2026-10-14)
 
 | Check | Command | Result | Notes |
