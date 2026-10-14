@@ -60,7 +60,7 @@ function resolveBadge(job: JobType): BadgeConfig | null {
       label: 'Salary Added',
       icon: <DollarSign className="h-3 w-3" />,
       classes:
-        'bg-sky-500/15 text-sky-400 border-sky-400/30 dark:text-sky-300',
+        'bg-sky-500/15 text-tone-sky border-sky-400/30',
     };
   }
 
@@ -70,7 +70,7 @@ function resolveBadge(job: JobType): BadgeConfig | null {
       label: 'Closed',
       icon: <WifiOff className="h-3 w-3" />,
       classes:
-        'bg-rose-500/15 text-rose-400 border-rose-400/30 dark:text-rose-300',
+        'bg-rose-500/15 text-tone-rose border-rose-400/30',
     };
   }
 
@@ -80,7 +80,7 @@ function resolveBadge(job: JobType): BadgeConfig | null {
       label: 'JD Changed',
       icon: <AlertTriangle className="h-3 w-3" />,
       classes:
-        'bg-amber-500/15 text-amber-400 border-amber-400/30 dark:text-amber-300',
+        'bg-amber-500/15 text-tone-amber border-amber-400/30',
     };
   }
 
@@ -90,7 +90,7 @@ function resolveBadge(job: JobType): BadgeConfig | null {
       label: 'Live',
       icon: <Wifi className="h-3 w-3" />,
       classes:
-        'bg-emerald-500/15 text-emerald-400 border-emerald-400/30 dark:text-emerald-300',
+        'bg-emerald-500/15 text-tone-emerald border-emerald-400/30',
     };
   }
 

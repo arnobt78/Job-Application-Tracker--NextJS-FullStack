@@ -34,7 +34,7 @@ function KpiCard({
   sub?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-border/20 bg-black/20 px-4 py-3">
+    <div className="flex flex-col gap-1 rounded-xl border border-border/20 bg-glass-inset px-4 py-3">
       <p className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wide">
         {label}
       </p>
@@ -75,7 +75,7 @@ function RoleBar({
           <span className="ml-1 text-muted-foreground/50">({role.count})</span>
         </span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-glass-fill">
         <div
           className="h-full rounded-full bg-emerald-500/60 transition-all"
           style={{ width: `${widthPct}%` }}
@@ -105,7 +105,7 @@ export function SalaryIntelligence() {
 
   if (isError) {
     return (
-      <p className="py-4 text-center text-xs text-rose-400">
+      <p className="py-4 text-center text-xs text-ink-rose">
         Failed to load salary intelligence. Try refreshing the page.
       </p>
     );

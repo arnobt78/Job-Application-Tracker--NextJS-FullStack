@@ -26,9 +26,9 @@ const FIELD_GLOW = 'shadow-[0_12px_40px_rgba(2,132,199,0.15)]';
 
 const statusIcons: Record<string, ReactNode> = {
   all: <Filter className="h-4 w-4" />,
-  pending: <Clock className="h-4 w-4 text-amber-400" />,
-  interview: <CalendarCheck className="h-4 w-4 text-emerald-400" />,
-  declined: <XCircle className="h-4 w-4 text-rose-400" />,
+  pending: <Clock className="h-4 w-4 text-ink-amber" />,
+  interview: <CalendarCheck className="h-4 w-4 text-ink-emerald" />,
+  declined: <XCircle className="h-4 w-4 text-ink-rose" />,
 };
 
 const modeIcons: Record<string, ReactNode> = {

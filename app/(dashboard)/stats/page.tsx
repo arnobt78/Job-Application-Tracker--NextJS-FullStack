@@ -106,13 +106,13 @@ async function StatsPage() {
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <GlassCard variant="emerald">
-            <h3 className="mb-4 text-center text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+            <h3 className="mb-4 text-center text-sm font-semibold text-tone-emerald">
               Status Distribution
             </h3>
             <StatusDistributionChart />
           </GlassCard>
           <GlassCard variant="amber">
-            <h3 className="mb-4 text-center text-sm font-semibold text-amber-700 dark:text-amber-300">
+            <h3 className="mb-4 text-center text-sm font-semibold text-tone-amber">
               Job Type Breakdown
             </h3>
             <ModeDistributionChart />

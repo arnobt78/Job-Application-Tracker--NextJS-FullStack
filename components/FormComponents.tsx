@@ -33,7 +33,7 @@ type CustomFormFieldProps<T extends FieldValues> = {
   placeholder?: string;
   required?: boolean;
   labelIcon?: LucideIcon;
-  /** Tailwind color class for label icon — e.g. text-sky-400 */
+  /** Tailwind color class for label icon — e.g. text-ink-sky */
   labelIconClassName?: string;
 };
 
@@ -44,7 +44,7 @@ export function CustomFormField<T extends FieldValues>({
   placeholder,
   required = false,
   labelIcon: LabelIcon,
-  labelIconClassName = 'text-sky-400',
+  labelIconClassName = 'text-ink-sky',
 }: CustomFormFieldProps<T>) {
   return (
     <FormField
@@ -97,7 +97,7 @@ export function CustomFormSelect<T extends FieldValues>({
   labelText,
   required = false,
   labelIcon: LabelIcon,
-  labelIconClassName = 'text-sky-400',
+  labelIconClassName = 'text-ink-sky',
 }: CustomFormSelectProps<T>) {
   return (
     <FormField
@@ -181,7 +181,7 @@ export function CustomFormFilterDropdown<T extends FieldValues>({
   labelText,
   required = false,
   labelIcon: LabelIcon,
-  labelIconClassName = 'text-sky-400',
+  labelIconClassName = 'text-ink-sky',
 }: CustomFormFilterDropdownProps<T>) {
   return (
     <FormField

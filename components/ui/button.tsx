@@ -10,13 +10,14 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border border-primary/30 bg-gradient-to-r from-primary/70 via-primary/50 to-primary/30 text-white/90 shadow-[0_15px_35px_rgba(59,130,246,0.45)] hover:from-primary/80 hover:via-primary/60 hover:to-primary/40 [&_svg]:text-white/90",
+          "border border-primary/30 bg-gradient-to-r from-primary/70 via-primary/50 to-primary/30 text-on-glass shadow-[0_15px_35px_rgba(59,130,246,0.45)] hover:from-primary/80 hover:via-primary/60 hover:to-primary/40 [&_svg]:text-on-glass",
         destructive:
-          "border border-rose-400/30 bg-gradient-to-r from-rose-500/70 via-rose-500/50 to-rose-500/30 text-white/90 shadow-[0_15px_35px_rgba(225,29,72,0.45)] hover:from-rose-500/80 hover:via-rose-600/60 hover:to-rose-500/40 [&_svg]:text-white/90",
+          "border border-rose-400/30 bg-gradient-to-r from-rose-500/70 via-rose-500/50 to-rose-500/30 text-on-glass shadow-[0_15px_35px_rgba(225,29,72,0.45)] hover:from-rose-500/80 hover:via-rose-600/60 hover:to-rose-500/40 [&_svg]:text-on-glass",
         outline:
           "border border-glass-border bg-background/50 text-foreground/90 hover:bg-accent/50 hover:border-glass-border-strong [&_svg]:text-foreground/90",
         secondary:
-          "bg-gradient-to-r from-secondary/70 via-secondary/50 to-secondary/30 text-secondary-foreground dark:text-white/80 border border-secondary/30 [&_svg]:text-secondary-foreground dark:[&_svg]:text-white/80",
+          // Light: slate fill + visible border (secondary/70 is near-white and vanishes on the light page)
+          "border bg-gradient-to-r from-slate-200/80 via-slate-100/70 to-slate-100/50 border-glass-border-strong text-on-glass [&_svg]:text-on-glass dark:from-secondary/70 dark:via-secondary/50 dark:to-secondary/30 dark:border-secondary/30 dark:text-white/80 dark:[&_svg]:text-white/80",
         ghost:
           "text-foreground/90 hover:bg-accent/50 hover:text-accent-foreground [&_svg]:text-foreground/90",
         link: "text-primary underline-offset-4 hover:underline",

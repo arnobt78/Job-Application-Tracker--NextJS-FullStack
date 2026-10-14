@@ -26,19 +26,19 @@ export const PORTFOLIO_BREAKDOWN_ITEMS: PortfolioBreakdownItem[] = [
     label: 'Pending',
     field: 'pending',
     icon: Clock,
-    iconClassName: 'text-amber-400',
+    iconClassName: 'text-ink-amber',
   },
   {
     label: 'Interview',
     field: 'interview',
     icon: CalendarCheck,
-    iconClassName: 'text-emerald-400',
+    iconClassName: 'text-ink-emerald',
   },
   {
     label: 'Declined',
     field: 'declined',
     icon: XCircle,
-    iconClassName: 'text-rose-400',
+    iconClassName: 'text-ink-rose',
   },
   {
     label: 'Full-time',

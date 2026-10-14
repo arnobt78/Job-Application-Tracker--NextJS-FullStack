@@ -54,10 +54,10 @@ export function CreateTeamForm() {
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Job Seekers 2026"
           maxLength={60}
-          className="w-full rounded-lg border border-border/30 bg-black/20 px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
+          className="w-full rounded-lg border border-border/30 bg-glass-inset px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
         />
 
-        {error && <p className="text-xs text-rose-400">{error}</p>}
+        {error && <p className="text-xs text-ink-rose">{error}</p>}
 
         <Button type="submit" disabled={isPending || !name.trim()} className="gap-2">
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users2 className="h-4 w-4" />}

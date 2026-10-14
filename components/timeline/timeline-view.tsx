@@ -101,11 +101,11 @@ export function TimelineView() {
         <div key={dateLabel}>
           {/* Date separator chip */}
           <div className="mb-4 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/10" />
-            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <div className="h-px flex-1 bg-glass-border" />
+            <span className="rounded-full border border-slate-900/10 dark:border-white/15 bg-glass-fill px-3 py-0.5 text-[11px] font-medium text-muted-foreground">
               {dateLabel}
             </span>
-            <div className="h-px flex-1 bg-white/10" />
+            <div className="h-px flex-1 bg-glass-border" />
           </div>
 
           {/* Events in this date group */}

@@ -35,9 +35,9 @@ export function TryDemoAccountButton({
           HERO_CTA_CLASS,
           'gap-2',
           'border border-emerald-400/30 bg-gradient-to-r from-emerald-500/70 via-emerald-500/50 to-emerald-500/30',
-          'text-white/90 shadow-[0_15px_35px_rgba(16,185,129,0.45)]',
+          'text-on-glass shadow-[0_15px_35px_rgba(16,185,129,0.45)]',
           'hover:from-emerald-500/80 hover:via-emerald-600/60 hover:to-emerald-500/40',
-          '[&_svg]:text-white/90'
+          '[&_svg]:text-on-glass'
         )}
       >
         {isLoading ? (

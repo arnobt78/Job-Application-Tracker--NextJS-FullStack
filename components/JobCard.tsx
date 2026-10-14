@@ -42,7 +42,7 @@ function JobCard({ job }: { job: JobType }) {
           <span className="text-sm text-muted-foreground">{job.company}</span>
           {/* Company size from Bluedoor /v1/orgs — shown when enriched */}
           {job.companySize && (
-            <span className="rounded-full border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/70">
+            <span className="rounded-full border border-glass-border bg-glass-fill px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/70">
               {job.companySize}
             </span>
           )}

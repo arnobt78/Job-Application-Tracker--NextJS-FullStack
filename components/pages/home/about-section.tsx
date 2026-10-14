@@ -26,7 +26,7 @@ export function AboutSection() {
           </p>
         </ScrollStagger>
 
-        <div className="rounded-[28px] border border-white/15 bg-background/70 p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
+        <div className="rounded-[28px] border border-slate-900/10 dark:border-white/15 bg-background/70 p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(15,23,42,0.35)]">
           <ScrollStagger staggerMs={90}>
             <p className="text-sm uppercase tracking-[0.3em] text-primary">
               {copy.ctaEyebrow}

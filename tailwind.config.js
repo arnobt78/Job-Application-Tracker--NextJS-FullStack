@@ -6,6 +6,8 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+    // lib/ui holds class-name maps (form icons, breakdown config) — must be scanned
+    './lib/**/*.{ts,tsx}',
 	],
   theme: {
     container: {
@@ -58,8 +60,16 @@ module.exports = {
           hover: "var(--glass-hover)",
           from: "var(--glass-from)",
           via: "var(--glass-via)",
+          "inset-soft": "var(--glass-inset-soft)",
+          inset: "var(--glass-inset)",
+          "inset-strong": "var(--glass-inset-strong)",
         },
         "accent-text": "var(--accent-text)",
+        // Text/icons on colored glass (buttons, tinted cards): slate-800 light, white/90 dark
+        "on-glass": {
+          DEFAULT: "var(--on-glass)",
+          muted: "var(--on-glass-muted)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

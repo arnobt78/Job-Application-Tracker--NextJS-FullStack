@@ -42,11 +42,11 @@ export function FeaturesSection() {
             const variant = FEATURE_VARIANTS[index];
             return (
               <GlassCard key={feature.title} variant={variant}>
-                <Icon className="mb-3 h-7 w-7 text-white/90" />
-                <h3 className="text-lg font-semibold text-white/90">
+                <Icon className="mb-3 h-7 w-7 text-on-glass" />
+                <h3 className="text-lg font-semibold text-on-glass">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/70">
+                <p className="mt-2 text-sm leading-relaxed text-on-glass-muted">
                   {feature.body}
                 </p>
               </GlassCard>

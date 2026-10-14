@@ -58,14 +58,14 @@ export function GlassAlertDialog({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="overflow-visible border-0 bg-transparent p-0 shadow-none sm:max-w-md">
-        <GlassCard variant={glassVariant} className="p-0">
+        <GlassCard variant={glassVariant} className="p-0 bg-background/95 dark:bg-transparent">
           <div className="flex gap-4 p-4 sm:p-6">
             <div
               className={cn(
                 "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-glass-border bg-background/40",
-                variant === "destructive" && "text-rose-400",
-                variant === "sky" && "text-sky-400",
-                variant === "default" && "text-violet-400",
+                variant === "destructive" && "text-ink-rose",
+                variant === "sky" && "text-ink-sky",
+                variant === "default" && "text-ink-violet",
               )}
             >
               {icon}

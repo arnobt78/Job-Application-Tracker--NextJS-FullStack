@@ -29,27 +29,27 @@ export const JOB_FORM_COPY = {
     position: {
       label: 'Position',
       icon: Briefcase,
-      iconClass: 'text-sky-400',
+      iconClass: 'text-ink-sky',
     },
     company: {
       label: 'Company',
       icon: Building2,
-      iconClass: 'text-violet-400',
+      iconClass: 'text-ink-violet',
     },
     location: {
       label: 'Location',
       icon: MapPin,
-      iconClass: 'text-emerald-400',
+      iconClass: 'text-ink-emerald',
     },
     status: {
       label: 'Job Status',
       icon: Clock,
-      iconClass: 'text-amber-400',
+      iconClass: 'text-ink-amber',
     },
     mode: {
       label: 'Job Mode',
       icon: Briefcase,
-      iconClass: 'text-sky-400',
+      iconClass: 'text-ink-sky',
     },
     applyUrl: {
       label: 'Apply URL (optional)',

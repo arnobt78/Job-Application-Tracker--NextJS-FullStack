@@ -15,8 +15,8 @@ import { cn } from '@/lib/utils';
 import type { TeamMemberType, TeamRole } from '@/utils/types';
 
 const ROLE_STYLES: Record<TeamRole, string> = {
-  owner: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  admin: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  owner: 'bg-amber-500/10 text-ink-amber border-amber-500/20',
+  admin: 'bg-violet-500/10 text-ink-violet border-violet-500/20',
   member: 'bg-muted/30 text-muted-foreground border-border/30',
 };
 
@@ -61,7 +61,7 @@ export function TeamMemberList({ members, currentUserId, currentRole, teamId }: 
         return (
           <div
             key={member.id}
-            className="flex items-center gap-3 rounded-lg border border-border/20 bg-black/10 px-4 py-3"
+            className="flex items-center gap-3 rounded-lg border border-border/20 bg-glass-inset-soft px-4 py-3"
           >
             {/* Avatar placeholder */}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -92,7 +92,7 @@ export function TeamMemberList({ members, currentUserId, currentRole, teamId }: 
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-rose-400"
+                className="h-7 w-7 text-muted-foreground hover:text-ink-rose"
                 disabled={removing === member.id}
                 onClick={() => handleRemove(member)}
                 aria-label={`Remove ${member.user.name ?? member.user.email}`}

@@ -20,10 +20,10 @@ type Props = {
 };
 
 const SCORE_STYLES: Record<string, string> = {
-  emerald: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
-  sky:     'bg-sky-500/10 text-sky-400 border border-sky-500/20',
-  amber:   'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-  rose:    'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+  emerald: 'bg-emerald-500/10 text-ink-emerald border border-emerald-500/20',
+  sky:     'bg-sky-500/10 text-ink-sky border border-sky-500/20',
+  amber:   'bg-amber-500/10 text-ink-amber border border-amber-500/20',
+  rose:    'bg-rose-500/10 text-ink-rose border border-rose-500/20',
 };
 
 function scoreColor(score: number): string {

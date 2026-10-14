@@ -54,7 +54,7 @@ export function InviteMemberForm({ team }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="colleague@email.com"
-          className="flex-1 rounded-lg border border-border/30 bg-black/20 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50"
+          className="flex-1 rounded-lg border border-border/30 bg-glass-inset px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/50"
         />
         <Button type="submit" size="sm" disabled={isPending || !email.trim()} className="gap-1.5 shrink-0">
           {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
@@ -63,7 +63,7 @@ export function InviteMemberForm({ team }: Props) {
       </form>
 
       {message && (
-        <p className={`text-xs ${message.type === 'success' ? 'text-emerald-400' : 'text-rose-400'}`}>
+        <p className={`text-xs ${message.type === 'success' ? 'text-ink-emerald' : 'text-ink-rose'}`}>
           {message.text}
         </p>
       )}

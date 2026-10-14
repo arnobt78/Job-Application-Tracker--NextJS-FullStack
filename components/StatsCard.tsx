@@ -11,9 +11,9 @@ type StatsCardsProps = {
 };
 
 const statIcons: Record<string, ReactNode> = {
-  "pending jobs": <Clock className="h-6 w-6 text-amber-400" />,
-  "interviews set": <CalendarCheck className="h-6 w-6 text-emerald-400" />,
-  "jobs declined": <XCircle className="h-6 w-6 text-rose-400" />,
+  "pending jobs": <Clock className="h-6 w-6 text-ink-amber" />,
+  "interviews set": <CalendarCheck className="h-6 w-6 text-ink-emerald" />,
+  "jobs declined": <XCircle className="h-6 w-6 text-ink-rose" />,
 };
 
 function StatsCards({

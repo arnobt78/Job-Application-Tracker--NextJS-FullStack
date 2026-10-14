@@ -62,7 +62,7 @@ async function UserProfilePage() {
           </GlassCard>
 
           <GlassCard variant="emerald">
-            <h3 className="mb-2 text-sm font-semibold text-emerald-300">Tips</h3>
+            <h3 className="mb-2 text-sm font-semibold text-tone-emerald">Tips</h3>
             <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
               <li>• Skills: be specific (TypeScript, not just &ldquo;coding&rdquo;)</li>
               <li>• Roles: include seniority (Senior, Staff, Principal)</li>

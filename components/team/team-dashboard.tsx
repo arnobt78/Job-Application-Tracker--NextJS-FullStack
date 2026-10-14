@@ -35,7 +35,7 @@ export function TeamDashboard({ userId }: Props) {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 rounded-lg border border-border/20 bg-black/10 px-4 py-3"
+                  className="flex items-center gap-3 rounded-lg border border-border/20 bg-glass-inset-soft px-4 py-3"
                 >
                   <div className="h-8 w-8 animate-pulse rounded-full bg-muted/20" />
                   <div className="flex flex-col gap-1.5 flex-1">
@@ -54,7 +54,7 @@ export function TeamDashboard({ userId }: Props) {
   if (isError) {
     return (
       <div className="flex flex-col items-center gap-3 py-12 text-center">
-        <AlertCircle className="h-8 w-8 text-rose-400" />
+        <AlertCircle className="h-8 w-8 text-ink-rose" />
         <p className="text-sm text-muted-foreground">
           Failed to load team data.
         </p>
@@ -95,7 +95,7 @@ export function TeamDashboard({ userId }: Props) {
       <div className="lg:col-span-2 flex flex-col gap-4">
         {canManage && (
           <GlassCard variant="sky">
-            <h3 className="mb-3 text-sm font-semibold text-sky-300">
+            <h3 className="mb-3 text-sm font-semibold text-tone-sky">
               Invite Member
             </h3>
             <InviteMemberForm team={team} />
@@ -103,7 +103,7 @@ export function TeamDashboard({ userId }: Props) {
         )}
 
         <GlassCard variant="violet">
-          <h3 className="mb-3 text-sm font-semibold text-violet-300">
+          <h3 className="mb-3 text-sm font-semibold text-tone-violet">
             Members{" "}
             <span className="ml-1 text-muted-foreground/60">
               ({members.length})
@@ -123,13 +123,13 @@ export function TeamDashboard({ userId }: Props) {
         <GlassCard variant="emerald">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <Users2 className="h-4 w-4 text-emerald-400" />
-              <h3 className="text-sm font-semibold text-emerald-300">
+              <Users2 className="h-4 w-4 text-ink-emerald" />
+              <h3 className="text-sm font-semibold text-tone-emerald">
                 Team Info
               </h3>
             </div>
 
-            <div className="rounded-lg border border-border/20 bg-black/20 px-4 py-3">
+            <div className="rounded-lg border border-border/20 bg-glass-inset px-4 py-3">
               <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
                 Team name
               </p>
@@ -137,22 +137,22 @@ export function TeamDashboard({ userId }: Props) {
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-lg border border-border/20 bg-black/20 px-3 py-2.5 text-center">
-                <p className="text-2xl font-semibold tabular-nums text-emerald-400">
+              <div className="rounded-lg border border-border/20 bg-glass-inset px-3 py-2.5 text-center">
+                <p className="text-2xl font-semibold tabular-nums text-ink-emerald">
                   {members.length}
                 </p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
                   Members
                 </p>
               </div>
-              <div className="rounded-lg border border-border/20 bg-black/20 px-3 py-2.5 text-center">
+              <div className="rounded-lg border border-border/20 bg-glass-inset px-3 py-2.5 text-center">
                 <p
                   className={cn(
                     "text-sm font-semibold capitalize",
                     role === "owner"
-                      ? "text-amber-400"
+                      ? "text-ink-amber"
                       : role === "admin"
-                        ? "text-violet-400"
+                        ? "text-ink-violet"
                         : "text-muted-foreground",
                   )}
                 >

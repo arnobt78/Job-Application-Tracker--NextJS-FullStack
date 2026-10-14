@@ -48,8 +48,8 @@ export function EmailInboundSetup() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <Mail className="h-4 w-4 text-sky-400" />
-        <h3 className="text-sm font-semibold text-sky-300">Auto-Apply Detection</h3>
+        <Mail className="h-4 w-4 text-ink-sky" />
+        <h3 className="text-sm font-semibold text-tone-sky">Auto-Apply Detection</h3>
       </div>
 
       <p className="text-xs text-muted-foreground leading-relaxed">
@@ -62,7 +62,7 @@ export function EmailInboundSetup() {
           variant="outline"
           size="sm"
           onClick={enable}
-          className="gap-2 border-sky-500/30 text-sky-300 hover:bg-sky-500/10"
+          className="gap-2 border-sky-500/30 text-tone-sky hover:bg-sky-500/10"
         >
           <Mail className="h-3.5 w-3.5" />
           Enable Auto-Apply Detection
@@ -78,7 +78,7 @@ export function EmailInboundSetup() {
 
       {state.status === 'error' && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-xs text-rose-400">{state.message}</p>
+          <p className="text-xs text-ink-rose">{state.message}</p>
           <Button variant="ghost" size="sm" onClick={enable} className="w-fit text-xs">
             Try again
           </Button>
@@ -88,17 +88,17 @@ export function EmailInboundSetup() {
       {state.status === 'ready' && (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <code className="flex-1 truncate rounded-md border border-border/30 bg-black/30 px-3 py-2 font-mono text-[10px] text-sky-300">
+            <code className="flex-1 truncate rounded-md border border-border/30 bg-glass-inset-strong px-3 py-2 font-mono text-[10px] text-tone-sky">
               {state.address}
             </code>
             <Button
               variant="outline"
               size="sm"
               onClick={() => copyAddress(state.address)}
-              className="shrink-0 gap-1.5 border-sky-500/30 text-sky-300 hover:bg-sky-500/10"
+              className="shrink-0 gap-1.5 border-sky-500/30 text-tone-sky hover:bg-sky-500/10"
             >
               {state.copied ? (
-                <><Check className="h-3.5 w-3.5 text-emerald-400" /> Copied!</>
+                <><Check className="h-3.5 w-3.5 text-ink-emerald" /> Copied!</>
               ) : (
                 <><Copy className="h-3.5 w-3.5" /> Copy</>
               )}
@@ -106,12 +106,12 @@ export function EmailInboundSetup() {
           </div>
 
           <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 px-3 py-2.5">
-            <p className="text-[10px] font-semibold text-sky-400 uppercase tracking-wide mb-1.5">
+            <p className="text-[10px] font-semibold text-ink-sky uppercase tracking-wide mb-1.5">
               How to use
             </p>
             <ol className="flex flex-col gap-1 text-[10px] text-muted-foreground">
               <li>1. Copy the address above</li>
-              <li>2. Create an email filter in Gmail/Outlook for keywords like <code className="text-sky-300">&ldquo;Thank you for applying&rdquo;</code></li>
+              <li>2. Create an email filter in Gmail/Outlook for keywords like <code className="text-tone-sky">&ldquo;Thank you for applying&rdquo;</code></li>
               <li>3. Auto-forward matching emails to this address</li>
               <li>4. New jobs appear on your dashboard within seconds</li>
             </ol>

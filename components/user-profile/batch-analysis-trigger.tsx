@@ -16,7 +16,7 @@ export function BatchAnalysisTrigger() {
 
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold text-violet-300">Bulk AI Analysis</h3>
+      <h3 className="text-sm font-semibold text-tone-violet">Bulk AI Analysis</h3>
       <p className="text-xs text-muted-foreground">
         Queue AI fit scores and summaries for all unanalysed jobs. Results appear on job cards as they complete.
       </p>
@@ -25,7 +25,7 @@ export function BatchAnalysisTrigger() {
         size="sm"
         disabled={isPending}
         onClick={() => mutate(undefined)}
-        className="mt-1 w-full gap-2 border-violet-500/30 text-violet-300 hover:bg-violet-500/10"
+        className="mt-1 w-full gap-2 border-violet-500/30 text-tone-violet hover:bg-violet-500/10"
       >
         {isPending ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />

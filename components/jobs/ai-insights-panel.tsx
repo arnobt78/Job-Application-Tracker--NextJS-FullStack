@@ -42,10 +42,10 @@ type AiInsightsPanelProps = {
 function FitScoreBadge({ score }: { score: number }) {
   const color =
     score >= 75
-      ? "bg-emerald-500/15 text-emerald-400"
+      ? "bg-emerald-500/15 text-ink-emerald"
       : score >= 50
-        ? "bg-amber-500/15 text-amber-400"
-        : "bg-red-500/15 text-red-400";
+        ? "bg-amber-500/15 text-ink-amber"
+        : "bg-red-500/15 text-ink-red";
 
   return (
     <span
@@ -75,7 +75,7 @@ function CoverLetterSection({ text }: { text: string }) {
         )}
       </button>
       {open && (
-        <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-black/20 p-3">
+        <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-glass-inset p-3">
           {/* LLM output is markdown — render with remark-gfm for proper formatting */}
           <div className="prose prose-invert prose-xs max-w-none text-xs leading-relaxed text-muted-foreground [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
@@ -124,7 +124,7 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
             {data.interview_angles.map((a: InterviewAngle, i: number) => (
               <li
                 key={i}
-                className="rounded-lg border border-border bg-black/10 p-2.5 text-xs"
+                className="rounded-lg border border-border bg-glass-inset-soft p-2.5 text-xs"
               >
                 <p className="font-medium">{a.question}</p>
                 <p className="mt-0.5 text-muted-foreground">{a.angle}</p>

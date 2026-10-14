@@ -58,7 +58,7 @@ function TagPill({ label, onRemove }: { label: string; onRemove: () => void }) {
       <button
         type="button"
         onClick={onRemove}
-        className="ml-0.5 rounded-full p-0.5 hover:bg-white/20 transition"
+        className="ml-0.5 rounded-full p-0.5 hover:bg-glass-border-strong transition"
         aria-label={`Remove ${label}`}
       >
         <X className="h-2.5 w-2.5" />
@@ -183,7 +183,7 @@ export function UserProfileForm() {
         {/* Skills */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-sky-400" />
+            <Sparkles className="h-3.5 w-3.5 text-ink-sky" />
             Skills
           </label>
           <TagInput
@@ -200,7 +200,7 @@ export function UserProfileForm() {
         {/* Target Roles */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium flex items-center gap-1.5">
-            <Briefcase className="h-3.5 w-3.5 text-violet-400" />
+            <Briefcase className="h-3.5 w-3.5 text-ink-violet" />
             Target Roles
           </label>
           <TagInput
@@ -226,7 +226,7 @@ export function UserProfileForm() {
             return (
               <FormItem>
                 <FormLabel className="flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-emerald-400" />
+                  <User className="h-3.5 w-3.5 text-ink-emerald" />
                   Experience Level
                 </FormLabel>
                 <FormControl>
@@ -270,7 +270,7 @@ export function UserProfileForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-1.5">
-                <FileText className="h-3.5 w-3.5 text-amber-400" />
+                <FileText className="h-3.5 w-3.5 text-ink-amber" />
                 Resume / CV Text
               </FormLabel>
               <FormControl>

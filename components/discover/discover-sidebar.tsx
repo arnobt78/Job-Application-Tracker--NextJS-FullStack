@@ -70,7 +70,7 @@ function SidebarRadioSection({
         return (
           <label
             key={option.value}
-            className="group flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors hover:bg-white/5"
+            className="group flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors hover:bg-glass-fill"
           >
             <input
               type="radio"
@@ -118,7 +118,7 @@ function SidebarRadioSection({
 }
 
 function Divider() {
-  return <div className="my-3 h-px bg-white/10" />;
+  return <div className="my-3 h-px bg-glass-border" />;
 }
 
 function toFacetCounts(
@@ -207,7 +207,7 @@ export function DiscoverSidebar({ className }: DiscoverSidebarProps) {
         {/* Header row */}
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-sm font-semibold">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-sky-400" />
+            <SlidersHorizontal className="h-3.5 w-3.5 text-ink-sky" />
             Filters
           </div>
           {/* Reserve space so layout never shifts */}

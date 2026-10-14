@@ -44,7 +44,7 @@ export function PipelineProgress({ currentStep, completedSteps }: PipelineProgre
             )}
           >
             {isCompleted ? (
-              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" aria-hidden />
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-ink-emerald" aria-hidden />
             ) : isCurrent ? (
               <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" aria-hidden />
             ) : (

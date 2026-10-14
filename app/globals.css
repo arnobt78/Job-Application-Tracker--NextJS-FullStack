@@ -37,6 +37,11 @@
     --app-glow-a: rgb(59 130 246 / 0.1);
     --app-glow-b: rgb(236 72 153 / 0.08);
     --app-overlay: rgb(255 255 255 / 0.05);
+    --on-glass: #1e293b;
+    --on-glass-muted: #475569;
+    --glass-inset-soft: rgb(15 23 42 / 0.03);
+    --glass-inset: rgb(15 23 42 / 0.04);
+    --glass-inset-strong: rgb(15 23 42 / 0.06);
   }
 
   .dark {
@@ -72,6 +77,56 @@
     --app-glow-a: rgb(59 130 246 / 0.15);
     --app-glow-b: rgb(236 72 153 / 0.12);
     --app-overlay: rgb(255 255 255 / 0.05);
+    --on-glass: rgb(255 255 255 / 0.9);
+    --on-glass-muted: rgb(255 255 255 / 0.7);
+    --glass-inset-soft: rgb(0 0 0 / 0.1);
+    --glass-inset: rgb(0 0 0 / 0.2);
+    --glass-inset-strong: rgb(0 0 0 / 0.3);
+  }
+}
+
+/* Tone text: readable 700 shade on light surfaces, original 300 shade in dark */
+@layer utilities {
+  .text-tone-sky {
+    @apply text-sky-700 dark:text-sky-300;
+  }
+  .text-tone-emerald {
+    @apply text-emerald-700 dark:text-emerald-300;
+  }
+  .text-tone-amber {
+    @apply text-amber-700 dark:text-amber-300;
+  }
+  .text-tone-violet {
+    @apply text-violet-700 dark:text-violet-300;
+  }
+  .text-tone-indigo {
+    @apply text-indigo-700 dark:text-indigo-300;
+  }
+  .text-tone-rose {
+    @apply text-rose-700 dark:text-rose-300;
+  }
+
+  /* Ink text: replaces bare *-400 status/icon colors (600 on light, original 400 in dark) */
+  .text-ink-sky {
+    @apply text-sky-600 dark:text-sky-400;
+  }
+  .text-ink-emerald {
+    @apply text-emerald-600 dark:text-emerald-400;
+  }
+  .text-ink-amber {
+    @apply text-amber-600 dark:text-amber-400;
+  }
+  .text-ink-violet {
+    @apply text-violet-600 dark:text-violet-400;
+  }
+  .text-ink-indigo {
+    @apply text-indigo-600 dark:text-indigo-400;
+  }
+  .text-ink-rose {
+    @apply text-rose-600 dark:text-rose-400;
+  }
+  .text-ink-red {
+    @apply text-red-600 dark:text-red-400;
   }
 }
 

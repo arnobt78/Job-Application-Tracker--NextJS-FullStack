@@ -170,9 +170,9 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                job.workplace_type === 'remote' && 'bg-emerald-500/15 text-emerald-400',
-                job.workplace_type === 'hybrid' && 'bg-sky-500/15 text-sky-400',
-                job.workplace_type === 'on_site' && 'bg-amber-500/15 text-amber-400'
+                job.workplace_type === 'remote' && 'bg-emerald-500/15 text-ink-emerald',
+                job.workplace_type === 'hybrid' && 'bg-sky-500/15 text-ink-sky',
+                job.workplace_type === 'on_site' && 'bg-amber-500/15 text-ink-amber'
               )}
             >
               {workplace}
@@ -183,7 +183,7 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
 
       {/* Salary */}
       {salary && (
-        <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-400">
+        <div className="flex items-center gap-1.5 text-sm font-medium text-ink-emerald">
           <DollarSign className="h-4 w-4" />
           {salary}
           {job.salary_period && (
@@ -194,7 +194,7 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
 
       {/* Full description */}
       {job.description_text ? (
-        <div className="overlay-scroll max-h-64 overflow-y-auto rounded-lg border border-border bg-black/20 p-4">
+        <div className="overlay-scroll max-h-64 overflow-y-auto rounded-lg border border-border bg-glass-inset p-4">
           <pre className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
             {job.description_text}
           </pre>
@@ -228,7 +228,7 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : tracked ? (
-            <Check className="h-4 w-4 text-emerald-400" />
+            <Check className="h-4 w-4 text-ink-emerald" />
           ) : (
             <PlusCircle className="h-4 w-4" />
           )}

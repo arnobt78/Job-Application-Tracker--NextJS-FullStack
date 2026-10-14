@@ -35,7 +35,7 @@ export function GlassDialogContent({
       {...props}
     >
       <DialogDescription className="sr-only">{description}</DialogDescription>
-      <div className="relative">
+      <div className="relative rounded-[28px] bg-background/95 dark:bg-transparent">
         <DialogClose
           className={cn(
             'absolute right-5 top-5 z-50 rounded-full p-1',

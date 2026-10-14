@@ -44,7 +44,7 @@ export function JobFormDialogFooter({
   return (
     <div
       className={cn(
-        'flex justify-end gap-2 border-t border-white/10 pt-4',
+        'flex justify-end gap-2 border-t border-glass-border pt-4',
         className
       )}
     >

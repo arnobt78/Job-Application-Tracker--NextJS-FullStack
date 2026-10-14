@@ -77,7 +77,7 @@ export function ResumeUpload() {
           'flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 cursor-pointer transition-colors',
           dragging
             ? 'border-primary/60 bg-primary/5'
-            : 'border-border hover:border-primary/40 hover:bg-white/[0.02]',
+            : 'border-border hover:border-primary/40 hover:bg-slate-900/[0.02] dark:hover:bg-white/[0.02]',
           state.status === 'loading' && 'pointer-events-none opacity-60'
         )}
       >
@@ -106,7 +106,7 @@ export function ResumeUpload() {
       </div>
 
       {state.status === 'success' && (
-        <div className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-400">
+        <div className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-ink-emerald">
           <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             Extracted {state.charCount.toLocaleString()} characters — resume text updated below.
@@ -115,7 +115,7 @@ export function ResumeUpload() {
       )}
 
       {state.status === 'error' && (
-        <div className="flex items-start gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2 text-xs text-rose-400">
+        <div className="flex items-start gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2 text-xs text-ink-rose">
           <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>{state.message}</span>
         </div>

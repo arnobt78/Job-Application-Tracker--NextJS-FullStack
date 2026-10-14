@@ -23,11 +23,11 @@ function eventLabel(type: BluedoorEventType): string {
 
 function eventIcon(type: BluedoorEventType) {
   switch (type) {
-    case 'job.created':  return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />;
-    case 'job.closed':   return <XCircle className="h-3.5 w-3.5 text-red-400" />;
-    case 'job.reopened': return <RefreshCw className="h-3.5 w-3.5 text-sky-400" />;
+    case 'job.created':  return <CheckCircle2 className="h-3.5 w-3.5 text-ink-emerald" />;
+    case 'job.closed':   return <XCircle className="h-3.5 w-3.5 text-ink-red" />;
+    case 'job.reopened': return <RefreshCw className="h-3.5 w-3.5 text-ink-sky" />;
     case 'job.updated':
-    default:             return <RefreshCw className="h-3.5 w-3.5 text-amber-400" />;
+    default:             return <RefreshCw className="h-3.5 w-3.5 text-ink-amber" />;
   }
 }
 
@@ -98,7 +98,7 @@ export function PostingActivityTab({ bluedoorJobId }: PostingActivityTabProps) {
 
   if (isError) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2.5 text-xs text-red-400">
+      <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2.5 text-xs text-ink-red">
         <AlertCircle className="h-3.5 w-3.5 shrink-0" />
         Could not load posting activity.
       </div>
@@ -138,7 +138,7 @@ export function PostingActivityTab({ bluedoorJobId }: PostingActivityTabProps) {
                 {detail && (
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     {event.field_name?.startsWith('salary') && (
-                      <DollarSign className="h-3 w-3 shrink-0 text-emerald-400" />
+                      <DollarSign className="h-3 w-3 shrink-0 text-ink-emerald" />
                     )}
                     {detail}
                   </span>

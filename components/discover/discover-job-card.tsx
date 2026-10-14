@@ -89,11 +89,11 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
               className={cn(
                 'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
                 job.workplace_type === 'remote' &&
-                  'bg-emerald-500/15 text-emerald-400',
+                  'bg-emerald-500/15 text-ink-emerald',
                 job.workplace_type === 'hybrid' &&
-                  'bg-sky-500/15 text-sky-400',
+                  'bg-sky-500/15 text-ink-sky',
                 job.workplace_type === 'on_site' &&
-                  'bg-amber-500/15 text-amber-400'
+                  'bg-amber-500/15 text-ink-amber'
               )}
             >
               {workplace}
@@ -119,7 +119,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
       </div>
 
       {salary && (
-        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-ink-emerald">
           <DollarSign className="h-3.5 w-3.5" />
           {salary}
           {job.salary_period && (
@@ -145,7 +145,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
       <div className="mt-auto flex items-center gap-2">
         <button
           onClick={() => setDetailsOpen(true)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-white/5 px-3 text-xs font-medium text-muted-foreground transition hover:bg-white/10 hover:text-foreground"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-glass-fill px-3 text-xs font-medium text-muted-foreground transition hover:bg-glass-hover hover:text-foreground"
         >
           <Search className="h-3.5 w-3.5" />
           Details
@@ -171,7 +171,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
           {isPending ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
           ) : tracked ? (
-            <Check className="h-3.5 w-3.5 text-emerald-400" />
+            <Check className="h-3.5 w-3.5 text-ink-emerald" />
           ) : (
             <PlusCircle className="h-3.5 w-3.5" />
           )}

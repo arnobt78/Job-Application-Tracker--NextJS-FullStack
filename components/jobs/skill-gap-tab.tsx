@@ -38,12 +38,12 @@ type Props = {
 function MatchGauge({ pct }: { pct: number }) {
   const color =
     pct >= 80
-      ? "text-emerald-400"
+      ? "text-ink-emerald"
       : pct >= 60
-        ? "text-sky-400"
+        ? "text-ink-sky"
         : pct >= 40
-          ? "text-amber-400"
-          : "text-rose-400";
+          ? "text-ink-amber"
+          : "text-ink-rose";
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -66,9 +66,9 @@ function SkillChip({
   variant: "matched" | "missing" | "bonus";
 }) {
   const styles = {
-    matched: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-    missing: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
-    bonus: "bg-sky-500/10 text-sky-400 border border-sky-500/20",
+    matched: "bg-emerald-500/10 text-ink-emerald border border-emerald-500/20",
+    missing: "bg-rose-500/10 text-ink-rose border border-rose-500/20",
+    bonus: "bg-sky-500/10 text-ink-sky border border-sky-500/20",
   };
 
   return (
@@ -112,7 +112,7 @@ function LearningPathSection({ items }: { items: string[] }) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <GraduationCap className="h-3.5 w-3.5 text-violet-400" />
+        <GraduationCap className="h-3.5 w-3.5 text-ink-violet" />
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Learning Path
         </span>
@@ -123,7 +123,7 @@ function LearningPathSection({ items }: { items: string[] }) {
             key={i}
             className="flex items-start gap-2 text-xs text-muted-foreground"
           >
-            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-[9px] font-semibold text-violet-400">
+            <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-[9px] font-semibold text-ink-violet">
               {i + 1}
             </span>
             {item}
@@ -177,7 +177,7 @@ export function SkillGapTab({ jobId }: Props) {
   if (isError) {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
-        <AlertCircle className="h-5 w-5 text-rose-400" />
+        <AlertCircle className="h-5 w-5 text-ink-rose" />
         <p className="text-xs text-muted-foreground">
           {aiMode
             ? "AI analysis failed. Switch to keyword mode."
@@ -225,7 +225,7 @@ export function SkillGapTab({ jobId }: Props) {
   return (
     <div className="flex flex-col gap-5">
       {/* Score header + AI toggle */}
-      <div className="flex items-center justify-between rounded-xl border border-border/20 bg-black/20 px-5 py-4">
+      <div className="flex items-center justify-between rounded-xl border border-border/20 bg-glass-inset px-5 py-4">
         <div className="flex flex-col gap-0.5">
           <p className="text-sm font-semibold">Skill Match Score</p>
           <p className="text-xs text-muted-foreground">
@@ -233,7 +233,7 @@ export function SkillGapTab({ jobId }: Props) {
             skills matched
           </p>
           {aiData?.confidence && (
-            <span className="mt-1 text-[10px] text-violet-400/80">
+            <span className="mt-1 text-[10px] text-violet-600/80 dark:text-violet-400/80">
               AI confidence: {aiData.confidence}
             </span>
           )}
@@ -247,7 +247,7 @@ export function SkillGapTab({ jobId }: Props) {
             className={cn(
               "h-6 gap-1 px-2 text-[10px]",
               aiMode
-                ? "text-violet-400 hover:text-violet-300"
+                ? "text-ink-violet hover:text-tone-violet"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -268,8 +268,8 @@ export function SkillGapTab({ jobId }: Props) {
       {aiData?.aiExplanation && (
         <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 px-4 py-3">
           <div className="flex items-center gap-1.5 mb-1">
-            <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-            <span className="text-[10px] font-semibold text-violet-400 uppercase tracking-wide">
+            <Sparkles className="h-3.5 w-3.5 text-ink-violet" />
+            <span className="text-[10px] font-semibold text-ink-violet uppercase tracking-wide">
               AI Insight
             </span>
           </div>
@@ -286,7 +286,7 @@ export function SkillGapTab({ jobId }: Props) {
             icon={CheckCircle2}
             label="You have"
             count={matched.length}
-            color="text-emerald-400"
+            color="text-ink-emerald"
           />
           <div className="flex flex-wrap gap-1.5">
             {matched.map((s) => (
@@ -303,7 +303,7 @@ export function SkillGapTab({ jobId }: Props) {
             icon={XCircle}
             label="Skills to add"
             count={missing.length}
-            color="text-rose-400"
+            color="text-ink-rose"
           />
           <div className="flex flex-wrap gap-1.5">
             {missing.map((s) => (
@@ -320,7 +320,7 @@ export function SkillGapTab({ jobId }: Props) {
             icon={Sparkles}
             label="Bonus skills"
             count={bonus.length}
-            color="text-sky-400"
+            color="text-ink-sky"
           />
           <div className="flex flex-wrap gap-1.5">
             {bonus.map((s) => (

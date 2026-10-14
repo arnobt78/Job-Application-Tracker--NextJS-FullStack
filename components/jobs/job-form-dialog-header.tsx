@@ -13,8 +13,8 @@ export function JobFormDialogHeader({ mode, className }: JobFormDialogHeaderProp
   const Icon = mode === 'create' ? FilePlus : Pencil;
   const iconBoxClass =
     mode === 'create'
-      ? 'border-sky-400/30 bg-sky-500/15 text-sky-400'
-      : 'border-violet-400/30 bg-violet-500/15 text-violet-400';
+      ? 'border-sky-400/30 bg-sky-500/15 text-ink-sky'
+      : 'border-violet-400/30 bg-violet-500/15 text-ink-violet';
 
   return (
     <div className={cn('mb-5 flex gap-3 pr-10', className)}>

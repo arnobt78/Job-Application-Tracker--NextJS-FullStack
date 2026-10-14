@@ -27,25 +27,25 @@ const EVENT_META: Record<
   job_created: {
     label: 'Application added',
     Icon: PlusCircle,
-    color: 'text-sky-400',
+    color: 'text-ink-sky',
     dotColor: 'bg-sky-500/20 border-sky-400/50',
   },
   enriched: {
     label: 'Posting enriched',
     Icon: Zap,
-    color: 'text-amber-400',
+    color: 'text-ink-amber',
     dotColor: 'bg-amber-500/20 border-amber-400/50',
   },
   posting_changed: {
     label: 'Posting changed',
     Icon: RefreshCw,
-    color: 'text-rose-400',
+    color: 'text-ink-rose',
     dotColor: 'bg-rose-500/20 border-rose-400/50',
   },
   ai_generated: {
     label: 'AI insights generated',
     Icon: Sparkles,
-    color: 'text-violet-400',
+    color: 'text-ink-violet',
     dotColor: 'bg-violet-500/20 border-violet-400/50',
   },
 };
@@ -97,7 +97,7 @@ export function TimelineItem({ event, isLast }: TimelineItemProps) {
         </span>
         {/* Connector line */}
         {!isLast && (
-          <div className="mt-1 w-px flex-1 bg-white/10" />
+          <div className="mt-1 w-px flex-1 bg-glass-border" />
         )}
       </div>
 
@@ -114,7 +114,7 @@ export function TimelineItem({ event, isLast }: TimelineItemProps) {
         </div>
 
         {/* Job card */}
-        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 transition-colors hover:bg-white/[0.07]">
+        <div className="flex items-center gap-2 rounded-xl border border-glass-border bg-glass-fill px-3 py-2 transition-colors hover:bg-slate-900/[0.05] dark:hover:bg-white/[0.07]">
           {/* Building2 fallback — no domain available from timeline events */}
           <Building2 className="h-5 w-5 shrink-0 text-muted-foreground/50" />
           <div className="min-w-0 flex-1">

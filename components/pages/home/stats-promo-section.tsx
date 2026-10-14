@@ -47,11 +47,11 @@ export function StatsPromoSection() {
             const variant = PROMO_VARIANTS[index];
             return (
               <GlassCard key={item.title} variant={variant}>
-                <Icon className="mb-3 h-8 w-8 text-white/90" />
-                <h3 className="text-lg font-semibold text-white/90">
+                <Icon className="mb-3 h-8 w-8 text-on-glass" />
+                <h3 className="text-lg font-semibold text-on-glass">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm text-white/70">{item.description}</p>
+                <p className="mt-2 text-sm text-on-glass-muted">{item.description}</p>
               </GlassCard>
             );
           })}

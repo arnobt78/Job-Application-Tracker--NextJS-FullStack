@@ -52,25 +52,25 @@ async function TimelinePage() {
             </h3>
             <ul className="flex flex-col gap-2.5 text-xs text-muted-foreground">
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sky-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-ink-sky">
                   +
                 </span>
                 Application added
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-ink-amber">
                   ⚡
                 </span>
                 Posting enriched
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-rose-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-ink-rose">
                   ↺
                 </span>
                 Posting changed
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-violet-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-500/20 text-ink-violet">
                   ✦
                 </span>
                 AI insights generated

@@ -43,9 +43,9 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
   ];
 
   return (
-    <div className="flex flex-col gap-0 rounded-xl border border-border/30 bg-black/10 overflow-hidden">
+    <div className="flex flex-col gap-0 rounded-xl border border-border/30 bg-glass-inset-soft overflow-hidden">
       {/* Tab bar */}
-      <div className="flex border-b border-border/30 bg-black/10">
+      <div className="flex border-b border-border/30 bg-glass-inset-soft">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -57,7 +57,7 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
               'border-b-2 -mb-px',
               active === tab.key
                 ? 'border-primary text-primary bg-primary/5'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5',
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-glass-fill',
               tab.disabled && 'opacity-30 cursor-not-allowed pointer-events-none'
             )}
             title={tab.disabled ? 'Only available for Bluedoor-enriched jobs' : undefined}
