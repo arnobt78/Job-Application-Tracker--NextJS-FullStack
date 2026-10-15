@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SalaryIntelligence — aggregated salary data from the user's Bluedoor-enriched jobs.
+ * SalaryIntelligence — aggregated salary data from the user's posting-linked jobs.
  * Uses queryKeys.salaryIntel() — invalidated on job CRUD via invalidateAllJobQueries.
  * NOT persisted in localStorage (changes when jobs are enriched).
  */
@@ -123,8 +123,8 @@ export function SalaryIntelligence() {
         <div>
           <p className="text-sm font-medium">No salary data yet</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Salary ranges appear here once Bluedoor enriches your jobs. Add
-            apply links to jobs to trigger enrichment.
+            Salary ranges appear here once your jobs are linked to postings.
+            Track jobs from Discover or add apply links to link them.
           </p>
         </div>
       </div>
@@ -182,7 +182,7 @@ export function SalaryIntelligence() {
 
       <p className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
         <Briefcase className="h-3 w-3" />
-        Data sourced from Bluedoor-enriched job postings only
+        Data sourced from jobs linked to a posting only
       </p>
     </div>
   );

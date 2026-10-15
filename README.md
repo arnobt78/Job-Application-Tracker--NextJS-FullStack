@@ -1,4 +1,4 @@
-# Job Application Tracker & Discovery — Next.js, TypeScript, Prisma, PostgreSQL, Bluedoor API (+ FastAPI AI Pipeline) FullStack Project
+# Job Application Tracker & Discovery — Next.js, TypeScript, Prisma, PostgreSQL, Job Postings Catalog (+ FastAPI AI Pipeline) FullStack Project
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -12,7 +12,7 @@
 [![Vitest](https://img.shields.io/badge/Vitest-4.1-6E9F18)](https://vitest.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Phase_2-009688)](https://fastapi.tiangolo.com/)
 
-A production-style, full-stack **job application CRM** — not a generic job board. It helps you track applications you have already submitted, enrich them with live posting data from the free [Bluedoor Job Postings API](https://bluedoor.sh/apis/job-postings), discover new roles to track, visualize your search with charts and KPIs, and (Phase 2) run an AI insights pipeline. Built for learning: App Router SSR, Server Actions, TanStack Query hydration, optimistic UI, multi-layer caching, SSE cross-tab sync, and strict TypeScript end-to-end.
+A production-style, full-stack **job application CRM** — not a generic job board. It helps you track applications you have already submitted, link them to postings in the app's own Postgres job postings catalog (salary, status, workplace and lifecycle changes), discover new roles to track, visualize your search with charts and KPIs, and (Phase 2) run an AI insights pipeline. Built for learning: App Router SSR, Server Actions, TanStack Query hydration, optimistic UI, multi-layer caching, SSE cross-tab sync, and strict TypeScript end-to-end.
 
 - **Live-Demo:** [https://jobify-tracker.vercel.app/](https://jobify-tracker.vercel.app/)
 
@@ -35,7 +35,7 @@ A production-style, full-stack **job application CRM** — not a generic job boa
 - [Server Actions (Backend)](#server-actions-backend)
 - [Authentication](#authentication)
 - [State Management & Caching](#state-management--caching)
-- [Bluedoor Enrichment & Discover](#bluedoor-enrichment--discover)
+- [Job Postings Catalog & Discover](#job-postings-catalog--discover)
 - [Notifications & Email Alerts](#notifications--email-alerts)
 - [AI Pipeline (Phase 2)](#ai-pipeline-phase-2)
 - [Components Guide](#components-guide)
@@ -54,9 +54,9 @@ A production-style, full-stack **job application CRM** — not a generic job boa
 Jobify helps job seekers **organize**, **track**, **enrich**, and **analyze** their job search in one place. Each authenticated user gets a private dashboard where they can:
 
 - Add and manage job applications (position, company, location, status, employment mode)
-- Attach an **apply URL** so Bluedoor can enrich the record with live salary, status, and workplace data
+- Attach an **apply URL** so the job links to a catalog posting with salary, status, and workplace data
 - Search and filter their pipeline with URL-synced filters and pagination
-- **Discover** 1.8M+ live postings and track any role with one click
+- **Discover** open postings from the built-in catalog and track any role with one click
 - View stats, KPIs, and multiple chart types (monthly trend, weekly velocity, status/mode breakdown)
 - Export data as CSV or Excel
 - Receive in-app notifications (and optional email) when a tracked posting closes or changes
@@ -79,15 +79,16 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 | **Export**           | Download CSV/Excel with monthly grouping                             |
 | **Dialogs**          | Add/Edit jobs in modal dialogs (no page navigation)                  |
 
-### Bluedoor Integration (Phase 1)
+### Job Postings Catalog (Phase 1)
 
-| Feature               | Description                                                              |
-| --------------------- | ------------------------------------------------------------------------ |
-| **Live enrichment**   | Match tracked jobs to Bluedoor via apply URL (ATS key, URL, fuzzy match) |
-| **Enrichment badges** | LIVE / CLOSED / JD CHANGED / SALARY / Syncing on job cards               |
-| **Discover page**     | Search 1.8M+ postings; one-click **Track Application**                   |
-| **Nightly cron**      | Batch re-sync linked jobs (`/api/cron/enrich`)                           |
-| **Webhook**           | Bluedoor lifecycle events → resync affected jobs                         |
+| Feature             | Description                                                                 |
+| ------------------- | --------------------------------------------------------------------------- |
+| **Own catalog**     | `Company`, `JobPosting`, `JobPostingEvent` tables in Postgres (seeded)      |
+| **Posting link**    | Tracked jobs link by exact apply URL, else same company + title similarity  |
+| **Posting badges**  | Live / Closed / JD Changed / Salary Added on job cards                      |
+| **Discover page**   | Keyset-paginated search with filters; one-click **Track Application**       |
+| **Nightly cron**    | Re-sync linked jobs and notify on changes (`/api/cron/enrich`)              |
+| **Read API**        | `/api/postings`, `/api/postings/facets`, `/api/postings/:id`, `/:id/events` |
 
 ### User Experience
 
@@ -139,7 +140,6 @@ The app is built as a **learning-oriented full-stack reference**: server-rendere
 | **Prisma**                 | 6.x      | ORM — type-safe DB queries and migrations                         |
 | **PostgreSQL**             | —        | Relational database for job records                               |
 | **NextAuth v5**            | 5.x      | Authentication — JWT session, Prisma adapter, OAuth + credentials |
-| **Bluedoor API**           | —        | Free job postings API — enrichment + discover (no auth key)       |
 | **Upstash Redis**          | optional | Read-through cache + SSE invalidation streams                     |
 | **Resend**                 | optional | Email alerts when postings change                                 |
 | **exceljs / papaparse**    | —        | Excel/CSV export generation                                       |
@@ -190,7 +190,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
   └─ useJobsMutation (optimistic UI patch)
        └─ Server Action (utils/actions.ts)
             └─ Prisma write
-            └─ after() → enrichJob() if applyUrl present (non-blocking)
+            └─ after() → linkJobToPosting() (non-blocking)
             └─ invalidateUserJobCaches(userId, jobId?)
                  ├─ revalidateTag / revalidatePath (Next cache)
                  ├─ Redis cache key delete (optional)
@@ -224,7 +224,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   │   │   ├── page.tsx              # /dashboard — jobs list + Add Job dialog
 │   │   │   └── [id]/page.tsx         # /dashboard/[id] — edit dialog via URL
 │   │   ├── discover/
-│   │   │   ├── page.tsx              # /discover — Bluedoor job search
+│   │   │   ├── page.tsx              # /discover — catalog postings search
 │   │   │   └── loading.tsx           # Instant shell: same page view, cache-only queries
 │   │   └── stats/
 │   │       └── page.tsx              # /stats — analytics + charts
@@ -233,7 +233,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   ├── user-profile/[[...user-profile]]/
 │   └── api/
 │       ├── jobs/events/route.ts      # SSE invalidation + notification stream
-│       ├── bluedoor/webhook/route.ts # Bluedoor lifecycle webhook (HMAC)
+│       ├── postings/                 # Read API: search, facets, :id, :id/events
 │       ├── cron/enrich/route.ts      # Nightly batch re-sync (CRON_SECRET)
 │       ├── ai/pipeline/route.ts      # AI proxy → Python FastAPI
 │       └── monitoring/route.ts       # Sentry browser tunnel
@@ -255,7 +255,7 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   └── useGuestSignIn.ts, useNavUserSession.ts…
 ├── lib/
 │   ├── jobs/queries.ts               # Cached Prisma reads (stats, charts, weekly)
-│   ├── bluedoor/                     # client.ts, enrich.ts, types.ts
+│   ├── postings/                     # queries, cache, link (match + resync), schema, types
 │   ├── ai/pipeline-client.ts         # AI service types + toPipelineJobInput
 │   ├── ai/insight-mapper.ts          # PipelineResponse ↔ JobAIInsight + fit label
 │   ├── ai/pipeline-payload.ts        # Server-only job select + DB profile loader
@@ -267,12 +267,13 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   ├── query-persist.ts              # localStorage persist rules
 │   └── cache-tags.ts, redis.ts…
 ├── utils/
-│   ├── actions.ts                    # Server Actions (CRUD + Bluedoor + stats)
+│   ├── actions.ts                    # Server Actions (CRUD + postings + stats)
 │   ├── types.ts                      # JobType + Zod schema
 │   └── db.ts                         # Prisma client singleton
 ├── prisma/
-│   ├── schema.prisma                 # Job model (+ Bluedoor enrichment fields)
-│   └── seed.ts                       # Sample data script
+│   ├── schema.prisma                 # Job + Company / JobPosting / JobPostingEvent
+│   ├── seed.ts                       # Deterministic demo seed (npm run db:seed)
+│   └── seed-data/                    # 15 companies, 50 postings, demo jobs + profile
 ├── python-ai-service/                # Phase 2 — FastAPI 9-agent pipeline
 │   ├── app/main.py
 │   ├── app/pipeline/agents/          # Extractor → Final Verifier
@@ -395,8 +396,7 @@ DIRECT_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
 | `UPSTASH_REDIS_REST_TOKEN`                            | Redis auth token                                 |
 | `NEXT_PUBLIC_SENTRY_DSN`                              | Browser error reporting                          |
 | `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Source map upload at build                       |
-| `BLUEDOOR_WEBHOOK_SECRET`                             | HMAC verification for Bluedoor webhooks          |
-| `CRON_SECRET`                                         | Bearer auth for Vercel cron → `/api/cron/enrich` |
+| `CRON_SECRET`                                         | Bearer auth for Vercel cron (fails closed if unset) |
 | `RESEND_API_KEY`                                      | Email alerts when postings change                |
 | `EMAIL_FROM`                                          | Verified sender address                          |
 | `NEXT_PUBLIC_APP_URL`                                 | Base URL for email deep-links                    |
@@ -408,44 +408,46 @@ DIRECT_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
 **Without Sentry:** error boundaries still work; errors are not reported externally.  
 **Without Resend:** `sendPostingChangeEmail()` is a graceful no-op.  
 **Without AI service:** `AiInsightsPanel`, skill gap and interview prep show an error state.  
-**Bluedoor API:** free, no API key — enrichment and discover work out of the box.
+**Postings catalog:** lives in the same Postgres database — `npm run db:seed` fills it with demo data.
 
 ---
 
 ## Database Setup
 
-### Schema (Job model)
+### Schema (Job + postings catalog)
 
 Defined in `prisma/schema.prisma`:
 
 ```prisma
 model Job {
   id        String   @id @default(uuid())
-  userId    String   // NextAuth user ID (cuid) — row-level isolation
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId    String   // FK → User (cascade) — row-level isolation
   position  String
   company   String
   location  String
   status    String   // pending | interview | declined
   mode      String   // full-time | part-time | internship
+  applyUrl  String?  // matched against JobPosting.applyUrl when linking
 
-  applyUrl              String?   // URL user applied through
-  bluedoorJobId           String?   // Bluedoor match ID
-  bluedoorOrgId           String?
-  bluedoorProvider        String?   // greenhouse | lever | ashby | workday
-  bluedoorStatus          String?   // active | expired | unknown
-  bluedoorWorkplaceType   String?   // remote | hybrid | on_site
-  bluedoorSalaryMin       Float?
-  bluedoorSalaryMax       Float?
-  bluedoorSalaryCurrency  String?
-  bluedoorDescHash        String?   // detects JD edits
-  bluedoorSyncedAt        DateTime?
-  bluedoorChangedAt       DateTime?
+  postingId         String?   // FK → JobPosting (SetNull) — unique per user
+  postingStatus     String?   // open | closed — snapshot at last sync
+  workplaceType     String?   // remote | hybrid | on_site
+  salaryMin         Int?
+  salaryMax         Int?
+  salaryCurrency    String?
+  postingDescHash   String?   // posting.contentHash at last sync — detects JD edits
+  postingSyncedAt   DateTime?
+  postingChangedAt  DateTime?
+  postingChangeType String?   // posting_closed | jd_changed | salary_added
 }
+
+model Company         { id, name, slug @unique, domain, size, industry, hq }
+model JobPosting      { companyId → Company (cascade), title, description, location, workplaceType,
+                        employmentType, salary*, applyUrl @unique, status, contentHash, postedAt, closedAt }
+model JobPostingEvent { postingId → JobPosting (cascade), type, fieldName, oldValue, newValue, observedAt }
 ```
 
-Each job belongs to one NextAuth user via `userId`. Server actions always filter by authenticated `userId`.
+Each job belongs to one NextAuth user via `userId`. Server actions always filter by authenticated `userId`. `JobAIInsight`, `UserProfile`, `Team` and `TeamMember` all cascade from `User`.
 
 ### Commands
 
@@ -453,7 +455,8 @@ Each job belongs to one NextAuth user via `userId`. Server actions always filter
 npm run prisma:generate   # Generate Prisma Client after schema changes
 npm run prisma:push       # Push schema to database (dev)
 npm run prisma:studio     # Open visual DB browser
-npm run db:seed           # Seed sample data
+npm run db:seed           # Replace catalog + demo account data (other users untouched)
+npm run db:reset          # DESTRUCTIVE: wipe the whole DB, push schema, then seed
 ```
 
 ---
@@ -467,7 +470,8 @@ npm run db:seed           # Seed sample data
 | `npm start`         | Run production server                               |
 | `npm run lint`      | ESLint                                              |
 | `npm run typecheck` | TypeScript check                                    |
-| `npm test`          | Vitest unit tests (49 tests)                        |
+| `npm test`          | Vitest unit tests (105 tests)                       |
+| `npm run test:e2e`  | Playwright (needs a running server + seeded DB)     |
 
 **Full verification (recommended before deploy):**
 
@@ -486,7 +490,7 @@ npm run lint && npm run typecheck && npm test && npm run build
 | `/sign-up`        | Public    | Custom sign-up form + email verification           |
 | `/dashboard`      | Protected | Main jobs dashboard (list, search, Add Job dialog) |
 | `/dashboard/[id]` | Protected | Opens edit job dialog for direct URL sharing       |
-| `/discover`       | Protected | Bluedoor job search — filter, track applications   |
+| `/discover`       | Protected | Catalog postings — filter, track applications      |
 | `/stats`          | Protected | Stats cards, KPIs, 4 chart sections                |
 | `/profile`        | Protected | User profile (skills, target roles, resume for AI) |
 
@@ -510,16 +514,16 @@ This project uses **Server Actions** for most data operations. HTTP routes:
 - **Used by:** `hooks/useJobsCacheSync.ts`
 - **Events:** `{ type: 'invalidate' }` and `{ type: 'notify', payload }`
 
-### `POST /api/bluedoor/webhook`
+### `GET /api/postings` · `/api/postings/facets` · `/api/postings/:id` · `/api/postings/:id/events`
 
-- **Purpose:** Receive Bluedoor lifecycle events (posting closed, JD changed, etc.)
-- **Auth:** HMAC-SHA256 via `BLUEDOOR_WEBHOOK_SECRET`
-- **Flow:** Verify signature → `resyncJob()` for affected tracked jobs → notify user
+- **Purpose:** Read API for the postings catalog (search with keyset `cursor`, facet counts, detail, lifecycle events)
+- **Auth:** NextAuth session (401 if unauthenticated); query params validated with the same Zod schemas as the Server Actions
+- **Params:** `q`, `country`, `workplaceType`, `employmentType`, `salaryExists`, `cursor`, `limit` (max 50)
 
 ### `GET /api/cron/enrich`
 
-- **Purpose:** Nightly batch re-sync of all Bluedoor-linked jobs
-- **Auth:** Bearer `CRON_SECRET` (Vercel cron at 03:00 UTC)
+- **Purpose:** Nightly re-sync of every job linked to a posting; notifies on closed / JD changed / salary added
+- **Auth:** Bearer `CRON_SECRET`, timing-safe compare, fails closed when unset (Vercel cron at 03:00 UTC)
 - **Schedule:** Defined in `vercel.json`
 
 ### `POST /api/ai/pipeline/stream`
@@ -547,19 +551,19 @@ All server-side data logic lives in `utils/actions.ts` with `"use server"`.
 
 | Action                                                              | Purpose                                                     |
 | ------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `createJobAction(values)`                                           | Create job; triggers `after()` enrichment if `applyUrl` set |
+| `createJobAction(values)`                                           | Create job; links it to a catalog posting in `after()`      |
 | `getAllJobsAction({ search, jobStatus, jobMode, monthYear, page })` | Paginated filtered list                                     |
 | `getJobFilterOptionsAction()`                                       | Distinct months for month filter dropdown                   |
 | `getSingleJobAction(id)`                                            | Single job (redirects if not found)                         |
-| `updateJobAction(id, values)`                                       | Update job; re-enrich if applyUrl changed                   |
+| `updateJobAction(id, values)`                                       | Update job; re-link if unlinked or applyUrl changed         |
 | `deleteJobAction(id)`                                               | Delete job                                                  |
 | `getStatsAction()`                                                  | Pending / interview / declined + mode breakdown             |
 | `getChartsDataAction()`                                             | Monthly application counts (6 months)                       |
 | `getWeeklyChartsDataAction()`                                       | Weekly velocity (12 weeks)                                  |
 | `getAllJobsForDownloadAction()`                                     | All jobs for CSV/Excel export                               |
-| `enrichJobAction(jobId)`                                            | Manual Bluedoor enrichment trigger                          |
-| `searchBluedoorJobsAction(params)`                                  | Discover page — live Bluedoor search                        |
-| `getBluedoorJobDetailsAction(jobId)`                                | On-demand full posting detail for modal                     |
+| `searchPostingsAction(params)` / `getPostingFacetsAction(params)`   | Discover search (keyset pages) + facet counts               |
+| `getPostingDetailsAction(id)` / `getPostingEventsAction(id)`        | Posting detail modal + job Activity tab                     |
+| `trackJobFromDiscoverAction(postingId)`                             | Track a posting (server loads it; idempotent upsert)        |
 
 **Security pattern** (every action):
 
@@ -603,7 +607,8 @@ queryKeys.charts.all                  // ['charts']
 queryKeys.chartsWeekly.all            // ['charts-weekly']
 queryKeys.job.detail(id)              // ['job', id]
 queryKeys.discover.search(q, …)       // NOT persisted
-queryKeys.discover.detail(jobId)      // NOT persisted
+queryKeys.discover.detail(postingId)  // NOT persisted
+queryKeys.discover.events(postingId)  // NOT persisted
 queryKeys.ai.pipeline(jobId)            // NOT persisted
 ```
 
@@ -630,37 +635,38 @@ Persists `jobs`, `stats`, `charts`, `charts-weekly`, `job` keys — **not** `dis
 
 ---
 
-## Bluedoor Enrichment & Discover
+## Job Postings Catalog & Discover
 
-### What is Bluedoor?
+### The catalog
 
-[Bluedoor Job Postings API](https://bluedoor.sh/apis/job-postings) tracks 1.8M+ US job postings across Greenhouse, Lever, Ashby, Workday, and 30+ ATS providers. **Free, no API key required.**
+Postings live in the app's own Postgres tables: `Company` → `JobPosting` → `JobPostingEvent` (lifecycle history). `npm run db:seed` loads 15 fictional companies and 50 postings (40 open, 10 closed; US and Canada; every workplace and employment type; ~70% with salary). Reads go through `unstable_cache` tagged `postings` (5-minute revalidate).
 
-### Enrichment flow
+### Link + resync flow
 
 ```text
-User saves job with applyUrl
-  └─ after() → enrichJob(jobId, userId)
-       └─ findBluedoorMatch (ATS key → URL match → fuzzy company+title)
-       └─ buildEnrichmentPatch → Prisma update
+User saves job (create / update / extension)
+  └─ after() → linkJobToPosting(jobId, userId)
+       └─ exact normalised applyUrl → else same company + title similarity ≥ 0.5
+       └─ buildPostingSnapshot → Prisma update (one posting per user)
        └─ invalidateUserJobCaches → SSE → dashboard badge updates
+Nightly cron → resyncJob → diffSnapshot → posting_closed | salary_added | jd_changed → bell + email
 ```
 
-**Badges on job cards:** LIVE · CLOSED · JD CHANGED · SALARY · Syncing
+**Badges on job cards:** Live · Closed · JD Changed · Salary Added
 
 ### Discover page (`/discover`)
 
 - Glass filter bar (country, workplace, employment type, salary)
 - SSR prefetch + TanStack Query with `placeholderData` (no grid flash on filter change)
 - **Track Application** uses `useCreateJobMutation` → dashboard updates instantly
-- Location strings cleaned (semicolon-joined multi-location → first entry only)
+- Keyset pagination (`cursor` = id of the next page's first posting) with real totals
 
 ### Key files
 
 | File                                        | Role                                       |
 | ------------------------------------------- | ------------------------------------------ |
-| `lib/bluedoor/client.ts`                    | API client, search, facets, ATS URL parser |
-| `lib/bluedoor/enrich.ts`                    | Match strategies, enrich, resync           |
+| `lib/postings/queries.ts` / `cache.ts`      | Search, facets, detail, events (+ cache)   |
+| `lib/postings/link.ts`                      | Match, snapshot, diff, resync + notify     |
 | `components/discover/discover-job-card.tsx` | Result card + track button                 |
 | `components/jobs/job-enrichment-badge.tsx`  | Live status badge                          |
 
@@ -675,7 +681,7 @@ User saves job with applyUrl
 - **Bell:** `components/layout/notification-bell.tsx` — badge + popover list
 - **Cross-tab:** `useJobsCacheSync` relays `notify` via BroadcastChannel `jobify-notifications`
 
-Triggered when Bluedoor resync detects: posting closed, JD changed, salary added.
+Triggered when the posting resync detects: posting closed, JD changed, salary added.
 
 ### Email (optional)
 
@@ -857,7 +863,7 @@ mutate({
   mode: toJobMode(job.employment_type),
   applyUrl: job.apply_url,
 });
-// → optimistic dashboard update + invalidateAllJobQueries + Bluedoor enrichment
+// → optimistic dashboard update + invalidateAllJobQueries + posting link in after()
 ```
 
 ### Protected middleware
@@ -924,8 +930,7 @@ npm test   # 51 tests
 - [ ] `NEXT_PUBLIC_APP_URL` set to production domain (needed for webhook registration + email links)
 - [ ] Optional: `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` — Google OAuth (callback: `/api/auth/callback/google`)
 - [ ] Optional: Upstash Redis for multi-instance cache/SSE
-- [ ] Optional: `CRON_SECRET` for nightly Bluedoor re-sync
-- [ ] Optional: `BLUEDOOR_WEBHOOK_SECRET` for live webhook events
+- [ ] `CRON_SECRET` for the nightly posting re-sync and weekly digest (cron routes reject requests without it)
 - [ ] Optional: Resend (`RESEND_API_KEY` + `EMAIL_FROM`) for email alerts
 - [ ] Optional: Sentry DSN + auth token for source maps
 - [ ] Optional: Python AI service (`AI_SERVICE_URL` + `AI_SERVICE_SECRET`) on Coolify VPS
@@ -936,7 +941,7 @@ See also: `docs/VERCEL_PRODUCTION_GUARDRAILS.md`, `docs/PROJECT_PLAN.md`
 
 ## Keywords
 
-`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `NextAuth v5 authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `BroadcastChannel` · `Redis Streams` · `Upstash` · `Bluedoor API` · `Job enrichment` · `Job discovery` · `Resend email` · `FastAPI` · `Ollama` · `LLM pipeline` · `Job tracker CRM` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
+`Next.js App Router` · `Server Actions` · `Server Components` · `Client Components` · `TypeScript` · `React 19` · `TanStack Query` · `React Query hydration` · `Optimistic UI` · `Prisma ORM` · `PostgreSQL` · `NextAuth v5 authentication` · `Tailwind CSS` · `shadcn/ui` · `Glassmorphism` · `SSR prefetch` · `Cache invalidation` · `Server-Sent Events` · `BroadcastChannel` · `Redis Streams` · `Upstash` · `Job postings catalog` · `Keyset pagination` · `Job discovery` · `Resend email` · `FastAPI` · `Ollama` · `LLM pipeline` · `Job tracker CRM` · `Full-stack` · `Zod validation` · `React Hook Form` · `Recharts` · `Dark mode` · `Vercel deployment` · `Sentry monitoring` · `Vitest`
 
 ---
 
@@ -946,7 +951,7 @@ Jobify demonstrates how a modern full-stack application combines **secure authen
 
 - Learn App Router patterns (SSR, Server Actions, Client Components)
 - Study production-ready cache and invalidation strategies
-- Understand how to integrate a free external API (Bluedoor) without breaking your architecture
+- Model a relational catalog (companies, postings, lifecycle events) with foreign keys and snapshot-based change detection
 - Fork as a starter for dashboards, CRMs, or any CRUD app with live data enrichment
 - Teach full-stack concepts with real, runnable code
 

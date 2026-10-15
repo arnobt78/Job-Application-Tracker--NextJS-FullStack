@@ -25,14 +25,14 @@ function JobCard({ job }: { job: JobType }) {
 
   return (
     <GlassCard variant="neutral" className="overflow-hidden">
-      {/* Header row — position + company + live Bluedoor status badge */}
+      {/* Header row — position + company + linked posting status badge */}
       <div className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <h3 className="flex items-center gap-2 text-md font-medium">
             <Briefcase className="h-5 w-5 shrink-0 text-primary" />
             {job.position}
           </h3>
-          {/* Bluedoor live posting badge — null-safe, renders nothing when not enriched */}
+          {/* Posting status badge — renders nothing when the job is not linked */}
           <JobEnrichmentBadge job={job} className="mt-0.5 shrink-0" />
           {/* AI fit score — shown only when AI pipeline has run for this job */}
           <AIFitChip fitScore={job.aiInsight?.fitScore} className="mt-0.5 shrink-0" />
@@ -40,7 +40,7 @@ function JobCard({ job }: { job: JobType }) {
         <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
           <CompanyLogo domain={extractDomain(job.applyUrl)} size={14} className="opacity-80" />
           <span className="text-sm text-muted-foreground">{job.company}</span>
-          {/* Company size from Bluedoor /v1/orgs — shown when enriched */}
+          {/* Company size from the linked posting's company */}
           {job.companySize && (
             <span className="rounded-full border border-glass-border bg-glass-fill px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/70">
               {job.companySize}
@@ -69,7 +69,7 @@ function JobCard({ job }: { job: JobType }) {
             className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/10 hover:border-primary/40"
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            {job.bluedoorJobId ? "View Posting" : "Apply Link"}
+            {job.postingId ? "View Posting" : "Apply Link"}
           </a>
         </div>
       ) : null}

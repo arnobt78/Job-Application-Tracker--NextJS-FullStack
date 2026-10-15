@@ -8,7 +8,7 @@
  *   AI Analysis (on-demand)   — LLM semantic match via getLLMSkillGapAction
  *
  * Keyword results are SSR-independent; AI results are lazy-fetched on toggle.
- * Neither is persisted — user skills + Bluedoor descriptions change too often.
+ * Neither is persisted — user skills + posting descriptions change too often.
  */
 
 import { useState } from "react";

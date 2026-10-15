@@ -5,9 +5,9 @@ import * as z from "zod";
 import prisma from "./db";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
-import { JobType, CreateAndEditJobType, createAndEditJobSchema, JobStatus, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult, LLMSkillGapResult, TeamType, TeamMemberType, TeamRole, type JobActionResult } from "./types";
+import { JobType, CreateAndEditJobType, createAndEditJobSchema, AIInsightType, UserProfileType, TimelineEvent, SalaryIntelResult, LLMSkillGapResult, TeamType, TeamMemberType, TeamRole, type JobActionResult } from "./types";
 import { redirect } from "next/navigation";
-import { invalidateUserJobCaches, revalidateUserJobsDataCache } from "@/lib/invalidate-jobs-server";
+import { invalidateUserJobCaches } from "@/lib/invalidate-jobs-server";
 import { publishNotification } from "@/lib/jobs-events";
 import {
   getCachedJobs,
@@ -20,17 +20,16 @@ import {
   type StatsResult,
 } from "@/lib/jobs/queries";
 import type { JobFilterOptions } from "@/lib/jobs/filter-types";
-import { enrichJob, resyncJob } from "@/lib/bluedoor/enrich";
-import type { BluedoorJob, BluedoorJobEvent, BluedoorSearchResponse, DiscoverFacets, DiscoverSearchParams } from "@/lib/bluedoor/types";
+import { buildPostingSnapshot, findSnapshotPosting, linkJobToPosting } from "@/lib/postings/link";
+import type { DiscoverFacets, DiscoverPosting, DiscoverSearchParams, PostingEvent, PostingSearchResponse } from "@/lib/postings/types";
+import { postingFacetsSchema, postingIdSchema, postingSearchSchema } from "@/lib/postings/schema";
 import {
-  bluedoorEmploymentToJobMode,
-  buildEnrichmentPatchFromDiscoverPayload,
-  resolveDiscoverCompanyName,
-  resolveTrackLocation,
-  type DiscoverTrackPayload,
-} from "@/lib/discover/track-helpers";
-import { getJobDetail, getJobEvents, getBluedoorOrg, registerBluedoorWebhook, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
-import { getCachedDiscoverSearch, getCachedDiscoverFacets } from "@/lib/bluedoor/discover-cache";
+  getCachedPostingDetail,
+  getCachedPostingEvents,
+  getCachedPostingFacets,
+  getCachedPostingSearch,
+} from "@/lib/postings/cache";
+import { toTrackValues } from "@/lib/discover/track-helpers";
 import { computeSkillGap } from "@/lib/jobs/skill-gap";
 import { toPipelineJobInput } from "@/lib/ai/pipeline-client";
 import { formatInterviewAngle } from "@/lib/ai/insight-mapper";
@@ -99,12 +98,8 @@ export async function createJobAction(
 
     await invalidateUserJobCaches(userId, job.id);
 
-    // Fire Bluedoor enrichment after response is sent — non-blocking
-    if (job.applyUrl) {
-      after(async () => {
-        await enrichJob(job.id, userId);
-      });
-    }
+    // Link to a catalog posting after the response is sent — non-blocking
+    after(() => linkJobToPosting(job.id, userId));
 
     return { success: true, job: job as JobType };
   } catch (error) {
@@ -120,37 +115,39 @@ export async function createJobAction(
 }
 
 /**
- * Track a Bluedoor posting as a dashboard application.
- * Pre-seeds bluedoorJobId + enrichment fields so badges appear without waiting on enrich.
- * Idempotent — returns the existing row when the same bluedoorJobId is already tracked.
+ * Track a catalog posting as a dashboard application. The posting is loaded server-side
+ * (never trusted from the client) and its snapshot is written in the same insert, so badges
+ * render immediately. Idempotent — returns the existing row when the posting is already tracked.
  */
 export async function trackJobFromDiscoverAction(
-  payload: DiscoverTrackPayload
+  postingId: string
 ): Promise<JobActionResult> {
   try {
     const userId = await authenticateAndRedirect();
+    const id = postingIdSchema.parse(postingId);
 
-    const existing = await prisma.job.findFirst({
-      where: { userId, bluedoorJobId: payload.jobId },
+    const existing = await prisma.job.findUnique({
+      where: { userId_postingId: { userId, postingId: id } },
     });
     if (existing) {
-      // Already tracked — return existing row without creating a duplicate
       return { success: true, job: existing as JobType, alreadyTracked: true };
     }
 
-    const parsed = createAndEditJobSchema.parse({
-      position: payload.title.trim(),
-      company: resolveDiscoverCompanyName(payload.orgId, payload.applyUrl),
-      location: resolveTrackLocation(payload.locationText, payload.country),
-      status: JobStatus.Pending,
-      mode: bluedoorEmploymentToJobMode(payload.employmentType),
-      applyUrl: payload.applyUrl?.trim() || undefined,
-    });
+    const [posting, snapshotSource] = await Promise.all([
+      getCachedPostingDetail(id),
+      findSnapshotPosting(id),
+    ]);
+    if (!posting || !snapshotSource) {
+      return { success: false, error: "This posting no longer exists.", code: "TRACK_FAILED" };
+    }
 
-    const enrichment = buildEnrichmentPatchFromDiscoverPayload(payload);
+    const parsed = createAndEditJobSchema.parse(toTrackValues(posting));
 
-    const job = await prisma.job.create({
-      data: {
+    // upsert absorbs a concurrent double-click racing past the findUnique above
+    const job = await prisma.job.upsert({
+      where: { userId_postingId: { userId, postingId: id } },
+      update: {},
+      create: {
         position: parsed.position,
         company: parsed.company,
         location: parsed.location,
@@ -158,41 +155,11 @@ export async function trackJobFromDiscoverAction(
         mode: parsed.mode,
         applyUrl: parsed.applyUrl ?? null,
         userId,
-        ...enrichment,
+        ...buildPostingSnapshot(snapshotSource),
       },
     });
 
     await invalidateUserJobCaches(userId, job.id);
-
-    // Org metadata + webhook subscription — best-effort, post-response
-    after(async () => {
-      try {
-        const org = await getBluedoorOrg(payload.orgId);
-        if (org) {
-          await prisma.job.update({
-            where: { id: job.id, userId },
-            data: {
-              companySize: org.size ?? null,
-              companyIndustry: org.industry ?? null,
-              companyHq: org.hq_location ?? null,
-            },
-          });
-          // Lightweight invalidation only — Redis was already fully purged pre-response.
-          // A second SCAN here would race with freshly-repopulated cache keys.
-          await revalidateUserJobsDataCache(userId, job.id);
-        }
-
-        const subId = await registerBluedoorWebhook(payload.jobId);
-        if (subId) {
-          await prisma.job.update({
-            where: { id: job.id, userId },
-            data: { bluedoorWebhookSubId: subId },
-          });
-        }
-      } catch (err) {
-        console.error("[trackJobFromDiscoverAction:after]", err);
-      }
-    });
 
     return { success: true, job: job as JobType };
   } catch (error) {
@@ -291,22 +258,11 @@ export async function deleteJobAction(id: string): Promise<JobType | null> {
   const userId = await authenticateAndRedirect();
 
   try {
-    // Fetch webhook sub ID before delete so we can unsubscribe from Bluedoor (best-effort)
-    const meta = await prisma.job.findUnique({
-      where: { id, userId },
-      select: { bluedoorWebhookSubId: true },
-    });
-
     const job = await prisma.job.delete({
       where: { id, userId },
     });
 
     await invalidateUserJobCaches(userId, id);
-
-    // Unsubscribe Bluedoor webhook after job is deleted — non-blocking, never throws
-    if (meta?.bluedoorWebhookSubId) {
-      void unregisterBluedoorWebhook(meta.bluedoorWebhookSubId);
-    }
 
     return job as JobType;
   } catch {
@@ -342,7 +298,7 @@ export async function updateJobAction(
     // Capture previous state to detect changes
     const previous = await prisma.job.findUnique({
       where: { id, userId },
-      select: { applyUrl: true, bluedoorJobId: true, status: true },
+      select: { applyUrl: true, postingId: true, status: true },
     });
 
     const job = await prisma.job.update({
@@ -355,14 +311,10 @@ export async function updateJobAction(
 
     await invalidateUserJobCaches(userId, id);
 
+    // Try linking again while unlinked, or when the apply URL now points somewhere else
     const applyUrlChanged = previous?.applyUrl !== (values.applyUrl ?? null);
-    const hasNewApplyUrl = !!values.applyUrl;
-
-    // Re-enrich when applyUrl is added or changed
-    if (hasNewApplyUrl && (applyUrlChanged || !previous?.bluedoorJobId)) {
-      after(async () => {
-        await enrichJob(id, userId);
-      });
+    if (!previous?.postingId || (applyUrlChanged && values.applyUrl)) {
+      after(() => linkJobToPosting(id, userId));
     }
 
     // Trigger interview-prep when job moves INTO interview status
@@ -431,76 +383,75 @@ export async function getAllJobsForDownloadAction(): Promise<JobType[]> {
 }
 
 // ─────────────────────────────────────────────
-// Bluedoor Enrichment
+// Discover — job postings catalog
 // ─────────────────────────────────────────────
 
+const EMPTY_SEARCH: PostingSearchResponse = { data: [], meta: { total: 0, limit: 20, nextCursor: null } };
+
 /**
- * Manual enrichment trigger — user clicks "Refresh Posting" on a job card.
- * Re-runs full Bluedoor lookup and updates enrichment fields.
+ * Search open postings. Called from /discover SSR prefetch and client infinite-query pages.
+ * cursor — `meta.nextCursor` of the previous page; absent on the first page.
  */
-export async function enrichJobAction(jobId: string): Promise<boolean> {
-  const userId = await authenticateAndRedirect();
+export async function searchPostingsAction(
+  params: Partial<DiscoverSearchParams> & { cursor?: string }
+): Promise<PostingSearchResponse> {
+  await authenticateAndRedirect();
+
+  const parsed = postingSearchSchema.safeParse(params);
+  if (!parsed.success) return EMPTY_SEARCH;
 
   try {
-    const job = await prisma.job.findUnique({
-      where: { id: jobId, userId },
-      select: { bluedoorJobId: true, applyUrl: true },
-    });
-
-    if (!job) return false;
-
-    if (job.bluedoorJobId) {
-      // Already linked — do a targeted resync
-      return await resyncJob(jobId, userId, job.bluedoorJobId);
-    }
-
-    if (job.applyUrl) {
-      // Not yet linked — run full enrichment flow
-      await enrichJob(jobId, userId);
-      return true;
-    }
-
-    return false;
-  } catch {
-    return false;
+    return await getCachedPostingSearch(parsed.data);
+  } catch (error) {
+    console.error("[searchPostingsAction]", error);
+    return EMPTY_SEARCH;
   }
 }
 
-// ─────────────────────────────────────────────
-// Discover — Bluedoor live job search
-// ─────────────────────────────────────────────
-
-/**
- * Fetch full Bluedoor job detail — called when user opens View Details modal.
- * Includes description_text (full JD) via ?include=description.
- */
-export async function getBluedoorJobDetailsAction(
-  jobId: string
-): Promise<BluedoorJob | null> {
+/** Workplace/employment facet counts for the /discover filter dropdowns. */
+export async function getPostingFacetsAction(
+  params: { q?: string; country?: string }
+): Promise<DiscoverFacets> {
   await authenticateAndRedirect();
 
+  const parsed = postingFacetsSchema.safeParse(params);
+  const empty: DiscoverFacets = { workplaceType: [], employmentType: [] };
+  if (!parsed.success) return empty;
+
   try {
-    return await getJobDetail(jobId);
+    return await getCachedPostingFacets(parsed.data);
   } catch (error) {
-    console.error('[getBluedoorJobDetailsAction] error:', error);
+    console.error("[getPostingFacetsAction]", error);
+    return empty;
+  }
+}
+
+/** Full posting incl. description — Discover details modal. */
+export async function getPostingDetailsAction(postingId: string): Promise<DiscoverPosting | null> {
+  await authenticateAndRedirect();
+
+  const parsed = postingIdSchema.safeParse(postingId);
+  if (!parsed.success) return null;
+
+  try {
+    return await getCachedPostingDetail(parsed.data);
+  } catch (error) {
+    console.error("[getPostingDetailsAction]", error);
     return null;
   }
 }
 
-/**
- * Fetch posting lifecycle events for a Bluedoor-linked job.
- * Called from PostingActivityTab when user opens the Activity panel.
- */
-export async function getBluedoorJobEventsAction(
-  bluedoorJobId: string
-): Promise<BluedoorJobEvent[]> {
+/** Posting lifecycle history — job detail "Activity" tab. */
+export async function getPostingEventsAction(postingId: string): Promise<PostingEvent[]> {
   await authenticateAndRedirect();
 
+  const parsed = postingIdSchema.safeParse(postingId);
+  if (!parsed.success) return [];
+
   try {
-    const res = await getJobEvents(bluedoorJobId);
-    return res.data;
+    return await getCachedPostingEvents(parsed.data);
   } catch (error) {
-    console.error('[getBluedoorJobEventsAction] error:', error);
+    console.error("[getPostingEventsAction]", error);
     return [];
   }
 }
@@ -612,98 +563,34 @@ export async function upsertUserProfileAction(
 // Skill Gap — compare user profile skills vs job description
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Compute skill gap for a job.
- * Pulls user's skills from UserProfile + job description from Bluedoor (if linked).
- * Falls back to position+company text when no Bluedoor description is available.
- *
- * Returns SkillGapResult or null when user has no skills set.
- */
+/** User skills + the job's description text (linked posting JD, else position + company). */
+async function loadSkillGapSource(userId: string, jobId: string) {
+  const [profile, jobRow] = await Promise.all([
+    prisma.userProfile.findUnique({ where: { userId }, select: { skills: true } }),
+    prisma.job.findUnique({
+      where: { id: jobId, userId },
+      select: { position: true, company: true, posting: { select: { description: true } } },
+    }),
+  ]);
+  return {
+    userSkills: profile?.skills ?? [],
+    position: jobRow?.position ?? '',
+    company: jobRow?.company ?? '',
+    jobDescription:
+      jobRow?.posting?.description ?? [jobRow?.position, jobRow?.company].filter(Boolean).join(' '),
+  };
+}
+
+/** Keyword skill gap for a job — null when the user has no skills set. */
 export async function getSkillGapAction(jobId: string): Promise<SkillGapResult | null> {
   const userId = await authenticateAndRedirect();
 
   try {
-    const [profile, jobRow] = await Promise.all([
-      prisma.userProfile.findUnique({ where: { userId }, select: { skills: true } }),
-      prisma.job.findUnique({
-        where: { id: jobId, userId },
-        select: { position: true, company: true, bluedoorJobId: true },
-      }),
-    ]);
-
-    const userSkills: string[] = profile?.skills ?? [];
-
-    let jobDescription = [jobRow?.position, jobRow?.company].filter(Boolean).join(' ');
-
-    if (jobRow?.bluedoorJobId) {
-      try {
-        const detail = await getJobDetail(jobRow.bluedoorJobId);
-        if (detail?.description_text) {
-          jobDescription = detail.description_text;
-        }
-      } catch {
-        // Bluedoor unreachable — fall back to position+company text
-      }
-    }
-
+    const { userSkills, jobDescription } = await loadSkillGapSource(userId, jobId);
     if (!userSkills.length) return null;
-
     return computeSkillGap(userSkills, jobDescription);
   } catch {
     return null;
-  }
-}
-
-/** Fetch workplace_type + employment_type facet counts for /discover filter dropdowns. */
-export async function getBluedoorFacetsAction(
-  params: { q?: string; country?: string }
-): Promise<DiscoverFacets> {
-  await authenticateAndRedirect();
-
-  try {
-    return await getCachedDiscoverFacets(params);
-  } catch {
-    return { workplace_type: [], employment_type: [] };
-  }
-}
-
-/**
- * Search Bluedoor for live job postings. Called from /discover page SSR
- * prefetch and client-side TanStack Query refetches (including infinite pages).
- *
- * cursor — opaque pagination token from meta.next_cursor of a prior response.
- *           Absent on the first page.
- */
-export async function searchBluedoorJobsAction(
-  params: Partial<DiscoverSearchParams> & { cursor?: string }
-): Promise<BluedoorSearchResponse> {
-  await authenticateAndRedirect();
-
-  try {
-    return await getCachedDiscoverSearch({
-      q: params.q || undefined,
-      country: params.country || "United States",
-      workplace_type:
-        (params.workplaceType as "remote" | "hybrid" | "on_site") || undefined,
-      employment_type:
-        (params.employmentType as
-          | "full_time"
-          | "part_time"
-          | "contract"
-          | "temporary"
-          | "internship"
-          | undefined) || undefined,
-      salary_exists: params.salaryExists || undefined,
-      cursor: params.cursor || undefined,
-      limit: 20,
-    });
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      console.warn('[searchBluedoorJobsAction] Bluedoor request timed out');
-    } else {
-      console.error('[searchBluedoorJobsAction] error:', error);
-    }
-    return { data: [], meta: { limit: 20, order: '', total_matching_unavailable: true } };
   }
 }
 
@@ -724,7 +611,7 @@ export async function getTimelineAction(): Promise<TimelineEvent[]> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Aggregate salary data from the user's Bluedoor-enriched jobs.
+ * Aggregate salary data from the user's posting-linked jobs.
  * Returns null when no jobs have salary data yet.
  */
 export async function getSalaryIntelligenceAction(): Promise<SalaryIntelResult | null> {
@@ -866,29 +753,8 @@ export async function getLLMSkillGapAction(jobId: string): Promise<LLMSkillGapRe
   const userId = await authenticateAndRedirect();
 
   try {
-    const [profile, jobRow] = await Promise.all([
-      prisma.userProfile.findUnique({ where: { userId }, select: { skills: true } }),
-      prisma.job.findUnique({
-        where: { id: jobId, userId },
-        select: { position: true, company: true, bluedoorJobId: true },
-      }),
-    ]);
-
-    const userSkills: string[] = profile?.skills ?? [];
+    const { userSkills, jobDescription, position, company } = await loadSkillGapSource(userId, jobId);
     if (!userSkills.length) return null;
-
-    let jobDescription = [jobRow?.position, jobRow?.company].filter(Boolean).join(' ');
-
-    if (jobRow?.bluedoorJobId) {
-      try {
-        const detail = await getJobDetail(jobRow.bluedoorJobId);
-        if (detail?.description_text) {
-          jobDescription = detail.description_text;
-        }
-      } catch {
-        // Bluedoor unreachable — fall back to position+company text
-      }
-    }
 
     // Call FastAPI /skill-gap (LLM-powered)
     try {
@@ -901,8 +767,8 @@ export async function getLLMSkillGapAction(jobId: string): Promise<LLMSkillGapRe
         body: JSON.stringify({
           job_description: jobDescription,
           user_skills: userSkills,
-          position: jobRow?.position ?? '',
-          company: jobRow?.company ?? '',
+          position,
+          company,
         }),
         signal: AbortSignal.timeout(30_000),
       });
@@ -1113,9 +979,7 @@ export async function createTeamJobAction(
 
     await invalidateUserJobCaches(userId, job.id);
 
-    if (job.applyUrl) {
-      after(async () => { await enrichJob(job.id, userId); });
-    }
+    after(() => linkJobToPosting(job.id, userId));
 
     return job as JobType;
   } catch {

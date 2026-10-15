@@ -1,120 +1,83 @@
 /**
- * Database Seed Script for job-tracker
- *
- * This script migrates data from CSV files to PostgreSQL database.
- *
- * Migration Status: ✅ IN PROGRESS (December 21, 2025)
- * - Migrating Job data from NeonDB/Supabase to Hetzner VPS PostgreSQL database
+ * Deterministic demo seed — Discover catalog (15 companies, 50 postings + events)
+ * and the demo account (test@user.com) with 25 tracked jobs and a profile.
  *
  * Usage:
- *   npm run db:seed
- *
- * Note: This script uses upsert, so it's safe to run multiple times.
- * It will update existing records or create new ones.
+ *   npm run db:seed    # replace catalog + demo user data (other users untouched)
+ *   npm run db:reset   # wipe the whole database, push the schema, then seed
  */
 
-import { PrismaClient } from "@prisma/client";
-import { parse } from "csv-parse/sync";
-import * as fs from "fs";
-import * as path from "path";
+import { PrismaClient, Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { TEST_ACCOUNTS } from '../lib/auth/test-credentials';
+import { invalidateUserRedisCaches } from '../lib/redis';
+import { SEED_COMPANIES } from './seed-data/companies';
+import { buildSeedPostings } from './seed-data/postings';
+import { buildSeedJobs, DEMO_PROFILE, DEMO_USER_ID } from './seed-data/jobs';
 
 const prisma = new PrismaClient();
 
-// CSV file paths (update these to match your actual paths)
-const CSV_DIR = "/Users/arnob_t78/Papers/Project Doc/db-migration/jobify";
+const toJson = (value: unknown) => (value == null ? Prisma.JsonNull : (value as Prisma.InputJsonValue));
 
-interface JobRow {
-  id: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-  position: string;
-  company: string;
-  location: string;
-  status: string;
-  mode: string;
-}
+async function seedCatalog(now: Date) {
+  await prisma.company.deleteMany();
 
-async function parseCSV<T>(filePath: string): Promise<T[]> {
-  if (!fs.existsSync(filePath)) {
-    console.warn(`⚠️  CSV file not found: ${filePath}`);
-    return [];
-  }
-
-  const content = fs.readFileSync(filePath, "utf-8");
-  if (!content.trim() || content.trim().split("\n").length <= 1) {
-    console.warn(`⚠️  CSV file is empty: ${filePath}`);
-    return [];
-  }
-
-  const records = parse(content, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true,
+  await prisma.company.createMany({
+    data: SEED_COMPANIES.map((c) => ({ id: `cmp_${c.slug}`, ...c, domain: null })),
   });
-  return records as T[];
+
+  const postings = buildSeedPostings(now);
+  await prisma.jobPosting.createMany({
+    data: postings.map(({ company, events: _events, ...p }) => ({ ...p, companyId: `cmp_${company.slug}` })),
+  });
+  await prisma.jobPostingEvent.createMany({
+    data: postings.flatMap((p) =>
+      p.events.map((e) => ({
+        postingId: p.id,
+        type: e.type,
+        fieldName: e.fieldName,
+        oldValue: toJson(e.oldValue),
+        newValue: toJson(e.newValue),
+        observedAt: e.observedAt,
+      }))
+    ),
+  });
+  return postings;
 }
 
-async function seedJobs() {
-  console.log("🌱 Seeding jobs...");
-  const jobs = await parseCSV<JobRow>(path.join(CSV_DIR, "Job.csv"));
+async function seedDemoUser(postings: ReturnType<typeof buildSeedPostings>, now: Date) {
+  const account = TEST_ACCOUNTS['guest-user'];
+  await prisma.user.deleteMany({ where: { email: account.email } });
 
-  if (jobs.length === 0) {
-    console.log("⚠️  No jobs to seed");
-    return;
-  }
+  await prisma.user.create({
+    data: {
+      id: DEMO_USER_ID,
+      name: account.name,
+      email: account.email,
+      password: await bcrypt.hash(account.password, 12),
+      profile: { create: DEMO_PROFILE },
+    },
+  });
 
-  for (const job of jobs) {
-    try {
-      await prisma.job.upsert({
-        where: { id: job.id },
-        update: {
-          userId: job.userId,
-          position: job.position,
-          company: job.company,
-          location: job.location,
-          status: job.status,
-          mode: job.mode,
-          createdAt: new Date(job.createdAt),
-          updatedAt: new Date(job.updatedAt),
-        },
-        create: {
-          id: job.id,
-          userId: job.userId,
-          position: job.position,
-          company: job.company,
-          location: job.location,
-          status: job.status,
-          mode: job.mode,
-          createdAt: new Date(job.createdAt),
-          updatedAt: new Date(job.updatedAt),
-        },
-      });
-    } catch (error) {
-      console.error(`❌ Error seeding job ${job.id}:`, error);
-    }
-  }
-  console.log(`✅ Seeded ${jobs.length} jobs`);
+  const jobs = buildSeedJobs(postings, now);
+  await prisma.job.createMany({ data: jobs });
+  return jobs.length;
 }
 
 async function main() {
-  console.log("🚀 Starting database seed...\n");
+  const now = new Date();
+  const postings = await seedCatalog(now);
+  const jobCount = await seedDemoUser(postings, now);
+  const purged = await invalidateUserRedisCaches(DEMO_USER_ID);
 
-  try {
-    // Seed jobs (only model with data)
-    await seedJobs();
-
-    console.log("\n✨ Database seeded successfully!");
-  } catch (error) {
-    console.error("❌ Error seeding database:", error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+  console.log(
+    `Seeded ${SEED_COMPANIES.length} companies, ${postings.length} postings, ${jobCount} demo jobs; purged ${purged} Redis keys.`
+  );
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
-
+main()
+  .catch((error) => {
+    console.error('Seed failed:', error);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

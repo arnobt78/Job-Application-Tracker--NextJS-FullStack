@@ -3,7 +3,7 @@
 /**
  * DiscoverJobDetailsModal — full job description + metadata modal.
  *
- * Fetches full BluedoorJob via getBluedoorJobDetailsAction on open (on-demand,
+ * Fetches the full posting via getPostingDetailsAction on open (on-demand,
  * not prefetched — rare action). Shows salary, location, workplace type,
  * full description text, and a Track Application CTA.
  */
@@ -28,64 +28,18 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { getBluedoorJobDetailsAction } from '@/utils/actions';
+import { getPostingDetailsAction } from '@/utils/actions';
 import { queryKeys } from '@/lib/query-keys';
 import { useTrackDiscoverJobMutation } from '@/hooks/useJobsMutation';
 import { AiInsightsPanel } from '@/components/jobs/ai-insights-panel';
-import { JobMode } from '@/utils/types';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import type { BluedoorJob } from '@/lib/bluedoor/types';
-import type { PipelineJobInput } from '@/lib/ai/pipeline-client';
-
 import {
-  cleanDiscoverLocation,
-  resolveDiscoverCompanyName,
-  toDiscoverTrackPayload,
+  formatPostingSalary,
+  toPostingPipelineInput,
   workplaceLabel,
-  bluedoorEmploymentToJobMode,
+  workplacePillClass,
 } from '@/lib/discover/track-helpers';
-
-function formatSalary(job: BluedoorJob): string | null {
-  if (!job.salary_min && !job.salary_max) return null;
-  const fmt = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: job.salary_currency ?? 'USD',
-    maximumFractionDigits: 0,
-  });
-  if (job.salary_min && job.salary_max) {
-    return `${fmt.format(job.salary_min)} – ${fmt.format(job.salary_max)}`;
-  }
-  if (job.salary_min) return `${fmt.format(job.salary_min)}+`;
-  if (job.salary_max) return `Up to ${fmt.format(job.salary_max!)}`;
-  return null;
-}
-
-function cleanLocation(text: string): string {
-  return cleanDiscoverLocation(text);
-}
-
-function toJobMode(employment_type: string | null): JobMode {
-  return bluedoorEmploymentToJobMode(employment_type);
-}
-
-/** Map BluedoorJob → PipelineJobInput for the AI pipeline (uses Bluedoor job_id). */
-function toBluedoorPipelineInput(job: BluedoorJob): PipelineJobInput {
-  return {
-    job_id: job.job_id,
-    position: job.title,
-    company: resolveDiscoverCompanyName(job.org_id, job.apply_url),
-    location: job.location_text ? cleanLocation(job.location_text) : 'Unknown',
-    status: 'pending', // not yet tracked in the user's pipeline
-    mode: toJobMode(job.employment_type),
-    apply_url: job.apply_url ?? null,
-    bluedoor_status: job.active ? 'active' : 'expired',
-    bluedoor_workplace_type: job.workplace_type ?? null,
-    bluedoor_salary_min: job.salary_min ?? null,
-    bluedoor_salary_max: job.salary_max ?? null,
-    bluedoor_salary_currency: job.salary_currency ?? null,
-  };
-}
 
 // ─────────────────────────────────────────────
 // Modal body
@@ -107,17 +61,17 @@ function ModalSkeleton() {
 }
 
 type ModalBodyProps = {
-  jobId: string;
+  postingId: string;
   onClose: () => void;
 };
 
-function ModalBody({ jobId, onClose }: ModalBodyProps) {
+function ModalBody({ postingId, onClose }: ModalBodyProps) {
   const [tracked, setTracked] = useState(false);
   const { mutate, isPending } = useTrackDiscoverJobMutation();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: queryKeys.discover.detail(jobId),
-    queryFn: () => getBluedoorJobDetailsAction(jobId),
+    queryKey: queryKeys.discover.detail(postingId),
+    queryFn: () => getPostingDetailsAction(postingId),
     // On-demand only — modal opens rarely; staleTime keeps it fresh for the session
     staleTime: 5 * 60 * 1_000,
     gcTime: 10 * 60 * 1_000,
@@ -133,13 +87,11 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
   }
 
   const job = data;
-  const salary = formatSalary(job);
-  const workplace = workplaceLabel(job.workplace_type);
-  const location = job.location_text ? cleanLocation(job.location_text) : null;
-  const companyName = resolveDiscoverCompanyName(job.org_id, job.apply_url);
+  const salary = formatPostingSalary(job);
+  const workplace = workplaceLabel(job.workplaceType);
 
   function handleTrack() {
-    mutate(toDiscoverTrackPayload(job), {
+    mutate(job, {
       onSuccess: () => {
         setTracked(true);
         onClose();
@@ -158,21 +110,17 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Building2 className="h-3 w-3" />
-            {companyName}
+            {job.companyName}
           </span>
-          {location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              {location}
-            </span>
-          )}
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {job.locationText}
+          </span>
           {workplace && (
             <span
               className={cn(
                 'rounded-full px-2 py-0.5 text-xs font-medium',
-                job.workplace_type === 'remote' && 'bg-emerald-500/15 text-ink-emerald',
-                job.workplace_type === 'hybrid' && 'bg-sky-500/15 text-ink-sky',
-                job.workplace_type === 'on_site' && 'bg-amber-500/15 text-ink-amber'
+                workplacePillClass(job.workplaceType)
               )}
             >
               {workplace}
@@ -186,17 +134,17 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
         <div className="flex items-center gap-1.5 text-sm font-medium text-ink-emerald">
           <DollarSign className="h-4 w-4" />
           {salary}
-          {job.salary_period && (
-            <span className="font-normal text-muted-foreground">/ {job.salary_period}</span>
+          {job.salaryPeriod && (
+            <span className="font-normal text-muted-foreground">/ {job.salaryPeriod}</span>
           )}
         </div>
       )}
 
       {/* Full description */}
-      {job.description_text ? (
+      {job.description ? (
         <div className="overlay-scroll max-h-64 overflow-y-auto rounded-lg border border-border bg-glass-inset p-4">
           <pre className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
-            {job.description_text}
+            {job.description}
           </pre>
         </div>
       ) : (
@@ -204,12 +152,12 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
       )}
 
       {/* AI Insights — on-demand fit score, cover letter, interview angles */}
-      <AiInsightsPanel job={toBluedoorPipelineInput(job)} persist={false} />
+      <AiInsightsPanel job={toPostingPipelineInput(job)} persist={false} />
 
       {/* Actions */}
       <div className="flex items-center gap-2">
         <a
-          href={job.apply_url}
+          href={job.applyUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-4 text-sm font-medium text-primary transition hover:bg-primary/10 hover:border-primary/40"
@@ -244,13 +192,13 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
 // ─────────────────────────────────────────────
 
 type DiscoverJobDetailsModalProps = {
-  jobId: string;
+  postingId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
 export function DiscoverJobDetailsModal({
-  jobId,
+  postingId,
   open,
   onOpenChange,
 }: DiscoverJobDetailsModalProps) {
@@ -265,7 +213,7 @@ export function DiscoverJobDetailsModal({
             <DialogTitle>Job Details</DialogTitle>
           </DialogHeader>
           {open && (
-            <ModalBody jobId={jobId} onClose={() => onOpenChange(false)} />
+            <ModalBody postingId={postingId} onClose={() => onOpenChange(false)} />
           )}
         </GlassCard>
       </GlassDialogContent>

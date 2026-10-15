@@ -12,7 +12,7 @@
 
 0. [Implementation Status (Audit)](#0-implementation-status-audit)
 1. [Current Stack (Existing)](#1-current-stack-existing)
-2. [Phase 1 Additions — Bluedoor Enrichment](#2-phase-1-additions--bluedoor-enrichment)
+2. [Phase 1 Additions — Job Postings Catalog](#2-phase-1-additions--job-postings-catalog)
 3. [Phase 2 — Python AI Backend](#3-phase-2--python-ai-backend)
 4. [LLM Provider Comparison](#4-llm-provider-comparison)
 5. [Automation Layer (n8n)](#5-automation-layer-n8n)
@@ -43,16 +43,16 @@
 | Next.js 16 App Router | ✅ | `force-dynamic` + SSR prefetch on all dashboard pages |
 | React 19 | ✅ | Server + Client Components |
 | NextAuth v5 (Auth.js) | ✅ | `middleware.ts` + `auth.ts` + Prisma adapter |
-| Prisma 6 + PostgreSQL | ✅ | `Job` + `JobAIInsight` + `UserProfile` models |
+| Prisma 6 + PostgreSQL | ✅ | `Job` + postings catalog + `JobAIInsight` + `UserProfile` models |
 | TanStack Query 5 | ✅ | Persist + hydration + optimistic mutations |
 | Redis (Upstash) | ⚠️ | Optional — in-memory + BroadcastChannel fallback |
-| Bluedoor API | ✅ | Client, enrich, discover, webhook, cron |
+| Postings catalog | ✅ | Own Postgres tables, link + resync, discover, `/api/postings`, cron |
 | Resend | ⚠️ | React Email templates; no-op without key |
 | React Email | ✅ | `@react-email/components` + `@react-email/render` |
 | Sentry | ⚠️ | Integrated; optional via env |
 | PostHog | ⚠️ | `posthog-js` + `PostHogProvider` — no-op without `NEXT_PUBLIC_POSTHOG_KEY` |
-| Playwright E2E | ⚠️ | `tests/e2e/*.spec.ts` — `npm run test:e2e` |
-| Vitest | ✅ | **51** tests |
+| Playwright E2E | ✅ | `tests/e2e/*.spec.ts` — auth setup + console/network assertions |
+| Vitest | ✅ | **105** tests |
 | FastAPI AI service | ⚠️ | Code complete; not deployed |
 | Ollama | ⬜ | Router ready; no VPS Ollama instance |
 | Groq / OpenRouter / Anthropic | ⚠️ | Client code in python-ai-service |
@@ -64,25 +64,24 @@
 
 | Feature | Status | Files |
 | --- | --- | --- |
-| `applyUrl` + Bluedoor enrichment fields | ✅ | `prisma/schema.prisma` |
-| Auto-enrich on CRUD | ✅ | `utils/actions.ts`, `lib/bluedoor/enrich.ts` |
-| Enrichment badges on cards | ✅ | `components/jobs/job-enrichment-badge.tsx` |
+| Catalog tables + Job snapshot columns | ✅ | `prisma/schema.prisma` |
+| Auto-link on CRUD | ✅ | `utils/actions.ts`, `lib/postings/link.ts` |
+| Posting badges on cards | ✅ | `components/jobs/job-enrichment-badge.tsx` |
 | `/discover` search | ✅ | `app/(dashboard)/discover/` |
-| Infinite cursor pagination | ✅ | `useInfiniteQuery`, `buildDiscoverQueryOptions` |
+| Keyset infinite pagination | ✅ | `useInfiniteQuery`, `buildDiscoverQueryOptions` |
 | Glass filter bar | ✅ | `components/discover/discover-filters.tsx` |
-| Track Application → dashboard sync | ✅ | `useCreateJobMutation` in `discover-job-card.tsx` |
+| Track Application → dashboard sync | ✅ | `useTrackDiscoverJobMutation` in `discover-job-card.tsx` |
 | Details modal | ✅ | `discover-job-details-modal.tsx` |
-| Inbound webhook | ✅ | `app/api/bluedoor/webhook/route.ts` |
+| Postings read API | ✅ | `app/api/postings/**` |
 | Nightly cron resync | ✅ | `app/api/cron/enrich/route.ts`, `vercel.json` |
 | Notification bell (SSE) | ✅ | `notification-bell.tsx`, `notifications-context.tsx` |
 | Per-change email | ✅ | `lib/notifications/email.ts` |
 | Stats KPI row | ✅ | `components/stats/stats-kpi-row.tsx` |
 | 4 chart types + weekly query | ✅ | `components/stats/*`, `getCachedWeeklyCharts` |
-| Posting Activity tab | ✅ | `getJobEvents`, `posting-activity-tab.tsx`, `job-detail-panels.tsx` |
-| Facet API (`/jobs/facets`) | ✅ | `getDiscoverFacets` — inline counts in `DiscoverFilters` |
-| Auto webhook subscription | ✅ | `registerBluedoorWebhook` / `unregisterBluedoorWebhook` |
+| Posting Activity tab | ✅ | `getPostingEvents`, `posting-activity-tab.tsx`, `job-detail-panels.tsx` |
+| Facet counts | ✅ | `getPostingFacets` — inline counts in `DiscoverFilters` |
 | Weekly digest email | ✅ | `/api/cron/weekly-digest` + `WeeklyDigestEmail` |
-| Company logos | ✅ | `CompanyLogo` — Clearbit + Building2 fallback |
+| Company logos | ✅ | `CompanyLogo` — Google s2 favicons + Building2 fallback |
 | Global timeline (`/timeline`) | ✅ | `lib/jobs/timeline.ts` — derived from Job + aiInsight |
 | Discover two-panel sidebar | ✅ | `DiscoverSidebar` on `lg+` |
 
@@ -152,37 +151,34 @@ Realtime: SSE /api/jobs/events + BroadcastChannel (jobify-cache, jobify-notifica
 
 ---
 
-## 2. Phase 1 Additions — Bluedoor Enrichment
+## 2. Phase 1 Additions — Job Postings Catalog
 
-Built inside Next.js. No separate Bluedoor microservice.
+Built inside Next.js on the same Postgres database. No separate microservice.
 
-### 2.1 Bluedoor API ✅
+> Phase 1 originally used the external Bluedoor Job Postings API. That API no longer exists, so it was replaced by the app's own catalog (ISSUE-0011 / ISSUE-0012): the Bluedoor client, webhook route and `bluedoor*` columns were removed.
+
+### 2.1 Postings catalog ✅
 
 | Property | Value |
 | --- | --- |
-| Base URL | `https://api.bluedoor.sh/job-postings/v1` |
-| Auth | None (free, no API key) |
-| Rate limits | Very high (confirmed by Sam — OSS projects won't hit ceiling) |
-| Coverage | 1.8M jobs · 60k+ companies · US-primary |
-| Refresh | Daily |
+| Tables | `companies` · `job_postings` · `job_posting_events` |
+| Keys | `JobPosting.companyId` → `Company` (cascade) · `JobPostingEvent.postingId` → `JobPosting` (cascade) · `Job.postingId` → `JobPosting` (SetNull, unique per user) |
+| Data | `npm run db:seed` — 15 companies, 50 postings (40 open / 10 closed), lifecycle events |
+| Cache | `unstable_cache` tagged `postings`, 5-minute revalidate |
 
-**Endpoints — usage in Jobify:**
+**Read surface:**
 
-| Endpoint | Purpose | Status |
+| Reader | Purpose | Implementation |
 | --- | --- | --- |
-| `GET /jobs` (search) | Discovery + enrich lookup | ✅ `lib/bluedoor/client.ts` `searchJobs` |
-| `GET /jobs/{job_id}` | Full job detail | ✅ `getJobDetail` — Details modal |
-| `GET /jobs/{job_id}/events` | Lifecycle history | ✅ `getJobEvents` — Posting Activity tab |
-| `GET /jobs/facets` | Live filter counts | ✅ `getDiscoverFacets` — parallel prefetch on `/discover` |
-| `POST /webhook_endpoints` | Register receiver | ✅ `registerBluedoorWebhook` on enrich |
-| `POST /subscriptions` | Subscribe to job_id | ✅ Auto-called; `bluedoorWebhookSubId` on Job |
-| `GET /orgs/lookup` | Company enrichment | ✅ `getBluedoorOrg` → companySize/Industry/Hq |
+| `searchPostingsAction` / `GET /api/postings` | Keyset search + filters | `lib/postings/queries.ts` `searchPostings` |
+| `getPostingDetailsAction` / `GET /api/postings/:id` | Full posting (Details modal) | `getPostingDetail` |
+| `getPostingEventsAction` / `GET /api/postings/:id/events` | Lifecycle history (Posting Activity tab) | `getPostingEvents` |
+| `getPostingFacetsAction` / `GET /api/postings/facets` | Live filter counts | `getPostingFacets` (`groupBy`) |
 
-**Join strategy (implemented in `enrich.ts`):**
+**Join strategy (implemented in `lib/postings/link.ts`):**
 
-1. ATS key from `apply_url`
-2. URL / source match via search
-3. Fuzzy company + title + location
+1. Exact normalised apply URL
+2. Same company name + title similarity ≥ 0.5
 
 ### 2.2 Email — Resend ⚠️
 
@@ -195,14 +191,14 @@ Built inside Next.js. No separate Bluedoor microservice.
 
 **Implementation:** `lib/notifications/email.ts` — graceful no-op when `RESEND_API_KEY` absent.
 
-### 2.3 Scheduled Enrichment Sync ✅
+### 2.3 Scheduled Posting Resync ✅
 
 | Option | Status | Notes |
 | --- | --- | --- |
-| Vercel Cron | ✅ | `vercel.json` → enrich 03:00 UTC · weekly-digest Sunday 09:00 UTC |
+| Vercel Cron | ✅ | `vercel.json` → posting resync 03:00 UTC · weekly-digest Sunday 09:00 UTC |
 | n8n cron | ⬜ | Planned Phase 2 migration |
 
-Batch: 10 jobs per batch, 150ms delay — polite to free API.
+Batch: linked jobs resynced 10 at a time; cron auth fails closed without `CRON_SECRET` (`lib/cron-auth.ts`).
 
 ### 2.4 Phase 1 Dependencies (actual)
 
@@ -218,9 +214,8 @@ Batch: 10 jobs per batch, 150ms delay — polite to free API.
 
 | Approach | Plan doc (original) | **Actual implementation** |
 | --- | --- | --- |
-| Bluedoor search | `POST /api/bluedoor/search` | `searchBluedoorJobsAction` Server Action |
-| Enrich trigger | `POST /api/jobs/[id]/enrich` | `enrichJobAction` + `after()` on CRUD |
-| Webhook | API route | ✅ `POST /api/bluedoor/webhook` |
+| Postings search | API route | `searchPostingsAction` (UI) + `GET /api/postings` (same zod schema) |
+| Link trigger | API route | `after(() => linkJobToPosting())` on CRUD |
 | Cron | API route | ✅ `GET /api/cron/enrich` + `GET /api/cron/weekly-digest` |
 
 Server Actions chosen for type safety, shared auth pattern, and consistency with existing CRUD.
@@ -403,27 +398,30 @@ Coolify VPS (planned)
 
 ## 8. Database Schema
 
-### 8.1 Phase 1 — Job model ✅
+### 8.1 Phase 1 — Job model + postings catalog ✅
 
 ```prisma
 model Job {
   // ... core fields ...
-  applyUrl              String?
-  bluedoorJobId         String?
-  bluedoorOrgId         String?
-  bluedoorProvider      String?
-  bluedoorStatus        String?
-  bluedoorWorkplaceType String?
-  bluedoorSalaryMin     Float?
-  bluedoorSalaryMax     Float?
-  bluedoorSalaryCurrency String?
-  bluedoorDescHash      String?
-  bluedoorSyncedAt      DateTime?
-  bluedoorChangedAt     DateTime?
-  bluedoorWebhookSubId  String?   // auto-subscribe on enrich
+  applyUrl          String?
+  postingId         String?   // FK → JobPosting (SetNull); @@unique([userId, postingId])
+  postingStatus     String?   // open | closed — snapshot at last sync
+  workplaceType     String?
+  salaryMin         Int?
+  salaryMax         Int?
+  salaryCurrency    String?
+  postingDescHash   String?
+  postingSyncedAt   DateTime?
+  postingChangedAt  DateTime?
+  postingChangeType String?   // posting_closed | jd_changed | salary_added
 
   aiInsight    JobAIInsight?
 }
+
+model Company         { id, name, slug @unique, domain, size, industry, hq }
+model JobPosting      { companyId → Company (cascade), title, description, workplaceType, employmentType,
+                        salary*, applyUrl @unique, status, contentHash, postedAt, closedAt }
+model JobPostingEvent { postingId → JobPosting (cascade), type, fieldName, oldValue, newValue, observedAt }
 ```
 
 ### 8.2 Phase 2 — AI models ✅ (migrated)
@@ -441,7 +439,8 @@ model JobAIInsight {
   redFlags        String[] @default([])
   generatedAt     DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  job             Job      @relation(...)
+  job             Job      @relation(...)   // cascade
+  user            User     @relation(...)   // cascade
 }
 
 model UserProfile {
@@ -466,7 +465,7 @@ model UserProfile {
 | `charts` | ✅ | ✅ |
 | `charts-weekly` | ✅ | ✅ |
 | `job(id)` | ✅ | ✅ |
-| `discover.*` | ❌ | N/A (live external) |
+| `discover.*` | ❌ | N/A (catalog, server `postings` tag) |
 | `discover.facets` | ❌ | N/A (staleTime 5 min) |
 | `ai.pipeline(id)` | ❌ | N/A (on-demand mutation) |
 | `aiInsight.job(id)` | ❌ | DB is source of truth |
@@ -485,9 +484,9 @@ model UserProfile {
 | Pinecone / Weaviate | No vector search in Phase 2 |
 | Kafka / RabbitMQ | Redis + ARQ sufficient |
 | Kubernetes | Coolify + Docker Compose sufficient |
-| Scrapy | Official Bluedoor API used ✅ |
+| Scrapy | Catalog is first-party data in Postgres ✅ |
 | WebSockets (new) | SSE infrastructure sufficient ✅ |
-| Separate Bluedoor API routes | Server Actions chosen instead ✅ |
+| Duplicate postings logic per entry point | Server Actions + `/api/postings` share queries and zod schemas ✅ |
 
 ---
 
@@ -502,14 +501,14 @@ model UserProfile {
 | Database | PostgreSQL + Prisma 6 | Yes |
 | Cache | Redis (optional) + unstable_cache | Yes |
 | Client state | TanStack Query 5 + Persist | Yes |
-| Job enrichment | Bluedoor API | Yes |
+| Job postings | Own Postgres catalog | Yes |
 | Email alerts | Resend + React Email | Yes (3k/mo) |
 | Weekly digest | Vercel Cron + WeeklyDigestEmail | Yes |
-| Scheduled sync | Vercel Cron (enrich + digest) | Yes |
+| Scheduled sync | Vercel Cron (posting resync + digest) | Yes |
 | Notifications | SSE + BroadcastChannel | Yes |
 | Monitoring | Sentry | Free tier |
 | Deployment | Vercel | Free hobby |
-| Testing | Vitest **51** tests | Yes |
+| Testing | Vitest **105** · pytest 26 · Playwright | Yes |
 
 ### Scaffolded / partial (code in repo)
 
@@ -550,11 +549,11 @@ model UserProfile {
 
 | Decision | Rationale |
 | --- | --- |
-| Server Actions over Bluedoor API routes | Type-safe, shared auth, matches existing CRUD |
+| Server Actions for the UI, read API alongside | Type-safe, shared auth, matches existing CRUD |
 | Ollama primary | Privacy, free, no rate limits |
 | Vercel Cron before n8n | Simpler for Phase 1 nightly sync |
 | SSE over WebSockets | Already built for invalidation + notifications |
-| Discover not persisted | Live external data — always fresh |
+| Discover not persisted | Catalog changes server-side — always fresh |
 | AI insights in DB | `JobAIInsight` — instant load; Regenerate on demand |
 | AI RQ queries not persisted | `ai.pipeline` mutation ephemeral; DB is cache |
 | Single PostgreSQL | No multi-DB complexity |

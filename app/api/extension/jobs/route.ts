@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/utils/db';
 import { invalidateUserJobCaches } from '@/lib/invalidate-jobs-server';
 import { after } from 'next/server';
-import { enrichJob } from '@/lib/bluedoor/enrich';
+import { linkJobToPosting } from '@/lib/postings/link';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,10 +71,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Invalidate caches so dashboard refreshes via SSE
     await invalidateUserJobCaches(userId, job.id);
 
-    // Fire Bluedoor enrichment if apply URL was provided
-    if (job.applyUrl) {
-      after(async () => { await enrichJob(job.id, userId); });
-    }
+    // Link to a catalog posting after the response is sent
+    after(() => linkJobToPosting(job.id, userId));
 
     return NextResponse.json({ id: job.id, position: job.position, company: job.company });
   } catch {

@@ -2,14 +2,14 @@
  * Types and Validation Schema File
  *
  * Defines TypeScript types for job data, enums for status/mode values,
- * Zod validation schemas for form inputs, and Bluedoor enrichment enums.
+ * and Zod validation schemas for form inputs.
  */
 import * as z from 'zod';
 
 /**
  * JobType — TypeScript type matching the full Prisma Job model including
- * Bluedoor enrichment fields. All enrichment fields are optional and null
- * until the background enrich task runs.
+ * the linked-posting snapshot. Snapshot fields are optional and null until
+ * the job is linked to a catalog posting.
  */
 export type JobType = {
   id: string;
@@ -22,24 +22,22 @@ export type JobType = {
   status: string; // pending | interview | declined
   mode: string;   // full-time | part-time | internship
 
-  // URL the user applied through — key for Bluedoor join
+  // URL the user applied through — matched against catalog postings
   applyUrl?: string | null;
 
-  // Bluedoor live-posting enrichment — absent or null until enrich runs
-  bluedoorJobId?: string | null;
-  bluedoorOrgId?: string | null;
-  bluedoorProvider?: string | null; // greenhouse | lever | ashby | workday
-  bluedoorStatus?: string | null;   // active | expired | unknown
-  bluedoorWorkplaceType?: string | null; // remote | hybrid | on_site
-  bluedoorSalaryMin?: number | null;
-  bluedoorSalaryMax?: number | null;
-  bluedoorSalaryCurrency?: string | null;
-  bluedoorDescHash?: string | null;
-  bluedoorSyncedAt?: Date | null;
-  bluedoorChangedAt?: Date | null;
-  bluedoorWebhookSubId?: string | null;
+  // Linked catalog posting snapshot — null until linkJobToPosting finds a match
+  postingId?: string | null;
+  postingStatus?: string | null;     // open | closed
+  workplaceType?: string | null;     // remote | hybrid | on_site
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryCurrency?: string | null;
+  postingDescHash?: string | null;
+  postingSyncedAt?: Date | null;
+  postingChangedAt?: Date | null;
+  postingChangeType?: string | null; // posting_closed | jd_changed | salary_added
 
-  // Company/org-level data from Bluedoor /v1/orgs — optional, populated after job match
+  // Company data copied from the linked posting's company
   companySize?: string | null;
   companyIndustry?: string | null;
   companyHq?: string | null;
@@ -103,7 +101,7 @@ export type TimelineEvent = {
   jobId: string;
   position: string;
   company: string;
-  /** Human-readable context (e.g. status, bluedoorStatus) */
+  /** Human-readable context (e.g. status, postingStatus) */
   detail: string | null;
   timestamp: Date;
 };
@@ -154,9 +152,9 @@ export type SalaryIntelResult = {
   count: number;
   /** Total tracked jobs (for coverage ratio) */
   total: number;
-  /** Average of bluedoorSalaryMin across jobs with salary data (annualised, in currency below) */
+  /** Average of salaryMin across jobs with salary data (in currency below) */
   avgMin: number;
-  /** Average of bluedoorSalaryMax across jobs with salary data */
+  /** Average of salaryMax across jobs with salary data */
   avgMax: number;
   /** Most common salary currency among enriched jobs */
   currency: string;
@@ -181,23 +179,6 @@ export enum JobMode {
   FullTime = 'full-time',
   PartTime = 'part-time',
   Internship = 'internship',
-}
-
-/**
- * Bluedoor posting status — reflects whether the live job posting is
- * still active or has been taken down since the user applied.
- */
-export enum BluedoorStatus {
-  Active = 'active',
-  Expired = 'expired',
-  Unknown = 'unknown',
-}
-
-/** Bluedoor workplace type values (normalised by Bluedoor) */
-export enum BluedoorWorkplaceType {
-  Remote = 'remote',
-  Hybrid = 'hybrid',
-  OnSite = 'on_site',
 }
 
 /**

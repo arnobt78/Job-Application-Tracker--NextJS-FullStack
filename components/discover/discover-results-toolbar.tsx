@@ -1,27 +1,21 @@
 'use client';
 
 /**
- * DiscoverResultsToolbar — "Showing X jobs" count badge for /discover.
+ * DiscoverResultsToolbar — total open postings badge for /discover.
  * Reads from the live TanStack Query cache (SSR-prefetched so renders immediately).
  * Uses useSearchParams to build matching query key — must be inside Suspense.
  */
 
-import { useSearchParams } from 'next/navigation';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
 import { Layers, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageSectionHeader } from '@/components/ui/page-section-header';
 import { useIsRouteFallback } from '@/components/providers/route-fallback-provider';
+import { useDiscoverSearchParams } from '@/hooks/useDiscoverSearchParams';
 
 export function DiscoverResultsToolbar() {
-  const searchParams = useSearchParams();
-
-  const q = searchParams.get('q') ?? '';
-  const country = searchParams.get('country') ?? 'United States';
-  const workplaceType = searchParams.get('workplaceType') ?? '';
-  const employmentType = searchParams.get('employmentType') ?? '';
-  const salaryExists = searchParams.get('salaryExists') === 'yes';
+  const { q, country, workplaceType, employmentType, salaryExists } = useDiscoverSearchParams();
 
   const isRouteFallback = useIsRouteFallback();
   const { data, isFetching } = useInfiniteQuery({
@@ -29,22 +23,13 @@ export function DiscoverResultsToolbar() {
     enabled: !isRouteFallback,
   });
 
-  const firstPage = data?.pages[0];
-  const jobs = firstPage?.data ?? [];
-  const total = firstPage?.meta.total_matching;
-  // Rate-limited: Bluedoor returned 429 → cached empty result with total_matching_unavailable flag
-  const isRateLimited = firstPage?.meta.total_matching_unavailable === true && jobs.length === 0;
-  const count = !isRateLimited && total != null ? total : jobs.length;
+  const total = data?.pages[0]?.meta.total ?? 0;
 
   const countBadge = (isFetching || isRouteFallback) && !data ? (
     <Skeleton className="h-6 min-w-[2.5rem] rounded-full" />
-  ) : isRateLimited ? (
-    <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full bg-muted px-2.5 py-0.5 text-sm font-semibold tabular-nums text-muted-foreground">
-      —
-    </span>
   ) : (
     <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full bg-primary/15 px-2.5 py-0.5 text-sm font-semibold tabular-nums text-primary">
-      {count.toLocaleString()}
+      {total.toLocaleString()}
     </span>
   );
 
@@ -52,18 +37,16 @@ export function DiscoverResultsToolbar() {
     <div className="mb-6 flex items-center gap-2">
       <PageSectionHeader
         icon={Layers}
-        title="Live Postings"
+        title="Open Postings"
         badge={countBadge}
         subtitle={
           isFetching ? (
             <span className="flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Fetching latest data…
+              Updating results…
             </span>
-          ) : isRateLimited ? (
-            'Live data temporarily unavailable — will refresh shortly'
           ) : (
-            'Fresh from Greenhouse, Lever, Ashby, Workday and more'
+            'Roles from companies hiring now — track any posting in one click'
           )
         }
       />

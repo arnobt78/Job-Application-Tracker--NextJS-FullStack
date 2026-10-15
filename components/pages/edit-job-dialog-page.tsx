@@ -33,7 +33,7 @@ export function EditJobDialogPage({ jobId }: EditJobDialogPageProps) {
     job && !isRouteFallback ? (
       <JobDetailPanels
         job={toPipelineJobInput(job)}
-        bluedoorJobId={job.bluedoorJobId ?? null}
+        postingId={job.postingId ?? null}
       />
     ) : null;
 

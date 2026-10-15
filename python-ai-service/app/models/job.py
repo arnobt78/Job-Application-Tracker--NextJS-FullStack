@@ -1,7 +1,7 @@
 """Pydantic models for job and user profile data sent from Next.js."""
 
 from __future__ import annotations
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 
 class JobInput(BaseModel):
@@ -14,12 +14,23 @@ class JobInput(BaseModel):
     status: str
     mode: str
     apply_url: str | None = None
-    # Bluedoor enrichment fields — present when enrichment ran
-    bluedoor_status: str | None = None
-    bluedoor_workplace_type: str | None = None
-    bluedoor_salary_min: float | None = None
-    bluedoor_salary_max: float | None = None
-    bluedoor_salary_currency: str | None = None
+    # Linked-posting snapshot — present when the job is linked to a posting.
+    # Legacy bluedoor_* names are still accepted until every caller is redeployed.
+    posting_status: str | None = Field(
+        default=None, validation_alias=AliasChoices("posting_status", "bluedoor_status")
+    )
+    workplace_type: str | None = Field(
+        default=None, validation_alias=AliasChoices("workplace_type", "bluedoor_workplace_type")
+    )
+    salary_min: float | None = Field(
+        default=None, validation_alias=AliasChoices("salary_min", "bluedoor_salary_min")
+    )
+    salary_max: float | None = Field(
+        default=None, validation_alias=AliasChoices("salary_max", "bluedoor_salary_max")
+    )
+    salary_currency: str | None = Field(
+        default=None, validation_alias=AliasChoices("salary_currency", "bluedoor_salary_currency")
+    )
 
 
 class UserProfile(BaseModel):

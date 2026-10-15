@@ -31,10 +31,10 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
           select: { id: true, position: true, company: true, status: true },
           orderBy: { createdAt: 'desc' },
         }),
-        // Jobs with Bluedoor posting changes this week
+        // Jobs whose linked posting changed this week
         prisma.job.findMany({
-          where: { userId, bluedoorChangedAt: { gte: sevenDaysAgo } },
-          select: { id: true, position: true, company: true, bluedoorStatus: true },
+          where: { userId, postingChangedAt: { gte: sevenDaysAgo } },
+          select: { id: true, position: true, company: true, postingChangeType: true },
         }),
         // Total tracked
         prisma.job.count({ where: { userId } }),
@@ -53,7 +53,7 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
       const postingChanges: DigestChange[] = changedJobs.map((j) => ({
         position: j.position,
         company: j.company,
-        changeType: j.bluedoorStatus === 'expired' ? 'posting_closed' : 'jd_changed',
+        changeType: isPostingChangeType(j.postingChangeType) ? j.postingChangeType : 'jd_changed',
       }));
 
       const digestApps = newApps.map((j) => ({
@@ -104,6 +104,10 @@ export async function sendAllWeeklyDigests(): Promise<{ sent: number; skipped: n
   }
 
   return { sent, skipped };
+}
+
+function isPostingChangeType(value: string | null): value is DigestChange['changeType'] {
+  return value === 'posting_closed' || value === 'jd_changed' || value === 'salary_added';
 }
 
 /** Fetch user email from DB by userId */

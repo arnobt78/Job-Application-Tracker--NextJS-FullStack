@@ -24,9 +24,9 @@ def make_request(**overrides) -> PipelineRequest:
         status="Pending",
         mode="Full-time",
         apply_url="https://stripe.com/jobs/123",
-        bluedoor_salary_min=180_000,
-        bluedoor_salary_max=250_000,
-        bluedoor_salary_currency="USD",
+        salary_min=180_000,
+        salary_max=250_000,
+        salary_currency="USD",
     )
     user = UserProfile(
         resume_summary="5 years Python + TypeScript, built payment infra at fintech startup.",

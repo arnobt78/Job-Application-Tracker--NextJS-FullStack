@@ -9,7 +9,7 @@
 
 ## Vision
 
-Transform Jobify from a manual job application tracker into a **full-stack intelligent job application OS** — combining live market data (Bluedoor API), AI-powered enrichment (local Ollama multi-agent pipeline), and n8n-style automation — while keeping users in control via human-in-the-loop review.
+Transform Jobify from a manual job application tracker into a **full-stack intelligent job application OS** — combining a built-in job postings catalog, AI-powered enrichment (local Ollama multi-agent pipeline), and n8n-style automation — while keeping users in control via human-in-the-loop review.
 
 **Core principle:** Jobify stays an **application CRM** at heart. AI and automation augment the tracker — they don't replace user judgment. `/discover` is a discovery add-on, not a replacement for manual tracking.
 
@@ -20,11 +20,11 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | Phase | Overall | Shipped in codebase | Remaining |
 | --- | --- | --- | --- |
 | **Core tracker** | ✅ Done | CRUD, filters, stats, export, auth, optimistic UI, SSE, **global timeline** | — |
-| **Phase 1 — Bluedoor** | ✅ Done | Enrichment, discover, facets, webhook, cron, bell, React Email, weekly digest, logos, Posting Activity, org enrich | — |
+| **Phase 1 — Postings catalog** | ✅ Done | Own Postgres catalog (replaced Bluedoor, whose API no longer exists), posting link + resync, discover, facets, `/api/postings`, cron, bell, React Email, weekly digest, Posting Activity | — |
 | **Stats overhaul** | ✅ Done | KPI row, 4 charts, weekly velocity query | — |
 | **Phase 2 — AI** | 🔄 ~95% | FastAPI + 9 agents + LLM router, DB persist, SSE streaming, profile UI, internal API, **ARQ queue**, batch AI, interview prep | Coolify deploy, prod LLM keys |
 | **Phase 2 — Infra** | ⚠️ Partial | `docker-compose.yml` (+ arq-worker), internal API, n8n JSON templates | Coolify, Ollama VPS, n8n instance |
-| **Testing / analytics** | ⚠️ Partial | Vitest **51**, Playwright E2E, PostHog (optional) | E2E CI wiring |
+| **Testing / analytics** | ✅ Done | Vitest **105**, pytest 26, Playwright (auth setup + console/network assertions), PostHog (optional) | E2E CI wiring |
 | **Phase 3** | ✅ ~95% | Fit chip, PDF parser, Skill Gap (+ LLM mode), Salary Intel, **team mode**, **browser extension**, **email inbound**, batch AI | Manual QA · extension store publish |
 
 ---
@@ -40,13 +40,13 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
         ┌────────────┼────────────────┐
         │            │                │
         ▼            ▼                ▼
-  PostgreSQL     Bluedoor API     Python AI API
-  (Prisma 6)   (free, no auth)   (FastAPI · not deployed)
-  JobAIInsight · UserProfile
-                     │                │
-               Enrichment       Ollama pipeline (9 agents)
+  PostgreSQL    Postings catalog  Python AI API
+  (Prisma 6)   (Company/JobPosting (FastAPI · Coolify)
+  JobAIInsight  /JobPostingEvent)
+  UserProfile        │                │
+               Posting link     Ollama pipeline (9 agents)
                Discover         n8n automation (planned)
-               Webhooks              │
+               Nightly resync        │
                           ┌──────────┴──────────┐
                           │   LLM Fallback Chain │
                           │  Ollama → Groq →    │
@@ -56,41 +56,40 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 
 ---
 
-## Phase 1 — Bluedoor Enrichment Layer ✅ COMPLETE
+## Phase 1 — Job Postings Catalog ✅ COMPLETE
 
-**Goal:** Enrich tracked applications + add job discovery. No separate backend service. Ships inside current Next.js codebase.
+**Goal:** Link tracked applications to postings + add job discovery. No separate backend service. Ships inside current Next.js codebase.
 
-### 1.1 Auto-Link Tracked Applications to Bluedoor ✅
+> Originally built on the Bluedoor Job Postings API. That API no longer exists, so Phase 1 now runs on the app's own Postgres catalog (ISSUE-0011 / ISSUE-0012).
+
+### 1.1 Auto-Link Tracked Applications to Postings ✅
 
 | Item | Status | Implementation |
 | --- | --- | --- |
-| Prisma `applyUrl` + 11 `bluedoor*` fields | ✅ | `prisma/schema.prisma` |
-| Bluedoor client | ✅ | `lib/bluedoor/client.ts` |
-| Match strategies (ATS → URL → fuzzy) | ✅ | `lib/bluedoor/enrich.ts` `findBluedoorMatch` |
-| Auto-enrich on create/update | ✅ | `after(() => enrichJob())` in `utils/actions.ts` |
-| Manual enrich action | ✅ | `enrichJobAction` |
+| Catalog tables | ✅ | `Company`, `JobPosting`, `JobPostingEvent` in `prisma/schema.prisma` |
+| Job snapshot columns | ✅ | `postingId` (FK, SetNull, unique per user) + status / workplace / salary / desc hash / change type |
+| Match strategies (URL → company + title) | ✅ | `lib/postings/link.ts` `linkJobToPosting` |
+| Auto-link on create/update/extension | ✅ | `after(() => linkJobToPosting())` |
 | `applyUrl` on Create/Edit forms | ✅ | `CreateJobForm`, `EditJobForm` |
+| Demo data | ✅ | `prisma/seed.ts` + `prisma/seed-data/` — 15 companies, 50 postings, events, demo jobs |
 
 **Join strategy (priority order):**
 
-1. ATS key from URL (`gh_jid=`, Lever UUID, Ashby card ID) → `provider` + `provider_job_key`
-2. `apply_url` / `source_url` search match
-3. Fuzzy: company + title + location
+1. Exact normalised apply URL (host + path, no query/hash)
+2. Same company name + title similarity (Jaccard) ≥ 0.5
 
 ### 1.2 Posting Status Monitoring ✅
 
 | Item | Status | Implementation |
 | --- | --- | --- |
-| Detect status / JD / salary changes | ✅ | `resyncJob` in `enrich.ts` |
-| Nightly batch poll | ✅ | `GET /api/cron/enrich` + `vercel.json` cron 03:00 UTC |
-| Inbound webhook handler | ✅ | `POST /api/bluedoor/webhook` (HMAC `BLUEDOOR_WEBHOOK_SECRET`) |
-| Auto-register Bluedoor subscriptions | ✅ | `registerBluedoorWebhook` on enrich → `bluedoorWebhookSubId`; `unregisterBluedoorWebhook` on delete |
+| Detect status / JD / salary changes | ✅ | `resyncJob` + `diffSnapshot` in `lib/postings/link.ts` |
+| Nightly batch resync | ✅ | `GET /api/cron/enrich` + `vercel.json` cron 03:00 UTC (fails closed without `CRON_SECRET`) |
 | In-app notification bell | ✅ | SSE + `NotificationsProvider` + `NotificationBell` |
 | Per-change email (Resend) | ✅ | `lib/notifications/email.ts` — React Email JSX templates |
 | Weekly email digest | ✅ | `GET /api/cron/weekly-digest` — Sunday 09:00 UTC + `WeeklyDigestEmail` |
 | React Email JSX templates | ✅ | `lib/notifications/templates/*` — PostingClosed, JdChanged, SalaryAdded, WeeklyDigest |
 
-**UI badges:** `JobEnrichmentBadge` — LIVE · CLOSED · JD CHANGED · SALARY · Syncing
+**UI badges:** `JobEnrichmentBadge` — Live · Closed · JD Changed · Salary Added
 
 ### 1.3 Job Discovery Mode ✅
 
@@ -98,12 +97,12 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 | --- | --- | --- |
 | `/discover` route | ✅ | `app/(dashboard)/discover/page.tsx` |
 | Glass filter bar (dashboard parity) | ✅ | `DiscoverFilters` + `DiscoverFilterSection` |
-| Search via Server Action | ✅ | `searchBluedoorJobsAction` (not separate API route) |
-| Cursor infinite scroll | ✅ | `useInfiniteQuery` + `buildDiscoverQueryOptions` + Load More |
-| Track Application | ✅ | `useCreateJobMutation` → instant dashboard invalidation |
-| View Details modal | ✅ | `DiscoverJobDetailsModal` + `getBluedoorJobDetailsAction` |
+| Search via Server Action | ✅ | `searchPostingsAction` (+ `GET /api/postings` read API) |
+| Keyset infinite scroll | ✅ | `useInfiniteQuery` + `buildDiscoverQueryOptions` + Load More |
+| Track Application | ✅ | `useTrackDiscoverJobMutation` → `trackJobFromDiscoverAction(postingId)` |
+| View Details modal | ✅ | `DiscoverJobDetailsModal` + `getPostingDetailsAction` |
 | Static card shell skeletons | ✅ | `DiscoverCardShellGrid` |
-| Live facet counts | ✅ | `getDiscoverFacets` + `queryKeys.discover.facets` — sidebar + mobile filters |
+| Live facet counts | ✅ | `getPostingFacets` (groupBy) + `queryKeys.discover.facets` — sidebar + mobile filters |
 | Two-panel facet sidebar | ✅ | `DiscoverSidebar` sticky left rail on `lg+`; mobile uses top filter bar |
 | Company logos | ✅ | `CompanyLogo` — Google s2 favicons + Building2 fallback on `JobCard` + discover cards |
 
@@ -123,14 +122,14 @@ Transform Jobify from a manual job application tracker into a **full-stack intel
 
 | Item | Status | Implementation |
 | --- | --- | --- |
-| Bluedoor events client | ✅ | `getJobEvents()` in `lib/bluedoor/client.ts` |
-| Server Action | ✅ | `getBluedoorJobEventsAction` in `utils/actions.ts` |
+| Events source | ✅ | `JobPostingEvent` rows via `getPostingEvents()` in `lib/postings/queries.ts` |
+| Server Action | ✅ | `getPostingEventsAction` in `utils/actions.ts` |
 | Timeline UI | ✅ | `components/jobs/posting-activity-tab.tsx` |
 | Tabbed panels on `/dashboard/[id]` | ✅ | `JobDetailPanels` — AI Insights + Posting Activity |
-| Query key | ✅ | `queryKeys.discover.events(bluedoorJobId)` — on-demand, not persisted |
-| Enabled when | — | Tab disabled until `bluedoorJobId` is set (job enriched) |
+| Query key | ✅ | `queryKeys.discover.events(postingId)` — on-demand, not persisted |
+| Enabled when | — | Tab disabled until `postingId` is set (job linked) |
 
-Events shown: `job.created` · `job.updated` · `job.closed` · `job.reopened` with icons and timestamps.
+Events shown: `created` · `updated` (salary / description / title / workplace) · `closed` · `reopened` with icons and timestamps.
 
 ### 1.6 Global Activity Timeline ✅
 
@@ -153,7 +152,7 @@ app/
     profile/page.tsx              # UserProfile settings
     timeline/page.tsx             # global activity feed
   api/
-    bluedoor/webhook/route.ts
+    postings/route.ts, facets/, [id]/, [id]/events/
     cron/enrich/route.ts
     cron/weekly-digest/route.ts
     jobs/events/route.ts
@@ -174,7 +173,7 @@ docs/n8n/                                  # workflow JSON templates (not deploy
 tests/e2e/                                 # Playwright specs
 ```
 
-> **Note:** Original plan listed `app/api/bluedoor/search` and `enrich` routes. **Actual architecture** uses Server Actions in `utils/actions.ts` — simpler, type-safe, consistent with the rest of the app.
+> **Note:** The UI uses Server Actions in `utils/actions.ts`; `/api/postings*` exposes the same reads (same zod schemas) for external callers.
 
 ### 1.8 Phase 1 Optional / Deferred
 
@@ -266,7 +265,7 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | --- | --- | --- |
 | Daily Job Digest | Cron 8am | ⚠️ `docs/n8n/daily-digest.json` |
 | Stale App Alert | Cron weekly | ⚠️ `docs/n8n/stale-app-alert.json` |
-| Posting Change Webhook | Bluedoor event | ⚠️ `docs/n8n/posting-change-webhook.json` |
+| Posting Change Alert | Nightly posting resync | ✅ bell + email from `resyncJob` (no external webhook needed) |
 | Enrichment Sync | Cron nightly | ✅ Vercel cron `/api/cron/enrich` |
 | Weekly Analytics Digest | Cron Sunday | ✅ Vercel cron `/api/cron/weekly-digest` |
 | Cover Letter Generator | User trigger | ✅ AiInsightsPanel + streaming + DB persist |
@@ -317,7 +316,7 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | Auto-apply email inbound | ✅ | `inboundEmailAddress` on `UserProfile` · `EmailInboundSetup` on `/profile` |
 | Batch AI analysis | ✅ | `useAIBatch` · ARQ worker · `POST /api/internal/ai-complete` callback |
 | Interview prep on status change | ✅ | `triggerInterviewPrepAction` · `interview_prep_ready` bell notification |
-| Company intelligence on cards | ✅ | `companySize` from `getBluedoorOrg` on `JobCard` |
+| Company intelligence on cards | ✅ | `companySize` copied from the linked posting's `Company` on `JobCard` |
 
 ---
 
@@ -326,7 +325,7 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 | Screen / Feature | Vision | Current |
 | --- | --- | --- |
 | `/discover` | Two-panel + facet sidebar + infinite scroll | ✅ Sidebar lg+ · ✅ facet counts · ✅ infinite scroll |
-| `/dashboard` cards | Bluedoor badge + AI fit chip | ✅ Badge + CompanyLogo + **AIFitChip** + companySize |
+| `/dashboard` cards | Posting badge + AI fit chip | ✅ Badge + CompanyLogo + **AIFitChip** + companySize |
 | `/dashboard/[id]` | AI Insights + Posting Activity + Skill Gap | ✅ `JobDetailPanels` — 3 tabs |
 | `/profile` | Skills + resume PDF + extension + batch AI + email inbound | ✅ `UserProfileForm` + `ResumeUpload` + `ExtensionConnect` + `BatchAnalysisTrigger` |
 | `/team` | Shared job tracking + invite members | ✅ `TeamDashboard` · `InviteMemberForm` |
@@ -340,13 +339,12 @@ Ollama (llama3.2:8b, mistral:7b, gemma2:9b, phi3:3.8b, llama3.2:3b)
 ## Data Flow Summary
 
 ```bash
-User adds job with applyUrl
-  → after() enrichJob → store bluedoorJobId + bluedoorWebhookSubId
-  → registerBluedoorWebhook (when NEXT_PUBLIC_APP_URL set)
+User adds job (applyUrl optional)
+  → after() linkJobToPosting → store postingId + posting snapshot
   → invalidateUserJobCaches → SSE → badge on card
 
-Bluedoor webhook OR nightly cron
-  → resyncJob → detect changes
+Nightly cron (/api/cron/enrich)
+  → resyncJob → diffSnapshot → posting_closed | salary_added | jd_changed
   → publishNotification (bell) + sendPostingChangeEmail (React Email via Resend)
   → invalidateAllJobQueries
 
@@ -375,22 +373,21 @@ n8n (planned)
 
 ### Phase 1
 
-1. ✅ Prisma schema additions (bluedoor fields)
-2. ✅ Bluedoor API client (`lib/bluedoor/client.ts`)
-3. ✅ Enrichment via Server Actions + `after()` hook
-4. ✅ Bluedoor webhook handler (inbound)
+1. ✅ Prisma catalog: `Company` / `JobPosting` / `JobPostingEvent` + Job snapshot columns + missing FKs
+2. ✅ Catalog reads + read API (`lib/postings/*`, `/api/postings*`) + deterministic seed
+3. ✅ Posting link via Server Actions + `after()` hook
+4. ✅ Bluedoor removed (API no longer exists) — webhook route, client and columns deleted
 5. ✅ Dashboard job card status badges
 6. ✅ `/discover` — search, infinite scroll, Details modal, Track Application
 7. ✅ Resend email alerts — React Email templates (PostingClosed, JdChanged, SalaryAdded, WeeklyDigest)
-8. ✅ Vercel cron nightly enrichment sync
+8. ✅ Vercel cron nightly posting resync
 9. ✅ SSE notification bell (BroadcastChannel relay, NotificationsProvider)
 10. ✅ `publishNotification` wired in `resyncJob`
 11. ✅ Discover + Stats UI overhaul (glass filters, card shells, 4 charts, KPIs)
-12. ✅ Posting Activity tab (`getJobEvents` + `PostingActivityTab` + `JobDetailPanels`)
-13. ✅ Bluedoor facet API — live counts in `DiscoverFilters`
-14. ✅ Auto webhook subscription registration + unsubscribe on delete
-15. ✅ Weekly email digest cron (`/api/cron/weekly-digest`)
-16. ✅ Company logos (`CompanyLogo` — Google s2 favicons)
+12. ✅ Posting Activity tab (`getPostingEvents` + `PostingActivityTab` + `JobDetailPanels`)
+13. ✅ Facet counts (`groupBy`) — live counts in `DiscoverFilters`
+14. ✅ Weekly email digest cron (`/api/cron/weekly-digest`)
+15. ✅ Company logos (`CompanyLogo` — Google s2 favicons)
 
 ### Phase 2
 
@@ -418,7 +415,7 @@ n8n (planned)
 
 ## Constraints
 
-- **All free tier** — Bluedoor, Groq, OpenRouter free models, Resend 3k/mo, n8n self-hosted, Ollama self-hosted
+- **All free tier** — own postings catalog, Groq, OpenRouter free models, Resend 3k/mo, n8n self-hosted, Ollama self-hosted
 - **Solo dev** — no over-engineering, no premature microservices
 - **Human-in-the-loop** — AI suggests, user approves. No autonomous apply
 - **Privacy** — Ollama local = default private path; cloud LLMs are explicit fallback

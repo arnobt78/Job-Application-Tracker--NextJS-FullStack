@@ -8,7 +8,7 @@ import {
   trackJobFromDiscoverAction,
   updateJobAction,
 } from '@/utils/actions';
-import { JobStatus, JobMode, type CreateAndEditJobType, type JobType } from '@/utils/types';
+import type { CreateAndEditJobType, JobType } from '@/utils/types';
 import { queryKeys } from '@/lib/query-keys';
 import { invalidateAllJobQueries } from '@/lib/invalidate-jobs';
 import {
@@ -40,10 +40,8 @@ import {
   applyStatsUpdate,
   type StatsCache,
 } from '@/lib/jobs/stats-optimistic';
-import {
-  resolveDiscoverCompanyName,
-  type DiscoverTrackPayload,
-} from '@/lib/discover/track-helpers';
+import { toTrackValues } from '@/lib/discover/track-helpers';
+import type { DiscoverPosting } from '@/lib/postings/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { DEFAULT_JOBS_LIST_FILTERS } from '@/lib/jobs/filter-types';
@@ -194,7 +192,7 @@ export function useCreateJobMutation() {
 }
 
 /**
- * Track a Bluedoor posting from /discover — pre-seeds enrichment + idempotent by bluedoorJobId.
+ * Track a catalog posting from /discover — server writes the posting snapshot; idempotent by postingId.
  * Shares optimistic invalidation pattern with useCreateJobMutation.
  *
  * Idempotent path (same posting re-tracked):
@@ -207,20 +205,13 @@ export function useTrackDiscoverJobMutation() {
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
-    mutationFn: async (payload: DiscoverTrackPayload) => {
-      const result = await trackJobFromDiscoverAction(payload);
+    mutationFn: async (posting: DiscoverPosting) => {
+      const result = await trackJobFromDiscoverAction(posting.id);
       if (!result.success) throw new Error(result.error || 'Could not track application');
       return { job: result.job, alreadyTracked: result.alreadyTracked ?? false };
     },
-    onMutate: async (payload) => {
-      const values: CreateAndEditJobType = {
-        position: payload.title,
-        company: resolveDiscoverCompanyName(payload.orgId, payload.applyUrl),
-        location: payload.locationText ?? payload.country ?? 'Unknown',
-        status: JobStatus.Pending,
-        mode: JobMode.FullTime,
-        applyUrl: payload.applyUrl,
-      };
+    onMutate: async (posting) => {
+      const values: CreateAndEditJobType = toTrackValues(posting);
 
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
       await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
@@ -243,7 +234,13 @@ export function useTrackDiscoverJobMutation() {
         updatedAt: now,
         userId: '',
         ...values,
-        bluedoorJobId: payload.jobId,
+        postingId: posting.id,
+        postingStatus: posting.status,
+        workplaceType: posting.workplaceType,
+        salaryMin: posting.salaryMin,
+        salaryMax: posting.salaryMax,
+        salaryCurrency: posting.salaryCurrency,
+        postingSyncedAt: now,
       };
 
       optimisticPrependJobList(queryClient, optimisticJob);
@@ -258,7 +255,7 @@ export function useTrackDiscoverJobMutation() {
 
       return { previousJobs, previousStats, previousCharts, values };
     },
-    onError: (err, payload, context) => {
+    onError: (err, posting, context) => {
       context?.previousJobs.forEach(([key, data]) => {
         queryClient.setQueryData(key, data);
       });
@@ -270,11 +267,7 @@ export function useTrackDiscoverJobMutation() {
       }
       const detail =
         err instanceof Error && err.message ? err.message : undefined;
-      notifyJobCreateError(
-        payload.title,
-        context?.values.company ?? payload.orgId,
-        detail
-      );
+      notifyJobCreateError(posting.title, posting.companyName, detail);
     },
     onSuccess: ({ job, alreadyTracked }, _payload, context) => {
       if (alreadyTracked) {

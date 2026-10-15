@@ -23,22 +23,22 @@ describe('list-cache', () => {
       page: 1,
       totalPages: 1,
     };
-    const created = { ...baseJob('real-1'), bluedoorJobId: 'bd-1' };
+    const created = { ...baseJob('real-1'), postingId: 'posting-1' };
     const next = mergeJobIntoListResult(old, created);
     expect(next.jobs).toHaveLength(1);
     expect(next.jobs[0].id).toBe('real-1');
     expect(next.count).toBe(1);
   });
 
-  it('does not duplicate by bluedoorJobId', () => {
-    const existing = { ...baseJob('j1'), bluedoorJobId: 'bd-1' };
+  it('does not duplicate by postingId', () => {
+    const existing = { ...baseJob('j1'), postingId: 'posting-1' };
     const old: JobsListResult = {
       jobs: [existing],
       count: 1,
       page: 1,
       totalPages: 1,
     };
-    const next = mergeJobIntoListResult(old, { ...baseJob('j2'), bluedoorJobId: 'bd-1' });
+    const next = mergeJobIntoListResult(old, { ...baseJob('j2'), postingId: 'posting-1' });
     expect(next.jobs).toHaveLength(1);
   });
 });

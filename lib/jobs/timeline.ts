@@ -3,8 +3,8 @@
  *
  * Event sources (all derivable from current schema without a history table):
  *   job_created      — Job.createdAt (always present)
- *   enriched         — Job.bluedoorSyncedAt (Bluedoor first matched this posting)
- *   posting_changed  — Job.bluedoorChangedAt (JD edit, status flip, salary added)
+ *   enriched         — Job.postingSyncedAt (job linked to a catalog posting)
+ *   posting_changed  — Job.postingChangedAt (JD edit, posting closed, salary added)
  *   ai_generated     — JobAIInsight.generatedAt (user ran AI pipeline on this job)
  *
  * Result sorted desc by timestamp, capped at 100 events.
@@ -25,9 +25,10 @@ async function buildTimelineEvents(userId: string): Promise<TimelineEvent[]> {
       company: true,
       status: true,
       createdAt: true,
-      bluedoorSyncedAt: true,
-      bluedoorChangedAt: true,
-      bluedoorStatus: true,
+      postingSyncedAt: true,
+      postingChangedAt: true,
+      postingStatus: true,
+      postingChangeType: true,
       aiInsight: {
         select: { generatedAt: true },
       },
@@ -40,7 +41,6 @@ async function buildTimelineEvents(userId: string): Promise<TimelineEvent[]> {
   const events: TimelineEvent[] = [];
 
   for (const job of jobs) {
-    // job_created — always present
     events.push({
       id: `${job.id}:job_created`,
       type: 'job_created',
@@ -51,33 +51,30 @@ async function buildTimelineEvents(userId: string): Promise<TimelineEvent[]> {
       timestamp: job.createdAt,
     });
 
-    // enriched — Bluedoor matched and fetched posting data
-    if (job.bluedoorSyncedAt) {
+    if (job.postingSyncedAt) {
       events.push({
         id: `${job.id}:enriched`,
         type: 'enriched',
         jobId: job.id,
         position: job.position,
         company: job.company,
-        detail: job.bluedoorStatus ?? 'active',
-        timestamp: job.bluedoorSyncedAt,
+        detail: job.postingStatus ?? 'open',
+        timestamp: job.postingSyncedAt,
       });
     }
 
-    // posting_changed — JD edit, status change, or salary added
-    if (job.bluedoorChangedAt) {
+    if (job.postingChangedAt) {
       events.push({
         id: `${job.id}:posting_changed`,
         type: 'posting_changed',
         jobId: job.id,
         position: job.position,
         company: job.company,
-        detail: job.bluedoorStatus ?? null,
-        timestamp: job.bluedoorChangedAt,
+        detail: job.postingChangeType ?? job.postingStatus ?? null,
+        timestamp: job.postingChangedAt,
       });
     }
 
-    // ai_generated — user ran AI insights on this job
     if (job.aiInsight) {
       events.push({
         id: `${job.id}:ai_generated`,
@@ -91,7 +88,6 @@ async function buildTimelineEvents(userId: string): Promise<TimelineEvent[]> {
     }
   }
 
-  // Sort descending by timestamp, cap at 100
   return events
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     .slice(0, 100);

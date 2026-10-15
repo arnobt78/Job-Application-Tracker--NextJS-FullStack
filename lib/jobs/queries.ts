@@ -336,7 +336,7 @@ export async function getCachedWeeklyCharts(
   )();
 }
 
-/** Salary intelligence — aggregated from Bluedoor-enriched jobs; null when no job has salary data yet */
+/** Salary intelligence — aggregated from posting-linked jobs; null when no job has salary data yet */
 export async function getCachedSalaryIntel(
   userId: string
 ): Promise<SalaryIntelResult | null> {
@@ -352,15 +352,15 @@ export async function getCachedSalaryIntel(
           where: {
             userId,
             OR: [
-              { bluedoorSalaryMin: { not: null } },
-              { bluedoorSalaryMax: { not: null } },
+              { salaryMin: { not: null } },
+              { salaryMax: { not: null } },
             ],
           },
           select: {
             position: true,
-            bluedoorSalaryMin: true,
-            bluedoorSalaryMax: true,
-            bluedoorSalaryCurrency: true,
+            salaryMin: true,
+            salaryMax: true,
+            salaryCurrency: true,
           },
         }),
       ]);
@@ -372,9 +372,9 @@ export async function getCachedSalaryIntel(
       const currencyMap: Record<string, number> = {};
 
       for (const j of jobsWithSalary) {
-        if (j.bluedoorSalaryMin != null) { sumMin += j.bluedoorSalaryMin; minCount++; }
-        if (j.bluedoorSalaryMax != null) { sumMax += j.bluedoorSalaryMax; maxCount++; }
-        const cur = j.bluedoorSalaryCurrency ?? 'USD';
+        if (j.salaryMin != null) { sumMin += j.salaryMin; minCount++; }
+        if (j.salaryMax != null) { sumMax += j.salaryMax; maxCount++; }
+        const cur = j.salaryCurrency ?? 'USD';
         currencyMap[cur] = (currencyMap[cur] ?? 0) + 1;
       }
 
@@ -388,8 +388,8 @@ export async function getCachedSalaryIntel(
       for (const j of jobsWithSalary) {
         const role = j.position.split(/\s+/).slice(0, 3).join(' ');
         if (!roleMap[role]) roleMap[role] = { sumMin: 0, sumMax: 0, minC: 0, maxC: 0 };
-        if (j.bluedoorSalaryMin != null) { roleMap[role].sumMin += j.bluedoorSalaryMin; roleMap[role].minC++; }
-        if (j.bluedoorSalaryMax != null) { roleMap[role].sumMax += j.bluedoorSalaryMax; roleMap[role].maxC++; }
+        if (j.salaryMin != null) { roleMap[role].sumMin += j.salaryMin; roleMap[role].minC++; }
+        if (j.salaryMax != null) { roleMap[role].sumMax += j.salaryMax; roleMap[role].maxC++; }
       }
 
       const byRole = Object.entries(roleMap)

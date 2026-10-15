@@ -23,7 +23,7 @@ const ignoreErrors: Array<string | RegExp> = [
 
 /**
  * Browser-only: user-side network drops, navigation aborts, stale-deploy chunks.
- * Kept off server/edge so real upstream timeouts (e.g. Bluedoor AbortController) still report.
+ * Kept off server/edge so real upstream timeouts (e.g. AI service AbortSignal) still report.
  */
 const clientOnlyIgnoreErrors: Array<string | RegExp> = [
   'AbortError',

@@ -1,46 +1,64 @@
-import { test, expect } from '@playwright/test';
+import { test as publicTest, expect as publicExpect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /**
- * Discover page smoke tests.
- *
- * Unauthenticated: must redirect to /sign-in.
- * Authenticated:   verify sidebar visible on desktop, results container present.
- *
- * Sidebar is hidden below 1024px (lg breakpoint) — this test uses default
- * Desktop Chrome viewport (1280×720) so it should be visible.
+ * Discover — catalog postings seeded by prisma/seed.ts
+ * (40 open: 30 United States + 10 Canada; first page holds 20).
  */
-test.describe('discover (unauthenticated)', () => {
-  test('redirects to /sign-in without session', async ({ page }) => {
+publicTest.describe('discover (unauthenticated)', () => {
+  publicTest('redirects to /sign-in without session', async ({ page }) => {
     await page.goto('/discover', { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/\/sign-in/, { timeout: 8_000 });
+    await publicExpect(page).toHaveURL(/\/sign-in/, { timeout: 8_000 });
+  });
+
+  publicTest('postings API rejects anonymous requests', async ({ request }) => {
+    const res = await request.get('/api/postings');
+    publicExpect(res.status()).toBe(401);
   });
 });
 
-test.describe('discover page structure', () => {
-  test.skip(
-    !process.env.E2E_SKIP_AUTH,
-    'Requires authenticated NextAuth session'
-  );
-
-  test('page loads without 500', async ({ page }) => {
-    const res = await page.goto('/discover', { waitUntil: 'domcontentloaded' });
-    expect(res?.status()).not.toBe(500);
+test.describe('discover (authenticated)', () => {
+  test('lists open US postings with the real total', async ({ page }) => {
+    await page.goto('/discover');
+    await expect(page.getByRole('heading', { name: 'Open Postings' })).toBeVisible();
+    await expect(page.getByText('Showing 20 of 30 jobs')).toBeVisible({ timeout: 15_000 });
   });
 
-  test('sidebar is visible on desktop viewport (lg+)', async ({ page }) => {
-    // Default viewport is 1280×720 — sidebar shows at lg (1024px+)
-    await page.goto('/discover');
-    // DiscoverSidebar renders as <aside> element
-    const sidebar = page.locator('aside').first();
-    await expect(sidebar).toBeVisible({ timeout: 10_000 });
+  test('country filter switches to Canadian postings', async ({ page }) => {
+    await page.goto('/discover?country=Canada');
+    await expect(page.getByText('Showing 10 of 10 jobs')).toBeVisible({ timeout: 15_000 });
   });
 
-  test('mobile filter section hidden on desktop', async ({ page }) => {
-    await page.goto('/discover');
-    // The .lg:hidden GlassCard is still in DOM but not visible at 1280px
-    // It has lg:hidden on the outer GlassCard — Tailwind adds display:none
-    const mobileFilters = page.locator('[class*="lg:hidden"]').first();
-    // May be not visible (CSS hidden) — this just verifies it exists in DOM
-    expect(await mobileFilters.count()).toBeGreaterThanOrEqual(0);
+  test('text search matches company names', async ({ page }) => {
+    await page.goto('/discover?q=Northwind');
+    await expect(page.getByText(/Showing \d+ of \d+ jobs/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('Northwind Labs').first()).toBeVisible();
+  });
+
+  test('postings API paginates with a keyset cursor', async ({ page }) => {
+    const first = await page.request.get('/api/postings?limit=5');
+    expect(first.status()).toBe(200);
+    const body = await first.json();
+    expect(body.data).toHaveLength(5);
+    // The API has no default country (the UI defaults to United States)
+    expect(body.meta.total).toBe(40);
+    expect(body.meta.nextCursor).toBeTruthy();
+
+    const next = await page.request.get(`/api/postings?limit=5&cursor=${body.meta.nextCursor}`);
+    const nextBody = await next.json();
+    expect(nextBody.data[0].id).toBe(body.meta.nextCursor);
+
+    const bad = await page.request.get('/api/postings?employmentType=gig');
+    expect(bad.status()).toBe(400);
+  });
+
+  test('posting detail and events endpoints', async ({ page }) => {
+    const detail = await page.request.get('/api/postings/pst_001');
+    expect(detail.status()).toBe(200);
+    expect((await detail.json()).description).toContain('What you will do');
+
+    const events = await page.request.get('/api/postings/pst_001/events');
+    const types = (await events.json()).data.map((e: { type: string }) => e.type);
+    expect(types).toContain('created');
   });
 });

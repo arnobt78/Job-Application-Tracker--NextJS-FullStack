@@ -28,8 +28,9 @@ import {
   EMPLOYMENT_OPTIONS,
   SALARY_OPTIONS,
   COUNTRY_OPTIONS,
+  toFacetCounts,
 } from './discover-filters';
-import type { DiscoverFacets } from '@/lib/bluedoor/types';
+import { DEFAULT_DISCOVER_COUNTRY } from '@/lib/discover/query-options';
 
 // ─────────────────────────────────────────────
 // Inline radio group section
@@ -119,12 +120,6 @@ function Divider() {
   return <div className="my-3 h-px bg-glass-border" />;
 }
 
-function toFacetCounts(
-  items: DiscoverFacets['workplace_type']
-): Record<string, number> {
-  return Object.fromEntries(items.map((f) => [f.value, f.count]));
-}
-
 // ─────────────────────────────────────────────
 // Sidebar component
 // ─────────────────────────────────────────────
@@ -141,14 +136,14 @@ export function DiscoverSidebar({ className }: DiscoverSidebarProps) {
 
   const q = searchParams.get('q') ?? '';
   const [searchValue, setSearchValue] = useState(q);
-  const country = searchParams.get('country') ?? 'United States';
+  const country = searchParams.get('country') ?? DEFAULT_DISCOVER_COUNTRY;
   const workplaceType = searchParams.get('workplaceType') ?? 'all';
   const employmentType = searchParams.get('employmentType') ?? 'all';
   const salaryExists = searchParams.get('salaryExists') ?? 'all';
 
   const hasFilters =
     !!q ||
-    (!!country && country !== 'United States') ||
+    (!!country && country !== DEFAULT_DISCOVER_COUNTRY) ||
     (!!workplaceType && workplaceType !== 'all') ||
     (!!employmentType && employmentType !== 'all') ||
     (!!salaryExists && salaryExists !== 'all');
@@ -156,8 +151,8 @@ export function DiscoverSidebar({ className }: DiscoverSidebarProps) {
   // Facet counts — same key as DiscoverFilters; hits SSR cache first
   const { data: facets } = useDiscoverFacets(q, country);
 
-  const workplaceCounts = facets ? toFacetCounts(facets.workplace_type) : undefined;
-  const employmentCounts = facets ? toFacetCounts(facets.employment_type) : undefined;
+  const workplaceCounts = facets ? toFacetCounts(facets.workplaceType) : undefined;
+  const employmentCounts = facets ? toFacetCounts(facets.employmentType) : undefined;
 
   const updateParam = useCallback(
     (key: string, value: string) => {

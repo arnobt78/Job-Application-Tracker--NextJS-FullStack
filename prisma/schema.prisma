@@ -27,6 +27,8 @@ model User {
   accounts        Account[]
   sessions        Session[]
   jobs            Job[]
+  aiInsights      JobAIInsight[]
+  profile         UserProfile?
   // Team mode — user may own teams and be a member of teams
   ownedTeams      Team[]       @relation("TeamOwner")
   teamMemberships TeamMember[]
@@ -86,24 +88,24 @@ model Job {
   status    String // pending | interview | declined
   mode      String // full-time | part-time | internship
 
-  // URL user applied through — primary key for Bluedoor enrichment join
+  // URL user applied through — matched against JobPosting.applyUrl when linking
   applyUrl  String? @map("apply_url")
 
-  // Bluedoor live-posting enrichment fields — all optional, populated by enrich.ts
-  bluedoorJobId         String?   @map("bluedoor_job_id")
-  bluedoorOrgId         String?   @map("bluedoor_org_id")
-  bluedoorProvider      String?   @map("bluedoor_provider") // greenhouse | lever | ashby | workday
-  bluedoorStatus        String?   @map("bluedoor_status")   // active | expired | unknown
-  bluedoorWorkplaceType String?   @map("bluedoor_workplace_type") // remote | hybrid | on_site
-  bluedoorSalaryMin     Float?    @map("bluedoor_salary_min")
-  bluedoorSalaryMax     Float?    @map("bluedoor_salary_max")
-  bluedoorSalaryCurrency String?  @map("bluedoor_salary_currency")
-  bluedoorDescHash      String?   @map("bluedoor_desc_hash")   // SHA-256 of description — detects JD edits
-  bluedoorSyncedAt      DateTime? @map("bluedoor_synced_at")   // last successful Bluedoor fetch
-  bluedoorChangedAt     DateTime? @map("bluedoor_changed_at")  // when Bluedoor last reported a change
-  bluedoorWebhookSubId  String?   @map("bluedoor_webhook_sub_id") // Bluedoor webhook subscription ID for unsubscribe on delete
+  // Linked posting from our own catalog — null when no match; posting deletion keeps the job
+  postingId String? @map("posting_id")
 
-  // Company/org-level data from Bluedoor /v1/orgs/{org_id} — optional, populated after job match
+  // Snapshot of the linked posting at last sync — diffed by resyncJob to detect changes
+  postingStatus   String?   @map("posting_status")    // open | closed
+  workplaceType   String?   @map("workplace_type")    // remote | hybrid | on_site
+  salaryMin       Int?      @map("salary_min")
+  salaryMax       Int?      @map("salary_max")
+  salaryCurrency  String?   @map("salary_currency")
+  postingDescHash String?   @map("posting_desc_hash") // posting.contentHash at last sync
+  postingSyncedAt DateTime? @map("posting_synced_at")
+  postingChangedAt DateTime? @map("posting_changed_at") // when a change was last detected
+  postingChangeType String?  @map("posting_change_type") // posting_closed | jd_changed | salary_added
+
+  // Company data copied from the linked posting's Company
   companySize      String? @map("company_size")      // e.g. "51-200", "1001-5000"
   companyIndustry  String? @map("company_industry")  // e.g. "Software Development"
   companyHq        String? @map("company_hq")        // e.g. "San Francisco, CA"
@@ -114,13 +116,86 @@ model Job {
   aiInsight    JobAIInsight?
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   team         Team?         @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  posting      JobPosting?   @relation(fields: [postingId], references: [id], onDelete: SetNull)
 
+  @@unique([userId, postingId])
   @@index([userId])
   @@index([userId, status])
   @@index([userId, createdAt(sort: Desc)])
-  // Index for nightly cron: find all jobs with a Bluedoor link across all users
-  @@index([bluedoorJobId])
+  @@index([postingId])
   @@index([teamId])
+}
+
+// ─── Job postings catalog (Discover) ──────────────────────────────────────────
+
+/// Hiring company behind one or more postings.
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  domain    String?                              // e.g. "stripe.com" — used for the logo favicon
+  size      String?                              // e.g. "51-200"
+  industry  String?
+  hq        String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  postings JobPosting[]
+
+  @@map("companies")
+}
+
+/// Public job posting listed on /discover and linked to tracked jobs.
+model JobPosting {
+  id             String    @id @default(cuid())
+  companyId      String    @map("company_id")
+  title          String
+  department     String?
+  description    String    @db.Text
+  locationText   String    @map("location_text")
+  city           String?
+  region         String?
+  country        String
+  workplaceType  String    @map("workplace_type")   // remote | hybrid | on_site
+  employmentType String    @map("employment_type")  // full_time | part_time | contract | temporary | internship
+  salaryMin      Int?      @map("salary_min")
+  salaryMax      Int?      @map("salary_max")
+  salaryCurrency String?   @map("salary_currency")
+  salaryPeriod   String?   @map("salary_period")    // year | hour
+  applyUrl       String    @unique @map("apply_url")
+  status         String    @default("open")         // open | closed
+  contentHash    String    @map("content_hash")     // SHA-256 of description — detects JD edits
+  postedAt       DateTime  @default(now()) @map("posted_at")
+  closedAt       DateTime? @map("closed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  events      JobPostingEvent[]
+  trackedJobs Job[]
+
+  @@index([status, postedAt(sort: Desc), id])
+  @@index([country, status])
+  @@index([workplaceType])
+  @@index([employmentType])
+  @@index([companyId])
+  @@map("job_postings")
+}
+
+/// Lifecycle history of a posting — shown in the job "Activity" tab.
+model JobPostingEvent {
+  id         String   @id @default(cuid())
+  postingId  String   @map("posting_id")
+  type       String                                // created | updated | closed | reopened
+  fieldName  String?  @map("field_name")           // salary | description | title | workplace_type
+  oldValue   Json?    @map("old_value")
+  newValue   Json?    @map("new_value")
+  observedAt DateTime @default(now()) @map("observed_at")
+
+  posting JobPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+
+  @@index([postingId, observedAt(sort: Desc)])
+  @@map("job_posting_events")
 }
 
 /// AI pipeline insight — persisted after the first pipeline run to avoid redundant LLM calls.
@@ -138,6 +213,7 @@ model JobAIInsight {
   generatedAt     DateTime @default(now())
   updatedAt       DateTime @updatedAt
   job             Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -157,6 +233,8 @@ model UserProfile {
   inboundEmailAddress String? @unique @map("inbound_email_address")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ─── P5: Team Mode ─────────────────────────────────────────────────────────────
@@ -169,7 +247,7 @@ model Team {
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
 
-  owner   User         @relation("TeamOwner", fields: [ownerId], references: [id])
+  owner   User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members TeamMember[]
   jobs    Job[]
 

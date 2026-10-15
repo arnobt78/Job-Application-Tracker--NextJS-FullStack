@@ -16,11 +16,11 @@ export const PIPELINE_JOB_SELECT = {
   status: true,
   mode: true,
   applyUrl: true,
-  bluedoorStatus: true,
-  bluedoorWorkplaceType: true,
-  bluedoorSalaryMin: true,
-  bluedoorSalaryMax: true,
-  bluedoorSalaryCurrency: true,
+  postingStatus: true,
+  workplaceType: true,
+  salaryMin: true,
+  salaryMax: true,
+  salaryCurrency: true,
 } satisfies Prisma.JobSelect;
 
 /** Signed-in user's AI profile; empty fields when no UserProfile row exists yet. */

@@ -29,11 +29,11 @@ def extract(request: PipelineRequest) -> ExtractedData:
     user = request.user
 
     salary_range: str | None = None
-    if job.bluedoor_salary_min is not None and job.bluedoor_salary_max is not None:
-        curr = job.bluedoor_salary_currency or "USD"
-        salary_range = f"{curr} {int(job.bluedoor_salary_min):,} – {int(job.bluedoor_salary_max):,}"
-    elif job.bluedoor_salary_min is not None:
-        salary_range = f"{int(job.bluedoor_salary_min):,}+"
+    if job.salary_min is not None and job.salary_max is not None:
+        curr = job.salary_currency or "USD"
+        salary_range = f"{curr} {int(job.salary_min):,} – {int(job.salary_max):,}"
+    elif job.salary_min is not None:
+        salary_range = f"{int(job.salary_min):,}+"
 
     return ExtractedData(
         position=job.position.strip(),
@@ -43,7 +43,7 @@ def extract(request: PipelineRequest) -> ExtractedData:
         status=job.status,
         apply_url=job.apply_url,
         salary_range=salary_range,
-        workplace_type=job.bluedoor_workplace_type,
+        workplace_type=job.workplace_type,
         resume_summary=user.resume_summary or "",
         target_role=user.target_role or job.position,
         skills=user.skills,

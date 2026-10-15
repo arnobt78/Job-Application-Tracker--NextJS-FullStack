@@ -10,7 +10,7 @@
  * The clear button + subtitle row live in DiscoverFilterSection (parent), matching
  * the JobsFilterSection pattern.
  *
- * Facet counts from Bluedoor /jobs/facets are shown inline in each filter option.
+ * Facet counts from the postings catalog are shown inline in each filter option.
  */
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -31,7 +31,8 @@ import { Globe2, MapPin, DollarSign, Briefcase } from 'lucide-react';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useDiscoverFacets } from '@/hooks/useDiscoverFacets';
 import type { ReactNode } from 'react';
-import type { DiscoverFacets } from '@/lib/bluedoor/types';
+import type { FacetItem } from '@/lib/postings/types';
+import { DEFAULT_DISCOVER_COUNTRY } from '@/lib/discover/query-options';
 
 // ─────────────────────────────────────────────
 // Filter options — exported for DiscoverSidebar reuse
@@ -128,7 +129,8 @@ function FilterDropdown({
 // Component
 // ─────────────────────────────────────────────
 
-function toFacetCounts(items: DiscoverFacets['workplace_type']): Record<string, number> {
+/** Facet list → { value: count } for option labels — shared with DiscoverSidebar. */
+export function toFacetCounts(items: FacetItem[]): Record<string, number> {
   return Object.fromEntries(items.map((f) => [f.value, f.count]));
 }
 
@@ -140,15 +142,15 @@ export function DiscoverFilters() {
 
   const q = searchParams.get('q') ?? '';
   const [searchValue, setSearchValue] = useState(q);
-  const country = searchParams.get('country') ?? 'United States';
+  const country = searchParams.get('country') ?? DEFAULT_DISCOVER_COUNTRY;
   const workplaceType = searchParams.get('workplaceType') ?? 'all';
   const employmentType = searchParams.get('employmentType') ?? 'all';
   const salaryExists = searchParams.get('salaryExists') ?? 'all';
 
   const { data: facets } = useDiscoverFacets(q, country);
 
-  const workplaceCounts = facets ? toFacetCounts(facets.workplace_type) : undefined;
-  const employmentCounts = facets ? toFacetCounts(facets.employment_type) : undefined;
+  const workplaceCounts = facets ? toFacetCounts(facets.workplaceType) : undefined;
+  const employmentCounts = facets ? toFacetCounts(facets.employmentType) : undefined;
 
   const updateParam = useCallback(
     (key: string, value: string) => {
@@ -176,7 +178,7 @@ export function DiscoverFilters() {
   }
 
   const countryLabel =
-    COUNTRY_OPTIONS.find((o) => o.value === country)?.label ?? 'United States';
+    COUNTRY_OPTIONS.find((o) => o.value === country)?.label ?? DEFAULT_DISCOVER_COUNTRY;
   const workplaceLabel =
     WORKPLACE_OPTIONS.find((o) => o.value === workplaceType)?.label ?? 'All locations';
   const employmentLabel =
@@ -205,7 +207,7 @@ export function DiscoverFilters() {
           triggerLabel={countryLabel}
         />
 
-        {/* Workplace type — shows live Bluedoor facet counts */}
+        {/* Workplace type — with facet counts */}
         <FilterDropdown
           value={workplaceType}
           options={WORKPLACE_OPTIONS}
@@ -215,7 +217,7 @@ export function DiscoverFilters() {
           facetCounts={workplaceCounts}
         />
 
-        {/* Employment type — shows live Bluedoor facet counts */}
+        {/* Employment type — with facet counts */}
         <FilterDropdown
           value={employmentType}
           options={EMPLOYMENT_OPTIONS}

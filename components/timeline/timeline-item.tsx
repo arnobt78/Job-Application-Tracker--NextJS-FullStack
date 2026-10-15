@@ -5,7 +5,7 @@
  *
  * Icon per event type:
  *   job_created     → PlusCircle (sky)
- *   enriched        → Zap (amber — Bluedoor matched this posting)
+ *   enriched        → Zap (amber — linked to a catalog posting)
  *   posting_changed → RefreshCw (rose — posting content/status changed)
  *   ai_generated    → Sparkles (violet — AI insights generated)
  *
@@ -31,7 +31,7 @@ const EVENT_META: Record<
     dotColor: 'bg-sky-500/20 border-sky-400/50',
   },
   enriched: {
-    label: 'Posting enriched',
+    label: 'Linked to posting',
     Icon: Zap,
     color: 'text-ink-amber',
     dotColor: 'bg-amber-500/20 border-amber-400/50',
@@ -48,6 +48,13 @@ const EVENT_META: Record<
     color: 'text-ink-violet',
     dotColor: 'bg-violet-500/20 border-violet-400/50',
   },
+};
+
+/** Readable text for machine values stored in TimelineEvent.detail. */
+const DETAIL_LABELS: Record<string, string> = {
+  posting_closed: 'posting closed',
+  jd_changed: 'description updated',
+  salary_added: 'salary added',
 };
 
 // ─────────────────────────────────────────────
@@ -125,7 +132,7 @@ export function TimelineItem({ event, isLast }: TimelineItemProps) {
               {event.company}
               {event.detail && (
                 <span className="ml-1.5 font-normal opacity-60">
-                  · {event.detail}
+                  · {DETAIL_LABELS[event.detail] ?? event.detail}
                 </span>
               )}
             </p>

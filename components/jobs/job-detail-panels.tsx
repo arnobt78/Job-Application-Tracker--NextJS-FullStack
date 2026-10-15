@@ -12,15 +12,15 @@ type Tab = 'ai' | 'activity' | 'skillgap';
 
 type JobDetailPanelsProps = {
   job: PipelineJobInput;
-  /** Bluedoor job ID — only present when the job has been enriched */
-  bluedoorJobId: string | null;
+  /** Linked catalog posting — null when the job is not linked */
+  postingId: string | null;
 };
 
 /**
  * Tab panel rendered below EditJobForm in /dashboard/[id].
- * Tabs: AI Insights (always) | Posting Activity (Bluedoor-linked only) | Skill Gap (always)
+ * Tabs: AI Insights (always) | Posting Activity (linked jobs only) | Skill Gap (always)
  */
-export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
+export function JobDetailPanels({ job, postingId }: JobDetailPanelsProps) {
   const [active, setActive] = useState<Tab>('ai');
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; disabled?: boolean }[] = [
@@ -38,7 +38,7 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
       key: 'activity',
       label: 'Posting Activity',
       icon: <Activity className="h-3.5 w-3.5" />,
-      disabled: !bluedoorJobId,
+      disabled: !postingId,
     },
   ];
 
@@ -60,7 +60,7 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-glass-fill',
               tab.disabled && 'opacity-30 cursor-not-allowed pointer-events-none'
             )}
-            title={tab.disabled ? 'Only available for Bluedoor-enriched jobs' : undefined}
+            title={tab.disabled ? 'Only available for jobs linked to a posting' : undefined}
           >
             {tab.icon}
             {tab.label}
@@ -77,8 +77,8 @@ export function JobDetailPanels({ job, bluedoorJobId }: JobDetailPanelsProps) {
       <div className="p-4">
         {active === 'ai' && <AiInsightsPanel job={job} />}
         {active === 'skillgap' && <SkillGapTab jobId={job.job_id} />}
-        {active === 'activity' && bluedoorJobId && (
-          <PostingActivityTab bluedoorJobId={bluedoorJobId} />
+        {active === 'activity' && postingId && (
+          <PostingActivityTab postingId={postingId} />
         )}
       </div>
     </div>

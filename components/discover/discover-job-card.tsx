@@ -1,11 +1,11 @@
 'use client';
 
 /**
- * DiscoverJobCard — single Bluedoor job posting result card.
+ * DiscoverJobCard — single catalog posting result card.
  *
- * "Track Application" uses useTrackDiscoverJobMutation so bluedoorJobId is
- * pre-seeded and invalidateAllJobQueries fires on success — dashboard updates
- * immediately without navigation.
+ * "Track Application" uses useTrackDiscoverJobMutation: the posting snapshot is
+ * written server-side and invalidateAllJobQueries fires on success — dashboard
+ * updates immediately without navigation.
  */
 
 import { useState } from 'react';
@@ -21,57 +21,33 @@ import {
   Loader2,
   Search,
 } from 'lucide-react';
-import type { BluedoorJob } from '@/lib/bluedoor/types';
+import type { DiscoverPosting } from '@/lib/postings/types';
 import { cn } from '@/lib/utils';
 import { useTrackDiscoverJobMutation } from '@/hooks/useJobsMutation';
 import { DiscoverJobDetailsModal } from '@/components/discover/discover-job-details-modal';
 import { CompanyLogo } from '@/components/ui/company-logo';
-import { extractDomain } from '@/lib/ui/company-logo';
 import {
-  cleanDiscoverLocation,
-  resolveDiscoverCompanyName,
-  toDiscoverTrackPayload,
+  formatPostingSalary,
   workplaceLabel,
-  bluedoorEmploymentToJobMode,
+  workplacePillClass,
 } from '@/lib/discover/track-helpers';
 
-function formatSalary(job: BluedoorJob): string | null {
-  if (!job.salary_min && !job.salary_max) return null;
-  const fmt = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: job.salary_currency ?? 'USD',
-    maximumFractionDigits: 0,
-  });
-  if (job.salary_min && job.salary_max) {
-    return `${fmt.format(job.salary_min)} – ${fmt.format(job.salary_max)}`;
-  }
-  if (job.salary_min) return `${fmt.format(job.salary_min)}+`;
-  if (job.salary_max) return `Up to ${fmt.format(job.salary_max!)}`;
-  return null;
-}
-
 type DiscoverJobCardProps = {
-  job: BluedoorJob;
+  job: DiscoverPosting;
 };
 
 export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
-  const salary = formatSalary(job);
-  const workplace = workplaceLabel(job.workplace_type);
+  const salary = formatPostingSalary(job);
+  const workplace = workplaceLabel(job.workplaceType);
   const [tracked, setTracked] = useState(false);
-  const companyName = resolveDiscoverCompanyName(job.org_id, job.apply_url);
-
   const [detailsOpen, setDetailsOpen] = useState(false);
   const { mutate, isPending } = useTrackDiscoverJobMutation();
 
   function handleTrack() {
-    mutate(toDiscoverTrackPayload(job), {
+    mutate(job, {
       onSuccess: () => setTracked(true),
     });
   }
-
-  const displayLocation = job.location_text
-    ? cleanDiscoverLocation(job.location_text)
-    : null;
 
   return (
     <GlassCard
@@ -88,12 +64,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
             <span
               className={cn(
                 'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
-                job.workplace_type === 'remote' &&
-                  'bg-emerald-500/15 text-ink-emerald',
-                job.workplace_type === 'hybrid' &&
-                  'bg-sky-500/15 text-ink-sky',
-                job.workplace_type === 'on_site' &&
-                  'bg-amber-500/15 text-ink-amber'
+                workplacePillClass(job.workplaceType)
               )}
             >
               {workplace}
@@ -103,18 +74,16 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
 
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <CompanyLogo domain={extractDomain(job.apply_url)} size={12} />
-            {companyName}
+            <CompanyLogo domain={job.companyDomain} size={12} />
+            {job.companyName}
           </span>
           {job.department && (
             <span className="text-muted-foreground/60">{job.department}</span>
           )}
-          {job.location_text && (
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              {displayLocation}
-            </span>
-          )}
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {job.locationText}
+          </span>
         </div>
       </div>
 
@@ -122,22 +91,16 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
         <div className="flex items-center gap-1.5 text-xs font-medium text-ink-emerald">
           <DollarSign className="h-3.5 w-3.5" />
           {salary}
-          {job.salary_period && (
+          {job.salaryPeriod && (
             <span className="font-normal text-muted-foreground">
-              / {job.salary_period}
+              / {job.salaryPeriod}
             </span>
           )}
         </div>
       )}
 
-      {job.description_text && (
-        <p className="line-clamp-2 text-xs text-muted-foreground">
-          {job.description_text.slice(0, 280)}
-        </p>
-      )}
-
       <DiscoverJobDetailsModal
-        jobId={job.job_id}
+        postingId={job.id}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
       />
@@ -152,7 +115,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
         </button>
 
         <a
-          href={job.apply_url}
+          href={job.applyUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-3 text-xs font-medium text-primary transition hover:bg-primary/10 hover:border-primary/40"

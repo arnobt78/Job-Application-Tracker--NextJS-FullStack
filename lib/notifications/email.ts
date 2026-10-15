@@ -4,7 +4,7 @@
  * Graceful no-op when RESEND_API_KEY is absent (local dev without email).
  * Fetches user email from the DB users table via userId stored on the Job record.
  *
- * Called from: lib/bluedoor/enrich.ts resyncJob when changed === true
+ * Called from: lib/postings/link.ts resyncJob when a posting change is detected
  */
 
 import prisma from '@/utils/db';
@@ -110,19 +110,6 @@ async function fetchUserEmail(userId: string): Promise<string | null> {
       select: { email: true },
     });
     return user?.email ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/** Resolve job owner's userId from DB (for webhook/cron callers that only have jobId) */
-export async function getJobOwnerUserId(jobId: string): Promise<string | null> {
-  try {
-    const job = await prisma.job.findUnique({
-      where: { id: jobId },
-      select: { userId: true },
-    });
-    return job?.userId ?? null;
   } catch {
     return null;
   }

@@ -9,7 +9,7 @@
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
 | **Last Updated** | 2026-10-15 |
 | **Git HEAD** | ISSUE-0013 commit on `main` (on top of `4e08fda`) · not pushed |
-| **Verify** | EVAL-0030 (2026-10-15, Node 24.21): lint ✓ · typecheck ✓ · vitest **83/83** ✓ · pytest **24/24** ✓ · build ✓ · e2e 11 ✓ · live Groq/OpenRouter smoke ✓ · verifier + security review ✓ |
+| **Verify** | ISSUE-0011/0012 (2026-10-15, Node 24): lint ✓ · typecheck ✓ · vitest **105/105** ✓ · pytest **26/26** ✓ · build ✓ · discover e2e 8/8 ✓ (EVAL-0031 recorded at end of A-Z pass) · prior EVAL-0030 |
 
 ## Reconcile (2026-10-15)
 - HEAD `4e08fda` matches recorded work; working tree clean (earlier "parallel edits" notes below are historical — all committed)
@@ -29,7 +29,7 @@
 - **ISSUE-0005 DONE** — GitHub OAuth removed: `components/auth/AuthOAuthButtons.tsx`, `lib/auth/config.ts`, `app/api/auth/[[...nextauth]]/route.ts` (comment), `.env.example`, `README.md` (GitHub lines only), `docs/PROJECT_WALKTHROUGH.md`, REQ-0001 AC2
 - Context: prod URL `https://jobify-tracker.vercel.app`; Resend sending domain `arnobmahmud.com` (`contact@`) verified; inbound email (`INBOUND_EMAIL_DOMAIN`, `RESEND_INBOUND_SECRET`) not configured
 - Working tree also holds **parallel edits not from this session** (home sections, jobs/stats/team components, SignIn/SignUp forms, README, .gitignore, docs) — review separately before commit
-- **Human-Action:** Vercel Firewall custom **Bypass** rule for `/api/internal`, `/api/cron`, `/api/email/inbound`, `/api/bluedoor/webhook`, `/api/extension` (Bot Protection Challenge would otherwise block machine callers) · Project Node.js = 24.x · Sentry env vars (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`) in Production + Preview · optional Sentry Inbound Filters (browser extensions, legacy browsers, web crawlers)
+- **Human-Action:** Vercel Firewall custom **Bypass** rule for `/api/internal`, `/api/cron`, `/api/email/inbound`, `/api/extension` (Bot Protection Challenge would otherwise block machine callers) · Project Node.js = 24.x · Sentry env vars (`NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`) in Production + Preview · optional Sentry Inbound Filters (browser extensions, legacy browsers, web crawlers)
 - Local dev: `nvm use` (reads `.nvmrc`) before npm commands
 - ISSUE-0001..0005 **committed** (session files only); parallel edits remain unstaged in working tree
 - **ISSUE-0006 DONE** — Stats 6-card grid (3+3 / 2+2+2 / 1) with one stats query: `components/StatsContainer.tsx`, `components/stats/stats-kpi-row.tsx` (`StatsKpiCards`), `app/(dashboard)/stats/page.tsx` (EVAL-0025)
@@ -41,8 +41,11 @@
 - **ISSUE-0010 DONE** — instant navigation (EVAL-0029). Pattern for any dashboard route: page JSX lives in `components/**/<x>-page-view.tsx`; `page.tsx` = prefetch + `HydrationBoundary` + view; `loading.tsx` = `<RouteFallbackProvider><View /></RouteFallbackProvider>`. Every data hook in a view MUST pass `enabled: !useIsRouteFallback()` (and use `useQueryBodyLoading` for skeletons). Nav links use `IntentLink` (no viewport prefetch). Salary intel cached via `getCachedSalaryIntel` (`salary-intel:${userId}` in `fixedUserRedisKeys`)
 - **ISSUE-0013 DONE** — AI free-tier fallback chain + pipeline fixes (EVAL-0030). Python: `app/llm/registry.py` (model chains, data only) · `app/llm/openai_compat.py` (one client, never raises) · `app/llm/router.py` (missing key skip · 401/402/403 next provider · 429/404/5xx/timeout/empty next model · 20 s budget · Ollama/Anthropic opt-in last) · `app/api/security.py` (fail-closed `verify_secret`) · `app/env.py` (local `.env.local`) · ARQ pool singleton · `requirements-dev.txt`. Next.js: `lib/ai/insight-mapper.ts` (mapper + fit label) · `lib/ai/pipeline-payload.ts` (server-only profile/job select) · `toPipelineJobInput` in `lib/ai/pipeline-client.ts` · `useStreamPipeline` rewrite · Discover panel `persist={false}` · `saveAIInsightAction` ownership check · inbound email 503 on AI outage · deleted `/api/ai/pipeline`, `runAiPipeline`, non-streaming hook. Env: single `.env.local`, `prisma.config.ts`, `db:*` scripts `--env-file-if-exists=.env.local`
 - **Human-Action (AI):** add `GEMINI_API_KEY` + `HF_TOKEN` (and `GROQ_API_KEY` / `OPENROUTER_API_KEY` if not yet) to `.env.local` · Coolify: same 4 keys + `AI_SERVICE_SECRET` (now **required** — service returns 503 without it) + `NEXT_APP_URL` (prod Vercel URL) on `ai-service` and `arq-worker`, then redeploy · then re-run live smoke for Gemini/HF
-- **Queued (BACKLOG, next plan):** ISSUE-0011 remove Bluedoor → own job-posting API with ~50 seeded postings + schema extension · ISSUE-0012 wipe + reseed demo account with 20–30 jobs (user approved wiping prod/local shared DB) · VPS (Coolify) health review · ISSUE-0014 feature-by-feature fixes (user to list)
-- **Next exact action:** user adds AI keys → live smoke Gemini/HF models (status + latency only) → discuss VPS setup → plan ISSUE-0011/0012 (scoped plan, wait for approval)
+- **ISSUE-0011 DONE** — Bluedoor removed (API gone): `lib/bluedoor/*`, `/api/bluedoor/webhook`, 13 `bluedoor*` Job columns, `enrichJobAction`, `scripts/seed-test-user-jobs.ts`, `csv-parse` deleted. New catalog: `Company` / `JobPosting` / `JobPostingEvent` + Job snapshot (`postingId` FK SetNull, `@@unique([userId, postingId])`, `postingChangeType`); missing FKs added (`JobAIInsight.user`, `UserProfile.user`, `Team.owner` cascade). `lib/postings/{types,queries,cache,link,schema,route-helpers}.ts` · `/api/postings`, `/facets`, `/[id]`, `/[id]/events` (session + zod) · `lib/cron-auth.ts` (both crons fail closed) · Python `JobInput` `posting_status/workplace_type/salary_*` with legacy `bluedoor_*` aliases
+- **ISSUE-0012 DONE** — `prisma/seed.ts` + `prisma/seed-data/` (15 fictional companies, 50 postings 40 open/10 closed, 70 events, demo user id `seed_demo_user`, 25 jobs with 12 linked across every badge, profile) · `npm run db:reset` (destructive; Prisma requires explicit user consent) — shared DB wiped + reseeded 2026-10-15 with user consent
+- Playwright: `tests/e2e/auth.setup.ts` (storageState → `tests/e2e/.auth/`, gitignored) + `tests/e2e/fixtures.ts` (auto console/network assertions); `discover.spec.ts` rewritten
+- **Human-Action (postings):** remove `BLUEDOOR_WEBHOOK_SECRET` from Vercel · confirm `CRON_SECRET` set in Vercel (crons now reject without it) · Coolify redeploy `ai-service` + `arq-worker` (new field names; old names still accepted) · anyone signed in before the reset must sign in again
+- **Next exact action:** Part 2 of plan `postings_system_and_verification` — editor red lines (venv done: `python-ai-service/.venv`) → Gemini/HF smoke → full Playwright suite → browser A-Z pass → security review → EVAL-0031 + commit
 
 ## Recent (sync 2026-07-24)
 - Infinity Loop reactivated @ `148a49f` — full `.agile-v/` sync
@@ -51,7 +54,7 @@
 - Vercel serves Next.js; Coolify VPS (redis/AI/ARQ) unchanged for UI-only commits
 
 ## Shipped
-P1–P3 · Bluedoor enrich/discover · AI pipeline VPS · team/extension/email/ARQ · UI dialog/filter polish
+P1–P3 · postings catalog + discover (Bluedoor removed) · AI pipeline VPS · team/extension/email/ARQ · UI dialog/filter polish
 
 ## Backlog (next)
 1. **Gate 1** INT-0001 — human approve REQ baseline
@@ -60,7 +63,7 @@ P1–P3 · Bluedoor enrich/discover · AI pipeline VPS · team/extension/email/A
 4. Optional: Ollama on VPS · Hetzner app migration (later)
 
 ## Architecture rules
-`force-dynamic` · SSR prefetch · persist jobs/stats/charts/job only · `invalidateUserJobCaches`+SSE · Bluedoor API only · no self-verify (Red Team)
+`force-dynamic` · SSR prefetch · persist jobs/stats/charts/job only · `invalidateUserJobCaches`+SSE · postings catalog in Postgres (`postings` cache tag) · no self-verify (Red Team)
 
 ## Agent memory
 `CLAUDE.md` · `docs/PROJECT_WALKTHROUGH.md` · `.agile-v/PLAYBOOK.md`

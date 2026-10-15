@@ -6,9 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
  * Tests live in tests/e2e/. Run against a running local dev server
  * (`npm run dev` in a separate terminal before `npm run test:e2e`).
  *
- * Auth: Tests that require a logged-in user depend on NextAuth. Most tests
- * rely on route-level redirect checks (unauthenticated) or page-structure
- * smoke tests with a pre-seeded session via E2E_COOKIE (advanced setup).
+ * Auth: the `setup` project signs in the seeded demo account (npm run db:seed)
+ * and saves its session; specs importing `test` from ./tests/e2e/fixtures run
+ * authenticated with console + network error assertions.
  *
  * Screenshots and traces are retained on failure for CI artefact upload.
  */
@@ -26,9 +26,12 @@ export default defineConfig({
     video: 'off',
   },
   projects: [
+    // Signs in the seeded demo account once; authed specs reuse tests/e2e/.auth/user.json
+    { name: 'setup', testMatch: /auth\.setup\.ts/ },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
     },
   ],
   // No webServer block — start `npm run dev` separately to avoid cold-start timeouts

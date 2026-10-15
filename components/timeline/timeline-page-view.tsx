@@ -40,7 +40,7 @@ export function TimelinePageView() {
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-ink-amber">
                   ⚡
                 </span>
-                Posting enriched
+                Linked to posting
               </li>
               <li className="flex items-center gap-2">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-500/20 text-ink-rose">
@@ -59,7 +59,7 @@ export function TimelinePageView() {
 
           <GlassCard variant="neutral">
             <p className="text-xs text-muted-foreground">
-              Timeline updates automatically when you add jobs, and when Bluedoor detects posting changes.
+              Timeline updates automatically when you add jobs, and when a linked posting changes.
             </p>
           </GlassCard>
         </div>

@@ -57,7 +57,7 @@ const COMMON_SKILLS: readonly string[] = [
  * Compute skill gap between the user's skills and a raw job description string.
  *
  * @param userSkills  Skills from UserProfile.skills[]
- * @param jobDescription  Raw text from Bluedoor job detail or JobAIInsight summary
+ * @param jobDescription  Raw text from the linked posting description or JobAIInsight summary
  */
 export function computeSkillGap(
   userSkills: string[],

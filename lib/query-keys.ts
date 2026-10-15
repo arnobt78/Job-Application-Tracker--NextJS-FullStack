@@ -26,8 +26,8 @@ export const queryKeys = {
   chartsWeekly: {
     all: ['charts-weekly'] as const,
   },
-  // Discover page — Bluedoor live job search.
-  // NOT persisted to localStorage (live external data, should always be fresh).
+  // Discover page — job postings catalog search.
+  // NOT persisted to localStorage (catalog may change between sessions).
   discover: {
     all: ['discover'] as const,
     search: (
@@ -38,12 +38,12 @@ export const queryKeys = {
       salaryExists: boolean
     ) =>
       ['discover', 'search', q, country, workplaceType, employmentType, salaryExists] as const,
-    // Full job detail — fetched on demand when user opens View Details modal
-    detail: (jobId: string) => ['discover', 'detail', jobId] as const,
+    // Full posting detail — fetched on demand when user opens View Details modal
+    detail: (postingId: string) => ['discover', 'detail', postingId] as const,
     // Posting lifecycle events — fetched on demand in Posting Activity tab
-    events: (bluedoorJobId: string) => ['discover', 'events', bluedoorJobId] as const,
-    // Live filter counts from Bluedoor /jobs/facets — staleTime 5 min, not persisted
-    facets: (q?: string, country?: string) => ['discover', 'facets', q ?? '', country ?? ''] as const,
+    events: (postingId: string) => ['discover', 'events', postingId] as const,
+    // Filter facet counts — staleTime 5 min, not persisted
+    facets: (q: string, country: string) => ['discover', 'facets', q, country] as const,
   },
   // AI pipeline — per-job insights (fit score, cover letter, interview angles).
   // NOT persisted: LLM output changes each run; user regenerates on demand.
@@ -59,7 +59,7 @@ export const queryKeys = {
   // Global activity timeline — built from Job rows, not persisted.
   timeline: () => ['timeline'] as const,
   // Skill gap analysis — per-job comparison of user profile skills vs job description.
-  // NOT persisted: on-demand, live Bluedoor data.
+  // NOT persisted: on-demand, depends on the linked posting description.
   skillGap: (jobId: string) => ['skill-gap', jobId] as const,
   // Salary intelligence — aggregated from user's enriched jobs.
   // NOT persisted in localStorage; invalidated on job CRUD via invalidateAllJobQueries.

@@ -75,7 +75,7 @@ export function StatsPageView() {
         </div>
       </div>
 
-      {/* Salary Intelligence — aggregated from Bluedoor-enriched jobs */}
+      {/* Salary Intelligence — aggregated from posting-linked jobs */}
       <div className="mt-10">
         <PageSectionHeader
           icon={DollarSign}

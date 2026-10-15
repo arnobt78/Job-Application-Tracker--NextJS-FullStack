@@ -23,7 +23,7 @@
     "db:inspect": "tsx --env-file-if-exists=.env.local scripts/db-inspect.ts",
     "db:fix-status": "tsx --env-file-if-exists=.env.local scripts/db-fix-status.ts",
     "db:fix-future-dates": "tsx --env-file-if-exists=.env.local scripts/db-fix-future-dates.ts",
-    "db:seed-test-user": "tsx --env-file-if-exists=.env.local scripts/seed-test-user-jobs.ts"
+    "db:reset": "prisma db push --force-reset --accept-data-loss && npm run db:seed"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
@@ -48,7 +48,6 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "csv-parse": "^7.0.3",
     "dayjs": "^1.11.23",
     "exceljs": "^4.4.0",
     "framer-motion": "^12.43.0",

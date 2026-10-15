@@ -1,22 +1,19 @@
 'use client';
 
 /**
- * JobEnrichmentBadge — shows live posting status fetched from Bluedoor.
+ * JobEnrichmentBadge — status of the catalog posting linked to a tracked job.
  *
- * States:
- *  - No bluedoorJobId + has applyUrl → "Syncing…" (enrichment pending)
- *  - active → green "LIVE" pill
- *  - expired → red "CLOSED" pill
- *  - description changed   → amber "CHANGED" pill  (bluedoorChangedAt set)
- *  - salary added          → blue "SALARY ADDED" pill
- *  - No enrichment data    → null (renders nothing)
- *
- * All state is derived from JobType fields — no extra fetch needed.
+ * States (derived from the JobType snapshot — no extra fetch):
+ *  - closed                         → red "CLOSED" pill
+ *  - last change was salary_added   → blue "SALARY ADDED" pill
+ *  - last change was jd_changed     → amber "JD CHANGED" pill
+ *  - open, no change                → green "LIVE" pill
+ *  - not linked                     → null (renders nothing)
  */
 
 import { cn } from '@/lib/utils';
 import type { JobType } from '@/utils/types';
-import { Wifi, WifiOff, RefreshCw, DollarSign, AlertTriangle } from 'lucide-react';
+import { Wifi, WifiOff, DollarSign, AlertTriangle } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 type JobEnrichmentBadgeProps = {
@@ -32,69 +29,38 @@ type BadgeConfig = {
 };
 
 function resolveBadge(job: JobType): BadgeConfig | null {
-  const { bluedoorJobId, bluedoorStatus, applyUrl, bluedoorSyncedAt,
-          bluedoorChangedAt, bluedoorSalaryMin } = job;
+  const { postingId, postingStatus, postingChangeType } = job;
+  if (!postingId || !postingStatus) return null;
 
-  // No enrichment data and no URL → nothing to show
-  if (!bluedoorJobId && !applyUrl) return null;
-
-  // Has apply URL but enrichment not yet run → syncing indicator
-  if (!bluedoorJobId && applyUrl) {
-    return {
-      label: 'Syncing',
-      icon: <RefreshCw className="h-3 w-3 animate-spin" />,
-      classes: 'bg-muted/60 text-muted-foreground border-muted-foreground/20',
-    };
-  }
-
-  // Enrichment exists but status not yet fetched (shouldn't happen normally)
-  if (!bluedoorStatus) return null;
-
-  // Salary added — highest priority display (most valuable signal)
-  if (
-    bluedoorSalaryMin != null &&
-    bluedoorSyncedAt &&
-    bluedoorStatus === 'active'
-  ) {
-    return {
-      label: 'Salary Added',
-      icon: <DollarSign className="h-3 w-3" />,
-      classes:
-        'bg-sky-500/15 text-tone-sky border-sky-400/30',
-    };
-  }
-
-  // Posting closed
-  if (bluedoorStatus === 'expired') {
+  if (postingStatus === 'closed') {
     return {
       label: 'Closed',
       icon: <WifiOff className="h-3 w-3" />,
-      classes:
-        'bg-rose-500/15 text-tone-rose border-rose-400/30',
+      classes: 'bg-rose-500/15 text-tone-rose border-rose-400/30',
     };
   }
 
-  // Description changed since we first linked it
-  if (bluedoorChangedAt && bluedoorStatus === 'active') {
+  if (postingChangeType === 'salary_added') {
+    return {
+      label: 'Salary Added',
+      icon: <DollarSign className="h-3 w-3" />,
+      classes: 'bg-sky-500/15 text-tone-sky border-sky-400/30',
+    };
+  }
+
+  if (postingChangeType === 'jd_changed') {
     return {
       label: 'JD Changed',
       icon: <AlertTriangle className="h-3 w-3" />,
-      classes:
-        'bg-amber-500/15 text-tone-amber border-amber-400/30',
+      classes: 'bg-amber-500/15 text-tone-amber border-amber-400/30',
     };
   }
 
-  // All good — actively live
-  if (bluedoorStatus === 'active') {
-    return {
-      label: 'Live',
-      icon: <Wifi className="h-3 w-3" />,
-      classes:
-        'bg-emerald-500/15 text-tone-emerald border-emerald-400/30',
-    };
-  }
-
-  return null;
+  return {
+    label: 'Live',
+    icon: <Wifi className="h-3 w-3" />,
+    classes: 'bg-emerald-500/15 text-tone-emerald border-emerald-400/30',
+  };
 }
 
 export function JobEnrichmentBadge({ job, className }: JobEnrichmentBadgeProps) {
@@ -115,7 +81,7 @@ export function JobEnrichmentBadge({ job, className }: JobEnrichmentBadgeProps) 
             badge.classes,
             className
           )}
-          title={`Bluedoor live posting status: ${badge.label}`}
+          title={`Linked posting status: ${badge.label}`}
         >
           {badge.icon}
           {badge.label}

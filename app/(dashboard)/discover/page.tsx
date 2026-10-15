@@ -2,16 +2,18 @@ import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query
 import type { Metadata } from 'next';
 import { createPageMetadata } from '@/lib/site-metadata';
 import { DiscoverPageView } from '@/components/discover/discover-page-view';
-import { buildDiscoverQueryOptions } from '@/lib/discover/query-options';
-import { queryKeys } from '@/lib/query-keys';
-import { getBluedoorFacetsAction } from '@/utils/actions';
+import {
+  buildDiscoverFacetsOptions,
+  buildDiscoverQueryOptions,
+  DEFAULT_DISCOVER_COUNTRY,
+} from '@/lib/discover/query-options';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = createPageMetadata({
   title: 'Discover Jobs',
   description:
-    'Search 1.8M+ live job postings from Greenhouse, Lever, Ashby, Workday and more. One click to track any posting in your application pipeline.',
+    'Browse open job postings across engineering, design, product and data roles. One click to track any posting in your application pipeline.',
   path: '/discover',
   noIndex: true,
 });
@@ -30,23 +32,20 @@ async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
 
   const q = params.q ?? '';
-  const country = params.country ?? 'United States';
+  const country = params.country ?? DEFAULT_DISCOVER_COUNTRY;
   const workplaceType = params.workplaceType ?? '';
   const employmentType = params.employmentType ?? '';
   const salaryExists = params.salaryExists === 'yes';
 
   const queryClient = new QueryClient();
 
-  // SSR prefetch — must not throw; Bluedoor/auth slowness degrades to client fetch.
+  // SSR prefetch — must not throw; DB/auth slowness degrades to client fetch.
   try {
     await Promise.all([
       queryClient.prefetchInfiniteQuery(
         buildDiscoverQueryOptions(q, country, workplaceType, employmentType, salaryExists)
       ),
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.discover.facets(q || undefined, country !== 'United States' ? country : undefined),
-        queryFn: () => getBluedoorFacetsAction({ q: q || undefined, country }),
-      }),
+      queryClient.prefetchQuery(buildDiscoverFacetsOptions(q, country)),
     ]);
   } catch (error) {
     console.error('[DiscoverPage] SSR prefetch failed:', error);

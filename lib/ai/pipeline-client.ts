@@ -18,11 +18,11 @@ export type PipelineJobInput = {
   status: string;
   mode: string;
   apply_url?: string | null;
-  bluedoor_status?: string | null;
-  bluedoor_workplace_type?: string | null;
-  bluedoor_salary_min?: number | null;
-  bluedoor_salary_max?: number | null;
-  bluedoor_salary_currency?: string | null;
+  posting_status?: string | null;
+  workplace_type?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_currency?: string | null;
 };
 
 export type PipelineUserProfile = {
@@ -69,11 +69,11 @@ export type PipelineJobSource = {
   status: string;
   mode: string;
   applyUrl?: string | null;
-  bluedoorStatus?: string | null;
-  bluedoorWorkplaceType?: string | null;
-  bluedoorSalaryMin?: number | null;
-  bluedoorSalaryMax?: number | null;
-  bluedoorSalaryCurrency?: string | null;
+  postingStatus?: string | null;
+  workplaceType?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryCurrency?: string | null;
 };
 
 export function toPipelineJobInput(job: PipelineJobSource): PipelineJobInput {
@@ -85,10 +85,10 @@ export function toPipelineJobInput(job: PipelineJobSource): PipelineJobInput {
     status: job.status,
     mode: job.mode,
     apply_url: job.applyUrl ?? null,
-    bluedoor_status: job.bluedoorStatus ?? null,
-    bluedoor_workplace_type: job.bluedoorWorkplaceType ?? null,
-    bluedoor_salary_min: job.bluedoorSalaryMin ?? null,
-    bluedoor_salary_max: job.bluedoorSalaryMax ?? null,
-    bluedoor_salary_currency: job.bluedoorSalaryCurrency ?? null,
+    posting_status: job.postingStatus ?? null,
+    workplace_type: job.workplaceType ?? null,
+    salary_min: job.salaryMin ?? null,
+    salary_max: job.salaryMax ?? null,
+    salary_currency: job.salaryCurrency ?? null,
   };
 }

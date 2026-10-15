@@ -42,7 +42,7 @@ function jobAlreadyInList(jobs: JobType[], job: JobType): boolean {
   return jobs.some(
     (j) =>
       j.id === job.id ||
-      (!!job.bluedoorJobId && j.bluedoorJobId === job.bluedoorJobId)
+      (!!job.postingId && j.postingId === job.postingId)
   );
 }
 
