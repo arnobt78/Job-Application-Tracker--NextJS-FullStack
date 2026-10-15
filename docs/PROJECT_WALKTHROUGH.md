@@ -126,7 +126,9 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 | `lib/notifications/email.ts` | Resend wrapper — React Email templates, graceful no-op without `RESEND_API_KEY` |
 | `lib/notifications/templates/` | `PostingClosedEmail`, `JdChangedEmail`, `SalaryAddedEmail`, `WeeklyDigestEmail` |
 | `lib/notifications/weekly-digest.ts` | `sendAllWeeklyDigests()` — per-user Sunday summary |
-| `lib/ai/pipeline-client.ts` | TypeScript types + `runAiPipeline()` → Python service |
+| `lib/ai/pipeline-client.ts` | AI service types + `toPipelineJobInput()` (client-safe) |
+| `lib/ai/insight-mapper.ts` | `pipelineResultToInsight` / `insightToPipelineResponse` + `fitLabelFromScore` — shared by panel save and ARQ callback |
+| `lib/ai/pipeline-payload.ts` | Server-only `PIPELINE_JOB_SELECT` + `loadPipelineUserProfile` (stream, batch, interview prep) |
 | `lib/ui/company-logo.ts` | `extractDomain(url)` — Clearbit logo domain helper |
 | `components/ui/company-logo.tsx` | `<CompanyLogo>` — img + Building2 fallback |
 | `components/jobs/ai-insights-panel.tsx` | DB-loaded insight + generate/regenerate; `gcTime:0` |
@@ -134,7 +136,7 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 | `lib/jobs/queries.ts` | `getCachedJobs`, `getCachedStats`, `getCachedCharts`, `getCachedWeeklyCharts` |
 | `hooks/useJobsListBodyLoading.ts` | List query + bodyLoading |
 | `hooks/useJobsCacheSync.ts` | SSE + BroadcastChannel cache sync; relays notify events |
-| `hooks/useAIPipeline.ts` | Blocking mutation + `useStreamPipeline` for SSE progress |
+| `hooks/useAIPipeline.ts` | `useStreamPipeline` — SSE progress; exactly one of onSuccess/onError per run |
 | `hooks/useJobsMutation.ts` | Optimistic CRUD + `invalidateAllJobQueries` |
 | `lib/query-client.ts` / `lib/query-persist.ts` | RQ defaults + localStorage persist rules |
 | `lib/invalidate-jobs.ts` | jobs · stats · charts · chartsWeekly · filterOptions · timeline · **salaryIntel** · job(id) |
@@ -254,7 +256,7 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 
 1. `EditJobDialog` — edit form (position, company, status, apply URL, …)
 2. `JobDetailPanels` below form:
-   - **AI Insights** — `AiInsightsPanel` → `useAIPipeline` → `/api/ai/pipeline`
+   - **AI Insights** — `AiInsightsPanel` → `useStreamPipeline` → `/api/ai/pipeline/stream` (profile added server-side; LLM chain in `python-ai-service/app/llm/registry.py`)
    - **Posting Activity** — `PostingActivityTab` → `getBluedoorJobEventsAction` → `getJobEvents()` (disabled until `bluedoorJobId` set)
 
 ---

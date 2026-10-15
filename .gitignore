@@ -51,3 +51,8 @@ COOLIFY_PUBLIC_BACKEND_GUIDE.md
 # Claude
 CLAUDE.md
 .claude
+
+# Python (python-ai-service)
+__pycache__/
+.pytest_cache/
+.venv/

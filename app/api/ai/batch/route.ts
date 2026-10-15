@@ -12,15 +12,25 @@
 import { auth } from '@/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/utils/db';
+import {
+  ALL_PIPELINE_OUTPUTS,
+  toPipelineJobInput,
+  type PipelineJobInput,
+  type PipelineUserProfile,
+} from '@/lib/ai/pipeline-client';
+import { PIPELINE_JOB_SELECT, loadPipelineUserProfile } from '@/lib/ai/pipeline-payload';
 
 export const dynamic = 'force-dynamic';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
 
+/** user_id rides along with the profile — the ARQ task reads it for the ai-complete callback. */
+type BatchUserData = PipelineUserProfile & { user_id: string };
+
 async function enqueueOne(
-  jobData: Record<string, unknown>,
-  userId: string
+  jobData: PipelineJobInput,
+  userData: BatchUserData
 ): Promise<string | null> {
   try {
     const res = await fetch(`${AI_SERVICE_URL}/enqueue`, {
@@ -31,8 +41,8 @@ async function enqueueOne(
       },
       body: JSON.stringify({
         job_data: jobData,
-        user_data: { user_id: userId },
-        include: ['fit_score', 'summary', 'cover_letter', 'interview_angles'],
+        user_data: userData,
+        include: ALL_PIPELINE_OUTPUTS,
       }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -67,43 +77,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     aiInsight: { is: null },
   };
 
-  const jobs = await prisma.job.findMany({
-    where,
-    select: {
-      id: true,
-      position: true,
-      company: true,
-      location: true,
-      status: true,
-      mode: true,
-      applyUrl: true,
-      bluedoorStatus: true,
-      bluedoorWorkplaceType: true,
-      bluedoorSalaryMin: true,
-      bluedoorSalaryMax: true,
-      bluedoorSalaryCurrency: true,
-    },
-    take: 50, // Safety cap — avoid queue flooding
-  });
+  const [jobs, profile] = await Promise.all([
+    prisma.job.findMany({
+      where,
+      select: PIPELINE_JOB_SELECT,
+      take: 50, // Safety cap — avoid queue flooding
+    }),
+    loadPipelineUserProfile(userId),
+  ]);
 
+  const userData: BatchUserData = { ...profile, user_id: userId };
   const taskIds: string[] = [];
 
   for (const job of jobs) {
-    const jobData = {
-      job_id: job.id,
-      position: job.position,
-      company: job.company,
-      location: job.location,
-      status: job.status,
-      mode: job.mode,
-      apply_url: job.applyUrl ?? null,
-      bluedoor_status: job.bluedoorStatus ?? null,
-      bluedoor_workplace_type: job.bluedoorWorkplaceType ?? null,
-      bluedoor_salary_min: job.bluedoorSalaryMin ?? null,
-      bluedoor_salary_max: job.bluedoorSalaryMax ?? null,
-      bluedoor_salary_currency: job.bluedoorSalaryCurrency ?? null,
-    };
-    const taskId = await enqueueOne(jobData, userId);
+    const taskId = await enqueueOne(toPipelineJobInput(job), userData);
     if (taskId) taskIds.push(taskId);
   }
 

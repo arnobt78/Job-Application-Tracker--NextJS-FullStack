@@ -32,6 +32,9 @@ import {
 import { getJobDetail, getJobEvents, getBluedoorOrg, registerBluedoorWebhook, unregisterBluedoorWebhook } from "@/lib/bluedoor/client";
 import { getCachedDiscoverSearch, getCachedDiscoverFacets } from "@/lib/bluedoor/discover-cache";
 import { computeSkillGap } from "@/lib/jobs/skill-gap";
+import { toPipelineJobInput } from "@/lib/ai/pipeline-client";
+import { formatInterviewAngle } from "@/lib/ai/insight-mapper";
+import { PIPELINE_JOB_SELECT, loadPipelineUserProfile } from "@/lib/ai/pipeline-payload";
 import type { SkillGapResult } from "@/lib/jobs/skill-gap";
 
 /** Get authenticated user ID or redirect to /sign-in */
@@ -529,6 +532,10 @@ export async function saveAIInsightAction(
   const userId = await authenticateAndRedirect();
 
   try {
+    // Insight rows are keyed by jobId alone — confirm ownership before upserting
+    const owned = await prisma.job.findFirst({ where: { id: jobId, userId }, select: { id: true } });
+    if (!owned) return null;
+
     const insight = await prisma.jobAIInsight.upsert({
       where: { jobId },
       create: {
@@ -800,44 +807,14 @@ const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
  */
 async function triggerInterviewPrepAction(jobId: string, userId: string): Promise<void> {
   try {
-    const [job, profile] = await Promise.all([
-      prisma.job.findUnique({
-        where: { id: jobId, userId },
-        select: {
-          position: true, company: true, location: true, status: true, mode: true,
-          applyUrl: true, bluedoorStatus: true, bluedoorWorkplaceType: true,
-          bluedoorSalaryMin: true, bluedoorSalaryMax: true, bluedoorSalaryCurrency: true,
-        },
-      }),
-      prisma.userProfile.findUnique({
-        where: { userId },
-        select: { resumeText: true, targetRoles: true, skills: true },
-      }),
+    const [job, user] = await Promise.all([
+      prisma.job.findUnique({ where: { id: jobId, userId }, select: PIPELINE_JOB_SELECT }),
+      loadPipelineUserProfile(userId),
     ]);
 
     if (!job) return;
 
-    const payload = {
-      job: {
-        job_id: jobId,
-        position: job.position,
-        company: job.company,
-        location: job.location,
-        status: job.status,
-        mode: job.mode,
-        apply_url: job.applyUrl ?? null,
-        bluedoor_status: job.bluedoorStatus ?? null,
-        bluedoor_workplace_type: job.bluedoorWorkplaceType ?? null,
-        bluedoor_salary_min: job.bluedoorSalaryMin ?? null,
-        bluedoor_salary_max: job.bluedoorSalaryMax ?? null,
-        bluedoor_salary_currency: job.bluedoorSalaryCurrency ?? null,
-      },
-      user: {
-        resume_summary: profile?.resumeText ?? null,
-        target_role: profile?.targetRoles?.[0] ?? null,
-        skills: profile?.skills ?? [],
-      },
-    };
+    const payload = { job: toPipelineJobInput(job), user };
 
     const res = await fetch(`${AI_SERVICE_URL}/pipeline/interview-prep`, {
       method: 'POST',
@@ -855,7 +832,7 @@ async function triggerInterviewPrepAction(jobId: string, userId: string): Promis
       interview_angles: Array<{ question: string; angle: string }>;
     };
 
-    const angles = result.interview_angles.map((a) => `${a.question}: ${a.angle}`);
+    const angles = result.interview_angles.map(formatInterviewAngle);
     if (!angles.length) return;
 
     // Merge angles into existing insight — upsert preserves fit score / cover letter in create path

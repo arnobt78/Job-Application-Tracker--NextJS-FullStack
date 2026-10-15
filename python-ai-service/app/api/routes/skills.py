@@ -5,23 +5,14 @@ to do semantic matching, identify implied skills, and generate a prioritised lea
 """
 
 from __future__ import annotations
-import os
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.api.security import verify_secret
 from app.llm import router as llm_router
 
 router = APIRouter(tags=["skills"])
-
-
-def _verify_secret(request: Request) -> None:
-    secret = os.environ.get("AI_SERVICE_SECRET")
-    if not secret:
-        return
-    header = request.headers.get("X-Internal-Secret", "")
-    if header != secret:
-        raise HTTPException(status_code=401, detail="Invalid internal secret")
 
 
 class SkillGapRequest(BaseModel):
@@ -51,7 +42,7 @@ _SYSTEM = (
 @router.post("/skill-gap", response_model=SkillGapResponse)
 async def analyse_skill_gap(
     payload: SkillGapRequest,
-    _: None = Depends(_verify_secret),
+    _: None = Depends(verify_secret),
 ) -> SkillGapResponse:
     """Semantic skill gap analysis using the LLM fallback chain."""
     if not payload.user_skills:

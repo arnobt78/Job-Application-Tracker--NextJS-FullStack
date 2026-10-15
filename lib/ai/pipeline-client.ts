@@ -1,9 +1,9 @@
 /**
- * Typed client for the Python AI pipeline service.
+ * Shared contract for the Python AI pipeline service (client + server safe).
  *
- * Adds X-Internal-Secret header (AI_SERVICE_SECRET).
- * Times out after 30 seconds (pipeline can be slow on cold Ollama start).
- * AI_SERVICE_URL defaults to http://localhost:3000 for local dev.
+ * Types mirror the Python Pydantic models in python-ai-service/app/models/.
+ * Network calls live in the API routes (/api/ai/pipeline/stream, /api/ai/batch)
+ * and utils/actions.ts — this module stays free of secrets and fetch logic.
  */
 
 // ─────────────────────────────────────────────
@@ -32,10 +32,19 @@ export type PipelineUserProfile = {
   skills?: string[];
 };
 
+export type PipelineOutput = 'fit_score' | 'cover_letter' | 'interview_angles' | 'summary';
+
+export const ALL_PIPELINE_OUTPUTS: PipelineOutput[] = [
+  'fit_score',
+  'cover_letter',
+  'interview_angles',
+  'summary',
+];
+
 export type PipelineRequest = {
   job: PipelineJobInput;
   user?: PipelineUserProfile;
-  include?: Array<'fit_score' | 'cover_letter' | 'interview_angles' | 'summary'>;
+  include?: PipelineOutput[];
 };
 
 export type FitScoreResult = { score: number; reasoning: string };
@@ -51,50 +60,35 @@ export type PipelineResponse = {
   meta: Record<string, unknown>;
 };
 
-// ─────────────────────────────────────────────
-// Client function — called from Next.js API route proxy
-// ─────────────────────────────────────────────
+/** Tracked-job fields the pipeline needs — satisfied by both JobType and a Prisma Job row. */
+export type PipelineJobSource = {
+  id: string;
+  position: string;
+  company: string;
+  location: string;
+  status: string;
+  mode: string;
+  applyUrl?: string | null;
+  bluedoorStatus?: string | null;
+  bluedoorWorkplaceType?: string | null;
+  bluedoorSalaryMin?: number | null;
+  bluedoorSalaryMax?: number | null;
+  bluedoorSalaryCurrency?: string | null;
+};
 
-const AI_SERVICE_URL =
-  process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
-const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
-const TIMEOUT_MS = 30_000;
-
-export class AiServiceError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly body: string
-  ) {
-    super(`AI service ${status}: ${body}`);
-    this.name = 'AiServiceError';
-  }
-}
-
-export async function runAiPipeline(
-  payload: PipelineRequest
-): Promise<PipelineResponse> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  try {
-    const res = await fetch(`${AI_SERVICE_URL}/pipeline/run`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(AI_SERVICE_SECRET ? { 'X-Internal-Secret': AI_SERVICE_SECRET } : {}),
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new AiServiceError(res.status, text);
-    }
-
-    return res.json() as Promise<PipelineResponse>;
-  } finally {
-    clearTimeout(timer);
-  }
+export function toPipelineJobInput(job: PipelineJobSource): PipelineJobInput {
+  return {
+    job_id: job.id,
+    position: job.position,
+    company: job.company,
+    location: job.location,
+    status: job.status,
+    mode: job.mode,
+    apply_url: job.applyUrl ?? null,
+    bluedoor_status: job.bluedoorStatus ?? null,
+    bluedoor_workplace_type: job.bluedoorWorkplaceType ?? null,
+    bluedoor_salary_min: job.bluedoorSalaryMin ?? null,
+    bluedoor_salary_max: job.bluedoorSalaryMax ?? null,
+    bluedoor_salary_currency: job.bluedoorSalaryCurrency ?? null,
+  };
 }

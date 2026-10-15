@@ -1,7 +1,7 @@
 """FastAPI app — Jobify AI pipeline service.
 
 Exposes:
-  GET  /health         — liveness probe
+  GET  /health         — liveness probe + configured LLM provider names
   POST /pipeline/run  — 9-agent AI pipeline (requires X-Internal-Secret header)
 
 Auth: X-Internal-Secret header matched against AI_SERVICE_SECRET env var.
@@ -10,20 +10,35 @@ CORS: restricted to AI_SERVICE_ALLOWED_ORIGINS (comma-separated list).
 
 from __future__ import annotations
 import os
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.api.routes.health import router as health_router
-from app.api.routes.pipeline import router as pipeline_router
-from app.api.routes.queue import router as queue_router
-from app.api.routes.interview import router as interview_router
-from app.api.routes.skills import router as skills_router
-from app.api.routes.email import router as email_router
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from app.env import load_local_env
+
+load_local_env()
+
+from fastapi import FastAPI  # noqa: E402 — env must be loaded before route modules import
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+from app.api.routes.health import router as health_router  # noqa: E402
+from app.api.routes.pipeline import router as pipeline_router  # noqa: E402
+from app.api.routes.queue import close_pool, router as queue_router  # noqa: E402
+from app.api.routes.interview import router as interview_router  # noqa: E402
+from app.api.routes.skills import router as skills_router  # noqa: E402
+from app.api.routes.email import router as email_router  # noqa: E402
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    yield
+    await close_pool()
+
 
 app = FastAPI(
     title="Jobify AI Service",
     version="0.1.0",
     docs_url="/docs",
     redoc_url=None,
+    lifespan=lifespan,
 )
 
 # CORS — Next.js frontend origin(s) only

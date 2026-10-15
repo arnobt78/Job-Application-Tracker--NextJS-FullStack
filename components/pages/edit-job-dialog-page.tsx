@@ -8,27 +8,9 @@ import { useIsRouteFallback } from "@/components/providers/route-fallback-provid
 import { queryKeys } from "@/lib/query-keys";
 import { useQueryBodyLoading } from "@/lib/query-body-loading";
 import { getSingleJobAction } from "@/utils/actions";
-import type { PipelineJobInput } from "@/lib/ai/pipeline-client";
-import type { JobType } from "@/utils/types";
+import { toPipelineJobInput } from "@/lib/ai/pipeline-client";
 
 type EditJobDialogPageProps = { jobId: string };
-
-function toPipelineJobInput(job: JobType): PipelineJobInput {
-  return {
-    job_id: job.id,
-    position: job.position,
-    company: job.company,
-    location: job.location,
-    status: job.status,
-    mode: job.mode,
-    apply_url: job.applyUrl ?? null,
-    bluedoor_status: job.bluedoorStatus ?? null,
-    bluedoor_workplace_type: job.bluedoorWorkplaceType ?? null,
-    bluedoor_salary_min: job.bluedoorSalaryMin ?? null,
-    bluedoor_salary_max: job.bluedoorSalaryMax ?? null,
-    bluedoor_salary_currency: job.bluedoorSalaryCurrency ?? null,
-  };
-}
 
 export function EditJobDialogPage({ jobId }: EditJobDialogPageProps) {
   const router = useRouter();

@@ -11,28 +11,21 @@
  * Body:
  *   job_id   — Prisma Job ID
  *   user_id  — NextAuth user ID (cuid)
- *   result   — PipelineResponse fields (snake_case from Python)
+ *   result   — PipelineResponse.model_dump() (nested snake_case from Python)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/utils/db';
 import { invalidateUserJobCaches } from '@/lib/invalidate-jobs-server';
+import { pipelineResultToInsight } from '@/lib/ai/insight-mapper';
+import type { PipelineResponse } from '@/lib/ai/pipeline-client';
 
 export const dynamic = 'force-dynamic';
-
-type PipelineResult = {
-  fit_score?: number | null;
-  fit_label?: string | null;
-  summary?: string | null;
-  cover_letter?: string | null;
-  interview_angles?: string[];
-  red_flags?: string[];
-};
 
 type RequestBody = {
   job_id: string;
   user_id: string;
-  result: PipelineResult;
+  result: Partial<PipelineResponse>;
 };
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -50,8 +43,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { job_id: jobId, user_id: userId, result } = body;
 
-  if (!jobId || !userId) {
-    return NextResponse.json({ error: 'job_id and user_id are required' }, { status: 400 });
+  if (!jobId || !userId || !result) {
+    return NextResponse.json({ error: 'job_id, user_id and result are required' }, { status: 400 });
   }
 
   // Verify the job belongs to this user before writing
@@ -64,34 +57,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
+  const insight = pipelineResultToInsight(result);
+
   try {
     await prisma.jobAIInsight.upsert({
       where: { jobId },
-      create: {
-        jobId,
-        userId,
-        fitScore: result.fit_score ?? null,
-        fitLabel: result.fit_label ?? null,
-        summary: result.summary ?? null,
-        coverLetter: result.cover_letter ?? null,
-        interviewAngles: result.interview_angles ?? [],
-        redFlags: result.red_flags ?? [],
-      },
-      update: {
-        fitScore: result.fit_score ?? null,
-        fitLabel: result.fit_label ?? null,
-        summary: result.summary ?? null,
-        coverLetter: result.cover_letter ?? null,
-        interviewAngles: result.interview_angles ?? [],
-        redFlags: result.red_flags ?? [],
-        generatedAt: new Date(),
-      },
+      create: { jobId, userId, ...insight },
+      update: { ...insight, generatedAt: new Date() },
     });
 
     await invalidateUserJobCaches(userId, jobId);
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error('[ai-complete] failed to persist insight:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

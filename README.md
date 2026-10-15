@@ -251,12 +251,14 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 │   ├── useJobsMutation.ts            # Optimistic CRUD mutations
 │   ├── useJobsCacheSync.ts           # SSE + BroadcastChannel sync
 │   ├── useJobsListParams.ts          # URL-driven dashboard filters
-│   ├── useAIPipeline.ts              # AI insights mutation
+│   ├── useAIPipeline.ts              # useStreamPipeline — SSE AI insights + progress
 │   └── useGuestSignIn.ts, useNavUserSession.ts…
 ├── lib/
 │   ├── jobs/queries.ts               # Cached Prisma reads (stats, charts, weekly)
 │   ├── bluedoor/                     # client.ts, enrich.ts, types.ts
-│   ├── ai/pipeline-client.ts         # TypeScript types for AI service
+│   ├── ai/pipeline-client.ts         # AI service types + toPipelineJobInput
+│   ├── ai/insight-mapper.ts          # PipelineResponse ↔ JobAIInsight + fit label
+│   ├── ai/pipeline-payload.ts        # Server-only job select + DB profile loader
 │   ├── notifications/email.ts        # Resend wrapper (no-op without key)
 │   ├── jobs-events.ts                # SSE event bus (invalidate | notify)
 │   ├── invalidate-jobs.ts            # Client query invalidation
@@ -274,7 +276,8 @@ User action (CreateJobForm / DiscoverJobCard / DeleteJobButton)
 ├── python-ai-service/                # Phase 2 — FastAPI 9-agent pipeline
 │   ├── app/main.py
 │   ├── app/pipeline/agents/          # Extractor → Final Verifier
-│   ├── app/llm/router.py             # Ollama → Groq → OpenRouter → Anthropic
+│   ├── app/llm/registry.py           # Free-tier model chains (Groq → Gemini → OpenRouter → HF)
+│   ├── app/llm/router.py             # Fallback router (+ optional Ollama / Anthropic last)
 │   └── docker-compose.yml
 ├── proxy.ts                           # NextAuth JWT gate (Next.js 16; auth + legacy redirects)
 ├── vercel.json                       # Cron schedule + security headers
@@ -398,12 +401,13 @@ DIRECT_URL="postgresql://postgres:password@localhost:5432/jobify?schema=public"
 | `EMAIL_FROM`                                          | Verified sender address                          |
 | `NEXT_PUBLIC_APP_URL`                                 | Base URL for email deep-links                    |
 | `AI_SERVICE_URL`                                      | FastAPI base URL (Phase 2)                       |
-| `AI_SERVICE_SECRET`                                   | Shared secret for `/api/ai/pipeline` proxy       |
+| `AI_SERVICE_SECRET`                                   | Shared secret Next.js ↔ FastAPI (required by AI) |
+| `GROQ_API_KEY` / `GEMINI_API_KEY` / `OPENROUTER_API_KEY` / `HF_TOKEN` | Free-tier LLM keys — read by `python-ai-service` |
 
 **Without Redis:** in-memory cache + BroadcastChannel (single instance / same browser).  
 **Without Sentry:** error boundaries still work; errors are not reported externally.  
 **Without Resend:** `sendPostingChangeEmail()` is a graceful no-op.  
-**Without AI service:** `/api/ai/pipeline` returns 500; `AiInsightsPanel` shows error state.  
+**Without AI service:** `AiInsightsPanel`, skill gap and interview prep show an error state.  
 **Bluedoor API:** free, no API key — enrichment and discover work out of the box.
 
 ---
@@ -518,11 +522,17 @@ This project uses **Server Actions** for most data operations. HTTP routes:
 - **Auth:** Bearer `CRON_SECRET` (Vercel cron at 03:00 UTC)
 - **Schedule:** Defined in `vercel.json`
 
-### `POST /api/ai/pipeline`
+### `POST /api/ai/pipeline/stream`
 
-- **Purpose:** Proxy to Python FastAPI 9-agent pipeline
-- **Auth:** NextAuth session + `X-Internal-Secret` header
+- **Purpose:** SSE proxy to the Python 9-agent pipeline (per-agent progress events)
+- **Auth:** NextAuth session; forwards `X-Internal-Secret` to FastAPI
+- **Profile:** loaded server-side from `UserProfile` — never taken from the request body
 - **Requires:** `AI_SERVICE_URL` + `AI_SERVICE_SECRET`
+
+### `POST /api/ai/batch`
+
+- **Purpose:** Enqueue AI analysis for jobs without an insight (ARQ worker → `/api/internal/ai-complete`)
+- **Auth:** NextAuth session
 
 ### `POST /api/monitoring`
 
@@ -682,29 +692,34 @@ Scaffolded — requires `python-ai-service/` running separately.
 
 ```text
 AiInsightsPanel (client)
-  └─ useAIPipeline → POST /api/ai/pipeline (NextAuth session)
-       └─ X-Internal-Secret → FastAPI /pipeline
+  └─ useStreamPipeline → POST /api/ai/pipeline/stream (NextAuth session, SSE)
+       └─ + DB profile, X-Internal-Secret → FastAPI /pipeline/run/stream
             └─ 9-agent pipeline:
                  Extractor → Analyzer → Preprocessor → Optimizer
                  → Synthesizer → Validator → Assembler → View → Final Verifier
-            └─ LLM fallback: Ollama → Groq → OpenRouter → Anthropic Haiku
+            └─ LLM fallback: Groq → Gemini → OpenRouter (:free) → Hugging Face
+                 (+ Ollama / Anthropic only when configured) — docs/LLM_MODEL_SELECTION.md
 ```
 
 ### Run Python service locally
 
 ```bash
 cd python-ai-service
-cp .env.example .env
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 3000
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+uvicorn app.main:app --reload --port 8000   # Next.js dev owns :3000
+pytest -q                                     # router, callback, auth, pipeline tests
 ```
 
-Set in `.env.local`:
+The service reads the repo-root `.env.local` (shared with Next.js). Set there:
 
 ```env
-AI_SERVICE_URL=http://localhost:3000
+AI_SERVICE_URL=http://localhost:8000
 AI_SERVICE_SECRET=change-me-in-production
+GROQ_API_KEY=...        # plus GEMINI_API_KEY, OPENROUTER_API_KEY, HF_TOKEN
 ```
+
+`GET /health` lists which LLM providers have keys (names only).
 
 See `docs/PROJECT_PLAN.md` for Coolify VPS deployment and n8n automation roadmap.
 
@@ -776,7 +791,7 @@ Both forms accept a **`standalone`** prop:
 | `useJobsCacheSync`       | `useJobsCacheSync.ts`       | SSE + BroadcastChannel invalidation |
 | `useJobsListParams`      | `useJobsListParams.ts`      | URL-driven dashboard filter state   |
 | `useJobsListBodyLoading` | `useJobsListBodyLoading.ts` | Skeleton only on cold cache         |
-| `useAIPipeline`          | `useAIPipeline.ts`          | AI insights mutation                |
+| `useStreamPipeline`      | `useAIPipeline.ts`          | SSE AI insights + per-agent progress |
 | `useGuestSignIn`         | `useGuestSignIn.ts`         | Demo account login flow             |
 | `useNavUserSession`      | `useNavUserSession.ts`      | SSR avatar + NextAuth useSession    |
 

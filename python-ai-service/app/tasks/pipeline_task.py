@@ -7,16 +7,22 @@ result is persisted to JobAIInsight and SSE invalidation updates all clients.
 """
 
 from __future__ import annotations
+import logging
 import os
 from typing import Any
 
 import httpx
-from arq import create_pool
 from arq.connections import RedisSettings
 
+from app.env import load_local_env
 from app.models.pipeline import PipelineRequest
 from app.models.job import JobInput, UserProfile
 from app.pipeline.orchestrator import run_pipeline
+
+# Worker is its own process — WorkerSettings reads REDIS_URL at import time
+load_local_env()
+
+logger = logging.getLogger(__name__)
 
 
 def _redis_settings() -> RedisSettings:
@@ -29,12 +35,12 @@ async def _notify_complete(
     user_id: str,
     result: dict[str, Any],
 ) -> None:
-    """Fire-and-forget callback to Next.js — persist result + invalidate SSE."""
+    """Callback to Next.js — persist result + invalidate SSE. Logs failures, never raises."""
     next_app_url = os.environ.get("NEXT_APP_URL", "http://localhost:3000")
     ai_secret = os.environ.get("AI_SERVICE_SECRET", "")
     try:
         async with httpx.AsyncClient() as client:
-            await client.post(
+            resp = await client.post(
                 f"{next_app_url}/api/internal/ai-complete",
                 json={"job_id": job_id, "user_id": user_id, "result": result},
                 headers={
@@ -43,9 +49,11 @@ async def _notify_complete(
                 },
                 timeout=10.0,
             )
-    except Exception:
-        # Never raise — ARQ task must succeed even if callback fails
-        pass
+        if resp.status_code >= 400:
+            logger.error("ai-complete callback for job %s returned %d", job_id, resp.status_code)
+    except httpx.HTTPError as exc:
+        # ARQ task must still succeed — the result stays readable via GET /task/{id}
+        logger.error("ai-complete callback for job %s failed: %s", job_id, type(exc).__name__)
 
 
 async def run_pipeline_task(

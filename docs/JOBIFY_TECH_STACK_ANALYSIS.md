@@ -93,10 +93,9 @@
 | FastAPI app | ✅ | `python-ai-service/app/main.py` |
 | 9-agent pipeline | ✅ | `python-ai-service/app/pipeline/` |
 | LLM fallback router | ✅ | `python-ai-service/app/llm/router.py` |
-| Next.js proxy (blocking) | ✅ | `app/api/ai/pipeline/route.ts` |
 | Next.js proxy (SSE stream) | ✅ | `app/api/ai/pipeline/stream/route.ts` |
-| `useAIPipeline` / `useStreamPipeline` | ✅ | Blocking + SSE streaming hooks |
-| `useAIPipeline` + panel UI | ✅ | DB load + `useStreamPipeline` + `PipelineProgress` |
+| `useStreamPipeline` | ✅ | SSE streaming hook (`hooks/useAIPipeline.ts`) |
+| Panel UI | ✅ | DB load + `useStreamPipeline` + `PipelineProgress` |
 | `JobAIInsight` DB model | ✅ | `prisma/schema.prisma` — one-to-one with Job |
 | `UserProfile` DB model + UI | ✅ | `/profile` + `UserProfileForm` + `useUserProfileMutation` |
 | AI output streaming | ✅ | SSE per-agent progress; cover letter after pipeline completes |
@@ -246,14 +245,13 @@ Separate FastAPI service. **Code in repo; not deployed to production.**
 
 | Tool | Role | Status |
 | --- | --- | --- |
-| Ollama | Local LLM server | ⬜ Not running on VPS |
-| Ollama Python client | API calls | ✅ `ollama_client.py` |
-| Groq SDK | Cloud fallback | ✅ `groq_client.py` |
-| OpenRouter httpx | Cloud fallback | ✅ `openrouter_client.py` |
-| Anthropic SDK | Last resort | ✅ `anthropic_client.py` |
+| Free-tier registry | Groq → Gemini → OpenRouter `:free` → Hugging Face model chains | ✅ `registry.py` |
+| OpenAI-compatible client | One httpx client for all four providers | ✅ `openai_compat.py` |
+| Ollama | Optional, only when `OLLAMA_BASE_URL` is set | ✅ `ollama_client.py` (opt-in) |
+| Anthropic (httpx) | Paid last resort, only when `ANTHROPIC_API_KEY` is set | ✅ `anthropic_client.py` (opt-in) |
 | LangChain | Optional patterns | ⬜ Not used — raw clients preferred |
 
-**Router:** `app/llm/router.py` — try providers in priority order, log `model_used`.
+**Router:** `app/llm/router.py` — walk the registry (missing key = skip; 401/402/403 = next provider; 429/404/5xx/timeout/empty = next model; 20s budget), then optional Ollama / Anthropic. See `docs/LLM_MODEL_SELECTION.md`.
 
 ### 3.3 Local Ollama Models (planned deploy)
 
@@ -287,9 +285,9 @@ Separate FastAPI service. **Code in repo; not deployed to production.**
 
 | Piece | Status | Path |
 | --- | --- | --- |
-| Proxy route | ✅ | `app/api/ai/pipeline/route.ts` |
-| TS types + client | ✅ | `lib/ai/pipeline-client.ts` |
-| Mutation hook | ✅ | `hooks/useAIPipeline.ts` |
+| Proxy route (SSE) | ✅ | `app/api/ai/pipeline/stream/route.ts` |
+| TS types + mappers | ✅ | `lib/ai/pipeline-client.ts`, `lib/ai/insight-mapper.ts` |
+| Stream hook | ✅ | `hooks/useAIPipeline.ts` (`useStreamPipeline`) |
 | UI panel | ✅ | `ai-insights-panel.tsx` + `pipeline-progress.tsx` |
 | Env vars | ⚠️ | `AI_SERVICE_URL`, `AI_SERVICE_SECRET` |
 | FastAPI streaming endpoint | ✅ | `POST /pipeline/run/stream` in `pipeline.py` |

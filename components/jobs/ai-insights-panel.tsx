@@ -9,7 +9,7 @@
  *
  * Consumes:
  *   - useQuery → getAIInsightAction (load from DB, staleTime Infinity)
- *   - useStreamPipeline → POST /api/ai/pipeline/stream (SSE)
+ *   - useStreamPipeline → POST /api/ai/pipeline/stream (SSE; profile added server-side)
  *   - saveAIInsightAction (persist result after generation)
  */
 
@@ -21,13 +21,16 @@ import { useStreamPipeline } from "@/hooks/useAIPipeline";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
 import { getAIInsightAction, saveAIInsightAction } from "@/utils/actions";
-import type {
-  PipelineJobInput,
-  PipelineUserProfile,
-  PipelineResponse,
-  InterviewAngle,
+import {
+  ALL_PIPELINE_OUTPUTS,
+  type PipelineJobInput,
+  type PipelineResponse,
+  type InterviewAngle,
 } from "@/lib/ai/pipeline-client";
-import type { AIInsightType } from "@/utils/types";
+import {
+  insightToPipelineResponse,
+  pipelineResultToInsight,
+} from "@/lib/ai/insight-mapper";
 import { PipelineProgress } from "@/components/jobs/pipeline-progress";
 import { trackEvent } from "@/lib/analytics/posthog";
 import { cn } from "@/lib/utils";
@@ -36,7 +39,11 @@ import remarkGfm from "remark-gfm";
 
 type AiInsightsPanelProps = {
   job: PipelineJobInput;
-  user?: PipelineUserProfile;
+  /**
+   * false for jobs not tracked in the DB yet (Discover) — the insight is shown
+   * but never loaded or saved, since job_id is not a Jobify Job ID.
+   */
+  persist?: boolean;
 };
 
 function FitScoreBadge({ score }: { score: number }) {
@@ -137,49 +144,7 @@ function InsightsResult({ data }: { data: PipelineResponse }) {
   );
 }
 
-/** Convert DB insight to PipelineResponse shape for unified rendering. */
-function dbInsightToPipelineResponse(insight: AIInsightType): PipelineResponse {
-  const angles: InterviewAngle[] = insight.interviewAngles.map((raw) => {
-    const sep = raw.indexOf(": ");
-    return sep !== -1
-      ? { question: raw.slice(0, sep), angle: raw.slice(sep + 2) }
-      : { question: raw, angle: "" };
-  });
-
-  return {
-    job_id: insight.jobId,
-    fit_score:
-      insight.fitScore != null
-        ? { score: insight.fitScore, reasoning: insight.fitLabel ?? "" }
-        : null,
-    cover_letter: insight.coverLetter
-      ? { text: insight.coverLetter, word_count: 0 }
-      : null,
-    interview_angles: angles,
-    summary: insight.summary,
-    meta: {},
-  };
-}
-
-/** Convert PipelineResponse to DB insight shape for saving. */
-function pipelineResponseToDbInsight(
-  data: PipelineResponse,
-): Partial<
-  Omit<AIInsightType, "id" | "jobId" | "userId" | "generatedAt" | "updatedAt">
-> {
-  return {
-    fitScore: data.fit_score?.score ?? null,
-    fitLabel: data.fit_score?.reasoning ?? null,
-    summary: data.summary ?? null,
-    coverLetter: data.cover_letter?.text ?? null,
-    interviewAngles: data.interview_angles.map((a) =>
-      a.angle ? `${a.question}: ${a.angle}` : a.question,
-    ),
-    redFlags: [],
-  };
-}
-
-export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
+export function AiInsightsPanel({ job, persist = true }: AiInsightsPanelProps) {
   const queryClient = useQueryClient();
   const insightKey = queryKeys.aiInsight.job(job.job_id);
 
@@ -194,6 +159,7 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
     queryFn: () => getAIInsightAction(job.job_id),
     staleTime: Infinity,
     gcTime: 0, // not in localStorage persist scope — DB is source of truth
+    enabled: persist,
   });
 
   const { stream, isPending, progress, abort } = useStreamPipeline();
@@ -203,11 +169,7 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
     setStreamError(null);
 
     await stream(
-      {
-        job,
-        user: user ?? {},
-        include: ["fit_score", "cover_letter", "interview_angles", "summary"],
-      },
+      { job, include: ALL_PIPELINE_OUTPUTS },
       {
         onSuccess: async (result) => {
           setStreamResult(result);
@@ -215,10 +177,11 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
             job_id: job.job_id,
             fit_score: result.fit_score?.score,
           });
+          if (!persist) return;
           // Persist to DB so next panel open is instant
           const saved = await saveAIInsightAction(
             job.job_id,
-            pipelineResponseToDbInsight(result),
+            pipelineResultToInsight(result),
           );
           if (saved) {
             queryClient.setQueryData(insightKey, saved);
@@ -241,7 +204,7 @@ export function AiInsightsPanel({ job, user }: AiInsightsPanelProps) {
 
   // Show streaming result (just generated) or persisted DB result
   const displayData =
-    streamResult ?? (dbInsight ? dbInsightToPipelineResponse(dbInsight) : null);
+    streamResult ?? (dbInsight ? insightToPipelineResponse(dbInsight) : null);
   const hasResult = !!displayData;
   const isFromDb = !streamResult && !!dbInsight;
 

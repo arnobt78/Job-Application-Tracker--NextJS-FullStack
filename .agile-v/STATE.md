@@ -7,9 +7,13 @@
 | **Status** | `ACTIVE` — Infinity Loop **ON** · awaiting user items for BL-0016 |
 | **Checkpoint** | INT-0004 `c1-bl0016-intake-20261014` (Human-Decision, PENDING) |
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
-| **Last Updated** | 2026-10-14 |
-| **Git HEAD** | BL-0016 ISSUE-0001..0005 commit on `main` (parent `6c48ba4`) · working tree holds unstaged parallel edits |
-| **Verify** | EVAL-0024 (2026-10-14, Node 24.21): lint ✓ · typecheck ✓ · test **69/69** ✓ · build ✓ · e2e 11 ✓ · browser CRUD ✓ · security ✓ · audit 7 high (RISK-0005 accepted) |
+| **Last Updated** | 2026-10-15 |
+| **Git HEAD** | ISSUE-0013 commit on `main` (on top of `4e08fda`) · not pushed |
+| **Verify** | EVAL-0030 (2026-10-15, Node 24.21): lint ✓ · typecheck ✓ · vitest **83/83** ✓ · pytest **24/24** ✓ · build ✓ · e2e 11 ✓ · live Groq/OpenRouter smoke ✓ · verifier + security review ✓ |
+
+## Reconcile (2026-10-15)
+- HEAD `4e08fda` matches recorded work; working tree clean (earlier "parallel edits" notes below are historical — all committed)
+- Open checkpoints: INT-0001 (Gate 1 baseline, PENDING) · INT-0004 (BL-0016 intake, PENDING)
 
 ## Reconcile (2026-10-14)
 - HEAD moved `148a49f` → `6c48ba4` (agile-v sync commit, docs only)
@@ -30,12 +34,15 @@
 - ISSUE-0001..0005 **committed** (session files only); parallel edits remain unstaged in working tree
 - **ISSUE-0006 DONE** — Stats 6-card grid (3+3 / 2+2+2 / 1) with one stats query: `components/StatsContainer.tsx`, `components/stats/stats-kpi-row.tsx` (`StatsKpiCards`), `app/(dashboard)/stats/page.tsx` (EVAL-0025)
 - **ISSUE-0007 DONE** — light-mode phase 1: tokens in `app/globals.css` + `tailwind.config.js` (`glass.*`, `accent-text`); primitives `components/ui/{glass-card,button,glass-alert-dialog,glass-dialog-content,glass-dropdown-menu}.tsx`, `components/layout/{dashboard-nav,landing-nav}.tsx`; `text-accent-text` on profile/timeline headings (EVAL-0026). Use `glass-*` / `accent-text` tokens for any new surface — never hardcode `white/*`
-- DB: `.env` `DATABASE_URL` is the demo DB used for both prod and local; GitHub OAuth was never configured (no GitHub accounts exist)
+- DB: `.env.local` `DATABASE_URL` (moved from `.env`, which no longer exists) is the demo DB used for both prod and local; GitHub OAuth was never configured (no GitHub accounts exist)
 - **ISSUE-0008 DONE** — light-mode phase 2 (EVAL-0027). Styling rules: `text-on-glass(-muted)` for text/icons on colored glass; `text-tone-X` replaces `text-X-300`, `text-ink-X` replaces `text-X-400` (no `/opacity` modifier on these — use `text-X-600/NN dark:text-X-400/NN`); `bg-glass-inset*` replaces `bg-black/10|20|30`; class maps in `lib/` are scanned by tailwind
 - **ISSUE-0009 DONE** — responsive 0 overflow; fixed `components/ui/company-logo.tsx` (Google s2), `components/EditJobForm.tsx` (seed + version-gated reset), `hooks/useJobsMutation.ts` (warm-up catch) (EVAL-0028)
 - **Human-Action (data):** audit cleanup hard-deleted the demo job "Senior Software Developer · Workforcenow" (test@user.com) — user restoring via DB point-in-time restore. Never run destructive UI automation on the shared demo DB; any future CRUD test must delete only rows it created (match by exact created id/name after filter settles)
 - **ISSUE-0010 DONE** — instant navigation (EVAL-0029). Pattern for any dashboard route: page JSX lives in `components/**/<x>-page-view.tsx`; `page.tsx` = prefetch + `HydrationBoundary` + view; `loading.tsx` = `<RouteFallbackProvider><View /></RouteFallbackProvider>`. Every data hook in a view MUST pass `enabled: !useIsRouteFallback()` (and use `useQueryBodyLoading` for skeletons). Nav links use `IntentLink` (no viewport prefetch). Salary intel cached via `getCachedSalaryIntel` (`salary-intel:${userId}` in `fixedUserRedisKeys`)
-- **Next exact action:** confirm demo job restored → re-run CRUD timing (create/edit/delete, delete only rows the test created) against the new navigation, or receive next BL-0016 item
+- **ISSUE-0013 DONE** — AI free-tier fallback chain + pipeline fixes (EVAL-0030). Python: `app/llm/registry.py` (model chains, data only) · `app/llm/openai_compat.py` (one client, never raises) · `app/llm/router.py` (missing key skip · 401/402/403 next provider · 429/404/5xx/timeout/empty next model · 20 s budget · Ollama/Anthropic opt-in last) · `app/api/security.py` (fail-closed `verify_secret`) · `app/env.py` (local `.env.local`) · ARQ pool singleton · `requirements-dev.txt`. Next.js: `lib/ai/insight-mapper.ts` (mapper + fit label) · `lib/ai/pipeline-payload.ts` (server-only profile/job select) · `toPipelineJobInput` in `lib/ai/pipeline-client.ts` · `useStreamPipeline` rewrite · Discover panel `persist={false}` · `saveAIInsightAction` ownership check · inbound email 503 on AI outage · deleted `/api/ai/pipeline`, `runAiPipeline`, non-streaming hook. Env: single `.env.local`, `prisma.config.ts`, `db:*` scripts `--env-file-if-exists=.env.local`
+- **Human-Action (AI):** add `GEMINI_API_KEY` + `HF_TOKEN` (and `GROQ_API_KEY` / `OPENROUTER_API_KEY` if not yet) to `.env.local` · Coolify: same 4 keys + `AI_SERVICE_SECRET` (now **required** — service returns 503 without it) + `NEXT_APP_URL` (prod Vercel URL) on `ai-service` and `arq-worker`, then redeploy · then re-run live smoke for Gemini/HF
+- **Queued (BACKLOG, next plan):** ISSUE-0011 remove Bluedoor → own job-posting API with ~50 seeded postings + schema extension · ISSUE-0012 wipe + reseed demo account with 20–30 jobs (user approved wiping prod/local shared DB) · VPS (Coolify) health review · ISSUE-0014 feature-by-feature fixes (user to list)
+- **Next exact action:** user adds AI keys → live smoke Gemini/HF models (status + latency only) → discuss VPS setup → plan ISSUE-0011/0012 (scoped plan, wait for approval)
 
 ## Recent (sync 2026-07-24)
 - Infinity Loop reactivated @ `148a49f` — full `.agile-v/` sync

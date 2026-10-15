@@ -11,13 +11,18 @@
  */
 
 import { auth } from '@/auth';
-import type { PipelineRequest } from '@/lib/ai/pipeline-client';
+import {
+  ALL_PIPELINE_OUTPUTS,
+  type PipelineOutput,
+  type PipelineRequest,
+} from '@/lib/ai/pipeline-client';
+import { loadPipelineUserProfile } from '@/lib/ai/pipeline-payload';
 
 export const dynamic = 'force-dynamic';
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL ?? 'http://localhost:3000';
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET ?? '';
-// Streaming pipeline can take up to 90s on cold Ollama start
+// Up to 4 sequential LLM calls, each possibly walking several fallback models
 const TIMEOUT_MS = 90_000;
 
 export async function POST(request: Request): Promise<Response> {
@@ -46,6 +51,16 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
+  // Profile always comes from the DB for the signed-in user — never from the request body
+  const include = payload.include?.filter((o): o is PipelineOutput =>
+    ALL_PIPELINE_OUTPUTS.includes(o)
+  );
+  const upstreamPayload: PipelineRequest = {
+    job: payload.job,
+    user: await loadPipelineUserProfile(session.user.id),
+    include: include?.length ? include : ALL_PIPELINE_OUTPUTS,
+  };
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -57,7 +72,7 @@ export async function POST(request: Request): Promise<Response> {
         Accept: 'text/event-stream',
         ...(AI_SERVICE_SECRET ? { 'X-Internal-Secret': AI_SERVICE_SECRET } : {}),
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(upstreamPayload),
       signal: controller.signal,
       // @ts-expect-error — Node 18+ fetch supports duplex
       duplex: 'half',

@@ -204,7 +204,7 @@ function ModalBody({ jobId, onClose }: ModalBodyProps) {
       )}
 
       {/* AI Insights — on-demand fit score, cover letter, interview angles */}
-      <AiInsightsPanel job={toBluedoorPipelineInput(job)} />
+      <AiInsightsPanel job={toBluedoorPipelineInput(job)} persist={false} />
 
       {/* Actions */}
       <div className="flex items-center gap-2">

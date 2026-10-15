@@ -5,23 +5,14 @@ Called by Next.js inbound email webhook after verifying Resend signature.
 """
 
 from __future__ import annotations
-import os
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.api.security import verify_secret
 from app.llm import router as llm_router
 
 router = APIRouter(tags=["email"])
-
-
-def _verify_secret(request: Request) -> None:
-    secret = os.environ.get("AI_SERVICE_SECRET")
-    if not secret:
-        return
-    header = request.headers.get("X-Internal-Secret", "")
-    if header != secret:
-        raise HTTPException(status_code=401, detail="Invalid internal secret")
 
 
 class ParseEmailRequest(BaseModel):
@@ -46,7 +37,7 @@ _SYSTEM = (
 @router.post("/parse-email", response_model=ParseEmailResponse)
 async def parse_email(
     payload: ParseEmailRequest,
-    _: None = Depends(_verify_secret),
+    _: None = Depends(verify_secret),
 ) -> ParseEmailResponse:
     """Use LLM to classify an email and extract job application details."""
     body_preview = payload.body[:2000]

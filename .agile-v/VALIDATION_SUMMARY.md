@@ -4,10 +4,25 @@
 |---|---|
 | Cycle | C1 |
 | Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009…0015 ✅ · Gate 1 PENDING |
-| Status | `ACTIVE` — EVAL-0020 PASS @ `148a49f` |
-| Last Updated | 2026-07-24T10:16:00Z |
+| Status | `ACTIVE` — EVAL-0030 PASS (AI fallback chain) |
+| Last Updated | 2026-10-15 |
 | Red Team | EVAL-0016…0019 PASS · EVAL-0020 governance sync |
 | EvalGate (Gate 2) | NOT_RUN |
+
+## EVAL-0030 (BL-0016 ISSUE-0013 — AI free-tier fallback chain + pipeline fixes — 2026-10-15)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Gates | `npx tsc --noEmit && npm run lint && npx vitest run && npm run build` (Node 24.21) | PASS | tsc clean · eslint clean · vitest 83/83 (17 files, + `insight-mapper.test.ts`) · build OK (`/api/ai/pipeline` gone, `/api/ai/pipeline/stream` + `/api/ai/batch` present) |
+| Python | `pytest -q` in throwaway venv (`requirements-dev.txt`) | PASS | 24/24 — router (next model / next provider / 429 per-model / timeout / empty / missing key / headroom / budget / no upstream body in errors / think-strip), callback payload + non-2xx logging, fail-closed secret (503 unset, 401 wrong), `/health` names only, pipeline |
+| E2E | `npx playwright test` vs `next start` | PASS | 11 passed · 10 skipped (`E2E_COOKIE`) — unchanged baseline |
+| Service smoke | `uvicorn app.main:app` local | PASS | `/health` → `{"status":"ok","llm_providers":[...]}` (names only) · wrong secret → 401 |
+| Live LLM smoke | 1 tiny prompt per model, status + latency only | PASS (partial) | Groq 3/3 OK (gpt-oss-20b 0.9 s, 120b 0.5 s, qwen3.8 0.15 s) · OpenRouter 3/5 OK (both Gemma `:free` 429 while Nemotron + `openrouter/free` answered → 429 reclassified per-model) · Gemini + HF **no key yet** |
+| Live pipeline | `run_pipeline` with sample job + profile | PASS | 4 LLM calls via groq/gpt-oss-20b · 4.4 s total · fit 73 · cover letter 150 words · 3 interview angles · summary |
+| Prisma env | `npx prisma validate` · `tsx --env-file-if-exists=.env.local` | PASS | `prisma.config.ts` loads `.env.local`; DB URLs present (booleans only) |
+| Red Team | implementation-verifier | PASS w/ notes → fixed | `saveAIInsightAction` lacked job-ownership check → added · `onSuccess` inside try → moved out · interview-prep angle format → shared `formatInterviewAngle` · no overall router deadline → 20 s budget · `@next/env` undeclared → devDependency |
+| Security | security-review (uncommitted diff) | PASS | no medium+ · hardening applied: client-visible LLM errors carry provider/model/status only (upstream bodies server-log only) |
+| Not verified | — | OPEN | Gemini + Hugging Face model IDs on user's keys · VPS (Coolify) still runs old image until redeploy with new env keys · ARQ batch path end-to-end on VPS · DB-writing UI tests (no DB writes this session) |
 
 ## EVAL-0029 (BL-0016 ISSUE-0010 — instant navigation — 2026-10-14)
 

@@ -5,13 +5,13 @@ Called when a job status changes to 'interview' (via after() in Next.js updateJo
 """
 
 from __future__ import annotations
-import os
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.api.security import verify_secret
 from app.models.job import JobInput, UserProfile
-from app.models.pipeline import InterviewAngle
+from app.models.pipeline import InterviewAngle, PipelineRequest
 from app.pipeline.agents import (
     extractor,
     analyzer,
@@ -23,16 +23,6 @@ from app.pipeline.agents import (
 )
 
 router = APIRouter(tags=["interview"])
-
-
-def _verify_secret(request: Request) -> None:
-    """Reject requests without a valid X-Internal-Secret header."""
-    secret = os.environ.get("AI_SERVICE_SECRET")
-    if not secret:
-        return
-    header = request.headers.get("X-Internal-Secret", "")
-    if header != secret:
-        raise HTTPException(status_code=401, detail="Invalid internal secret")
 
 
 class InterviewPrepRequest(BaseModel):
@@ -49,7 +39,7 @@ class InterviewPrepResponse(BaseModel):
 @router.post("/pipeline/interview-prep", response_model=InterviewPrepResponse)
 async def run_interview_prep(
     payload: InterviewPrepRequest,
-    _: None = Depends(_verify_secret),
+    _: None = Depends(verify_secret),
 ) -> InterviewPrepResponse:
     """Generate interview angles only — skips fit score, cover letter, summary.
 
@@ -57,7 +47,6 @@ async def run_interview_prep(
     """
     try:
         # Run agents 1-4 (pure functions — build context)
-        from app.models.pipeline import PipelineRequest
         request = PipelineRequest(
             job=payload.job,
             user=payload.user,
@@ -87,8 +76,11 @@ async def run_interview_prep(
             interview_tips=tips,
         )
 
-    except (ValueError, RuntimeError) as exc:
+    except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        # All LLM providers failed — transient, same contract as /pipeline/run
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
 
 def _derive_tips(angles: list[InterviewAngle]) -> list[str]:

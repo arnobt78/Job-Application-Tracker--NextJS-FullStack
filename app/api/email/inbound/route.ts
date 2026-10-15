@@ -5,7 +5,8 @@
  * when the email is a job application confirmation.
  *
  * Auth: HMAC-SHA256 signature in Resend-Signature header verified against
- * RESEND_INBOUND_SECRET env var. Always return 200 to avoid Resend retry storms.
+ * RESEND_INBOUND_SECRET env var. Returns 200 for everything except an AI-service
+ * outage on a matched user's email (503), so Resend only retries recoverable cases.
  *
  * Flow:
  *   1. Verify Resend-Signature (skip if RESEND_INBOUND_SECRET not set)
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text();
   const signature = request.headers.get('resend-signature') ?? '';
 
-  // Always return 200 — Resend will retry on non-2xx; avoid double-processing
+  // 200 on rejects — Resend retries non-2xx and a forged/invalid request will never succeed
   if (RESEND_INBOUND_SECRET && !verifyResendSignature(rawBody, signature)) {
     return NextResponse.json({ ok: true });
   }
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Call FastAPI /parse-email for LLM classification
     let parsed: ParseEmailResponse | null = null;
+    let aiUnavailable = false;
     try {
       const parseRes = await fetch(`${AI_SERVICE_URL}/parse-email`, {
         method: 'POST',
@@ -101,9 +103,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       if (parseRes.ok) {
         parsed = (await parseRes.json()) as ParseEmailResponse;
+      } else {
+        aiUnavailable = parseRes.status >= 500;
       }
     } catch {
-      // AI service unavailable — fall through without creating job
+      aiUnavailable = true;
+    }
+
+    if (aiUnavailable) {
+      // Valid email for a known user that could not be classified — let Resend retry later
+      return NextResponse.json({ error: 'AI service unavailable' }, { status: 503 });
     }
 
     if (parsed?.is_application_confirmation && parsed.confidence >= 0.7) {

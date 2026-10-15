@@ -135,6 +135,10 @@
 | ISSUE-0008 | ISSUE-0007 follow-up · Agent Review | Light-mode phase 2: tokens `on-glass(-muted)`, `glass-inset(-soft/-strong)`, `.text-tone-*` (700/300) + `.text-ink-*` (600/400) utilities; ~40 feature files migrated; button text/icons slate-800 in light (default/destructive/TryDemo); secondary button visible shape in light (Agent Review fix); dialog overlay `slate-900/40` + opaque glass panels in light; `lib/` added to tailwind `content`; dark identical | REQ-0014 | DONE (EVAL-0027) |
 | ISSUE-0009 | user | Responsive audit 10 routes × 390/768/1280 × light/dark + dialogs: 0 overflow. Fixes from A-Z run: CompanyLogo Clearbit (retired, DNS fail → console errors) → Google s2 favicons; EditJobForm empty-until-fetch + refetch reset dropping saves → list-job `placeholderData` + version-gated `reset(keepDirtyValues)`; warm-up `fetchQuery` unhandled `CancelledError` (Sentry events) → caught | REQ-0012, REQ-0014 | DONE (EVAL-0028) |
 | ISSUE-0010 | EVAL-0028 finding + user | Instant navigation on all dashboard routes: mirrored `loading.tsx` (same page view, cache-only `RouteFallbackProvider`), intent prefetch + pending spinner in nav/profile dropdown, `staleTimes.dynamic=30`, cached salary intel (Redis + stats tag), deduped stats/facets queries | REQ-0012, REQ-0014 | DONE (EVAL-0029) |
+| ISSUE-0011 | user (2026-10-14) | Replace third-party Bluedoor API (upstream down, 530) with ~50 seeded job postings behind the same Discover / enrich workflow, so features, API and network timing can be tested end-to-end | REQ-0026 (TBD) | TODO (needs plan + approval) |
+| ISSUE-0012 | user (2026-10-14) | Seed 10–20 varied jobs for the demo account (test@user.com) | REQ-0012 (TBD) | TODO (needs plan + approval) |
+| ISSUE-0013 | user (2026-10-14/15) | Free-tier LLM fallback chain per `docs/LLM_MODEL_SELECTION.md` + AI pipeline wiring fixes + single `.env.local` | REQ-0027 | DONE (EVAL-0030) — Human-Action: add GEMINI/HF keys; Coolify env + redeploy |
+| ISSUE-0014 | user (2026-10-14) | Feature-by-feature test pass; user will list non-working features, UI polish and API fixes; prod navigation feedback pending | — | TODO (details from user) |
 
 ---
 
