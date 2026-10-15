@@ -80,7 +80,7 @@ export function StatsPageView() {
         <PageSectionHeader
           icon={DollarSign}
           title="Salary Intelligence"
-          subtitle="Market salary data extracted from your enriched job postings"
+          subtitle="Salary ranges from the postings your applications are linked to"
           className="mb-4"
         />
         <GlassCard variant="emerald">

@@ -21,8 +21,24 @@ import { PrismaClient } from '@prisma/client';
  * This is wrapped in a function so we can call it lazily
  */
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient({ datasourceUrl: withConnectTimeout(process.env.DATABASE_URL) });
 };
+
+/**
+ * The remote Postgres can take ~4s to open a fresh connection (after idle pool
+ * connections are dropped); Prisma's 5s default then fails writes with
+ * "Can't reach database server". An explicit connect_timeout in the URL wins.
+ */
+function withConnectTimeout(url: string | undefined): string | undefined {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    if (!parsed.searchParams.has('connect_timeout')) parsed.searchParams.set('connect_timeout', '15');
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
 
 /**
  * Type definition for the PrismaClient singleton

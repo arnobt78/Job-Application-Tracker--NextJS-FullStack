@@ -29,3 +29,12 @@ test('root / loads without 500', async ({ page }) => {
   const res = await page.goto('/', { waitUntil: 'domcontentloaded' });
   expect(res?.status()).not.toBe(500);
 });
+
+test('wrong password stays on /sign-in', async ({ page }) => {
+  await page.goto('/sign-in');
+  await page.getByLabel('Email').fill('test@user.com');
+  await page.getByLabel('Password').fill('definitely-wrong-password');
+  await page.getByRole('button', { name: 'Sign In' }).click();
+  await expect(page.getByRole('alert').or(page.getByText(/invalid|incorrect/i)).first()).toBeVisible({ timeout: 10_000 });
+  await expect(page).toHaveURL(/\/sign-in/);
+});

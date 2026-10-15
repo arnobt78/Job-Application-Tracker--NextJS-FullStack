@@ -104,6 +104,12 @@ async function unwrapJobActionResult(
   return result.job;
 }
 
+/** Update/delete actions return null on failure — throw so onError rolls back and toasts */
+function requireJob(job: JobType | null, fallbackLabel: string): JobType {
+  if (!job) throw new Error(fallbackLabel);
+  return job;
+}
+
 /** Shared post-mutation invalidation — busts all job queries + cross-tab broadcast */
 export function useJobsInvalidation() {
   const queryClient = useQueryClient();
@@ -311,8 +317,8 @@ export function useUpdateJobMutation(jobId: string) {
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
-    mutationFn: (values: CreateAndEditJobType) =>
-      updateJobAction(jobId, values),
+    mutationFn: async (values: CreateAndEditJobType) =>
+      requireJob(await updateJobAction(jobId, values), 'Could not update application'),
     onMutate: async (values) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
       await queryClient.cancelQueries({
@@ -376,7 +382,6 @@ export function useUpdateJobMutation(jobId: string) {
       notifyJobUpdateError(values.position, values.company);
     },
     onSuccess: (result) => {
-      if (!result) return;
       notifyJobUpdated(result);
       invalidateAfterMutation(jobId);
       trackEvent('job_updated', { status: result.status, mode: result.mode });
@@ -393,7 +398,8 @@ export function useDeleteJobMutation(jobId: string) {
   const { invalidateAfterMutation } = useJobsInvalidation();
 
   return useMutation({
-    mutationFn: () => deleteJobAction(jobId),
+    mutationFn: async () =>
+      requireJob(await deleteJobAction(jobId), 'Could not delete application'),
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.all });
       await queryClient.cancelQueries({ queryKey: queryKeys.stats.all });
@@ -449,7 +455,6 @@ export function useDeleteJobMutation(jobId: string) {
       );
     },
     onSuccess: (data) => {
-      if (!data) return;
       invalidateAfterMutation(jobId);
       notifyJobDeleted(data);
       trackEvent('job_deleted', { status: data.status });

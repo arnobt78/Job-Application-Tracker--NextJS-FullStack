@@ -4,10 +4,23 @@
 |---|---|
 | Cycle | C1 |
 | Stage | 3 Synthesis — P1+P2+P3 ✅ · BL-0009…0015 ✅ · Gate 1 PENDING |
-| Status | `ACTIVE` — EVAL-0030 PASS (AI fallback chain) |
+| Status | `ACTIVE` — EVAL-0031 PASS (own postings catalog + A-Z verification) |
 | Last Updated | 2026-10-15 |
 | Red Team | EVAL-0016…0019 PASS · EVAL-0020 governance sync |
 | EvalGate (Gate 2) | NOT_RUN |
+
+## EVAL-0031 (BL-0016 ISSUE-0011/0012 — own postings catalog + full A-Z verification — 2026-10-15)
+
+| Check | Command | Result | Notes |
+|---|---|---|---|
+| Gates | `npx tsc --noEmit && npm run lint && npx vitest run && npm run build` (Node 24.21) | PASS | tsc clean · eslint clean · vitest 107/107 (19 files) · build OK |
+| Python | `python-ai-service/.venv` · `pytest -q` · `pylint app --rcfile ../.pylintrc` | PASS | 26/26 · pylint 9.82/10 · `pyrightconfig.json` + `.pylintrc` clear editor red lines |
+| E2E | `npx playwright test` vs `next start` (shared demo DB) | PASS | 31/31 · auto fixture fails on any console error / same-origin 5xx / unexpected 4xx · every dashboard route · create → optimistic card < 2 s → edit status → `/dashboard/[id]` → delete · discover track `pst_002` → dashboard → delete · only own `E2E-<timestamp>` rows written, 0 leftovers verified after each run |
+| Live LLM smoke | 1 tiny prompt per model, status + latency only | PASS (partial) | Gemini OK after chain reorder (`3.5-flash-lite` first; `3.8-flash` timed out) · Hugging Face 402 on every model = credits exhausted (Human-Action) |
+| Browser A-Z | Playwright probe vs prod build | PASS | client nav 320–500 ms cold / 70–110 ms warm · 0 console errors/warnings/hydration · `loading.tsx` = real page view (mirrored by construction) · Discover card actions wrap at all widths (Track button was clipped) · Sentry tunnel 27 → 1 request per browsing session |
+| Fixes from verification | — | DONE | form select triggers now labelled (`<label htmlFor>` reaches the button) · update/delete mutations throw on `null` → rollback + error toast (was silent optimistic loss) · `updateJobAction` / `createTeamJobAction` persist parsed fields only (snapshot columns server-owned) + log failures · Prisma `connect_timeout=15` when URL has none (remote DB fresh connect 1.7–4 s vs 5 s default) · Sentry `browserSessionIntegration({ lifecycle: 'page' })` · stale Bluedoor-era copy on Discover/job form/Stats |
+| Security | security-review (commit `1dde90b` + working tree) | PASS | no medium+ · hardening applied (parsed-only job writes) |
+| Not verified | — | OPEN | Coolify `ai-service`/`arq-worker` still on old image · prod Vercel env (`CRON_SECRET`, remove `BLUEDOOR_WEBHOOK_SECRET`) · HF credits |
 
 ## EVAL-0030 (BL-0016 ISSUE-0013 — AI free-tier fallback chain + pipeline fixes — 2026-10-15)
 

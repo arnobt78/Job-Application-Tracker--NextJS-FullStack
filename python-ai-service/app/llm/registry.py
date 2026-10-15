@@ -57,11 +57,13 @@ GEMINI = ProviderSpec(
     base_url="https://generativelanguage.googleapis.com/v1beta/openai",
     models=tuple(
         ModelSpec(model_id, {"reasoning_effort": "low"}, reasoning=True)
+        # Ordered by live latency (2026-10-15 smoke): flash-lite ~2s; 3.8-flash timed out / 503
+        # repeatedly and a hang there would consume the router's whole time budget
         for model_id in (
             "gemini-3.5-flash-lite",
-            "gemini-3.8-flash",
-            "gemini-3.6-flash",
             "gemini-3.1-flash-lite",
+            "gemini-3.6-flash",
+            "gemini-3.8-flash",
         )
     ),
 )

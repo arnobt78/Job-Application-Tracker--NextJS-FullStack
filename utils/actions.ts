@@ -265,7 +265,8 @@ export async function deleteJobAction(id: string): Promise<JobType | null> {
     await invalidateUserJobCaches(userId, id);
 
     return job as JobType;
-  } catch {
+  } catch (error) {
+    console.error("[deleteJobAction]", error);
     return null;
   }
 }
@@ -293,7 +294,10 @@ export async function updateJobAction(
   const userId = await authenticateAndRedirect();
 
   try {
-    createAndEditJobSchema.parse(values);
+    const parsed = createAndEditJobSchema.parse({
+      ...values,
+      applyUrl: values.applyUrl ?? undefined,
+    });
 
     // Capture previous state to detect changes
     const previous = await prisma.job.findUnique({
@@ -301,25 +305,30 @@ export async function updateJobAction(
       select: { applyUrl: true, postingId: true, status: true },
     });
 
+    // Persist only form fields — posting snapshot columns are server-owned
     const job = await prisma.job.update({
       where: { id, userId },
       data: {
-        ...values,
-        applyUrl: values.applyUrl ?? null,
+        position: parsed.position,
+        company: parsed.company,
+        location: parsed.location,
+        status: parsed.status,
+        mode: parsed.mode,
+        applyUrl: parsed.applyUrl ?? null,
       },
     });
 
     await invalidateUserJobCaches(userId, id);
 
     // Try linking again while unlinked, or when the apply URL now points somewhere else
-    const applyUrlChanged = previous?.applyUrl !== (values.applyUrl ?? null);
-    if (!previous?.postingId || (applyUrlChanged && values.applyUrl)) {
+    const applyUrlChanged = previous?.applyUrl !== (parsed.applyUrl ?? null);
+    if (!previous?.postingId || (applyUrlChanged && parsed.applyUrl)) {
       after(() => linkJobToPosting(id, userId));
     }
 
     // Trigger interview-prep when job moves INTO interview status
     const movingToInterview =
-      values.status === 'interview' && previous?.status !== 'interview';
+      parsed.status === 'interview' && previous?.status !== 'interview';
     if (movingToInterview) {
       after(async () => {
         await triggerInterviewPrepAction(id, userId);
@@ -327,7 +336,8 @@ export async function updateJobAction(
     }
 
     return job as JobType;
-  } catch {
+  } catch (error) {
+    console.error("[updateJobAction]", error);
     return null;
   }
 }
@@ -966,12 +976,19 @@ export async function createTeamJobAction(
 
   try {
     await assertTeamMembership(userId, teamId);
-    createAndEditJobSchema.parse(values);
+    const parsed = createAndEditJobSchema.parse({
+      ...values,
+      applyUrl: values.applyUrl ?? undefined,
+    });
 
     const job = await prisma.job.create({
       data: {
-        ...values,
-        applyUrl: values.applyUrl ?? null,
+        position: parsed.position,
+        company: parsed.company,
+        location: parsed.location,
+        status: parsed.status,
+        mode: parsed.mode,
+        applyUrl: parsed.applyUrl ?? null,
         userId,
         teamId,
       },

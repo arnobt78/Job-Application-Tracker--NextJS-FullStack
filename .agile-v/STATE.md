@@ -8,8 +8,8 @@
 | **Checkpoint** | INT-0004 `c1-bl0016-intake-20261014` (Human-Decision, PENDING) |
 | **Auth** | NextAuth v5 · `proxy.ts` (Next.js 16) |
 | **Last Updated** | 2026-10-15 |
-| **Git HEAD** | ISSUE-0013 commit on `main` (on top of `4e08fda`) · not pushed |
-| **Verify** | ISSUE-0011/0012 (2026-10-15, Node 24): lint ✓ · typecheck ✓ · vitest **105/105** ✓ · pytest **26/26** ✓ · build ✓ · discover e2e 8/8 ✓ (EVAL-0031 recorded at end of A-Z pass) · prior EVAL-0030 |
+| **Git HEAD** | `main` — ISSUE-0011/0012 commit + A-Z verification commit on top of `2c8d08b` · **not pushed** |
+| **Verify** | EVAL-0031 (2026-10-15, Node 24): lint ✓ · typecheck ✓ · vitest **107/107** ✓ · pytest **26/26** ✓ · build ✓ · Playwright **31/31** ✓ · browser A-Z ✓ · security review ✓ |
 
 ## Reconcile (2026-10-15)
 - HEAD `4e08fda` matches recorded work; working tree clean (earlier "parallel edits" notes below are historical — all committed)
@@ -45,7 +45,9 @@
 - **ISSUE-0012 DONE** — `prisma/seed.ts` + `prisma/seed-data/` (15 fictional companies, 50 postings 40 open/10 closed, 70 events, demo user id `seed_demo_user`, 25 jobs with 12 linked across every badge, profile) · `npm run db:reset` (destructive; Prisma requires explicit user consent) — shared DB wiped + reseeded 2026-10-15 with user consent
 - Playwright: `tests/e2e/auth.setup.ts` (storageState → `tests/e2e/.auth/`, gitignored) + `tests/e2e/fixtures.ts` (auto console/network assertions); `discover.spec.ts` rewritten
 - **Human-Action (postings):** remove `BLUEDOOR_WEBHOOK_SECRET` from Vercel · confirm `CRON_SECRET` set in Vercel (crons now reject without it) · Coolify redeploy `ai-service` + `arq-worker` (new field names; old names still accepted) · anyone signed in before the reset must sign in again
-- **Next exact action:** Part 2 of plan `postings_system_and_verification` — editor red lines (venv done: `python-ai-service/.venv`) → Gemini/HF smoke → full Playwright suite → browser A-Z pass → security review → EVAL-0031 + commit
+- **A-Z verification DONE** (EVAL-0031): `pyrightconfig.json` + `.pylintrc` (editor red lines; local venv `python-ai-service/.venv`, gitignored) · Gemini chain starts at `3.5-flash-lite` · Playwright `tests/e2e/routes.spec.ts` + rewritten auth/dashboard/discover/stats/profile specs (CRUD writes only `E2E-<timestamp>` rows and deletes them) · fixes: `components/ui/glass-filter-dropdown.tsx` + `components/FormComponents.tsx` (label → trigger), `hooks/useJobsMutation.ts` (`requireJob`), `utils/actions.ts` (parsed-only update/team-create + error logs), `utils/db.ts` (`connect_timeout`), `instrumentation-client.ts` (session lifecycle `page`), `components/discover/discover-job-card.tsx` (action row wraps)
+- **Human-Action (AI):** Hugging Face returns 402 on every model — credits exhausted; top up or leave HF as last-resort
+- **Next exact action:** user pushes `main` when ready, then the Human-Actions above (Vercel env, Coolify redeploy); BL-0016 intake continues with the next user item
 
 ## Recent (sync 2026-07-24)
 - Infinity Loop reactivated @ `148a49f` — full `.agile-v/` sync

@@ -101,6 +101,36 @@ describe('CustomFormFilterDropdown', () => {
         )}
       </WithForm>
     );
-    expect(getByRole('button', { name: /Pending/i })).toBeTruthy();
+    expect(getByRole('button', { name: /Job Status/ }).textContent).toContain('Pending');
+  });
+
+  it('associates the field label with the trigger button', () => {
+    const { getByLabelText } = render(
+      <WithForm>
+        {(control) => (
+          <CustomFormFilterDropdown
+            name="status"
+            control={control}
+            options={JOB_FORM_STATUS_OPTIONS}
+            getOptionIcon={getJobStatusOptionIcon}
+            labelText="Job Status"
+          />
+        )}
+      </WithForm>
+    );
+    expect(getByLabelText(/Job Status/).tagName).toBe('BUTTON');
+  });
+});
+
+describe('CustomFormSelect label', () => {
+  it('associates the field label with the trigger button', () => {
+    const { getByLabelText } = render(
+      <WithForm>
+        {(control) => (
+          <CustomFormSelect name="status" control={control} items={['pending']} labelText="job status" />
+        )}
+      </WithForm>
+    );
+    expect(getByLabelText(/job status/).tagName).toBe('BUTTON');
   });
 });

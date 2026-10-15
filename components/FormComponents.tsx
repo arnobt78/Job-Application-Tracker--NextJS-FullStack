@@ -123,34 +123,34 @@ export function CustomFormSelect<T extends FieldValues>({
                 <span className="text-destructive ml-0.5">*</span>
               ) : null}
             </FormLabel>
-            <FormControl>
-              <DropdownMenu modal={false}>
+            <DropdownMenu modal={false}>
+              <FormControl>
                 <DropdownMenuTrigger asChild>
                   <GlassDropdownTrigger className={FIELD_GLOW}>
                     <span className="truncate capitalize">{selectedLabel}</span>
                   </GlassDropdownTrigger>
                 </DropdownMenuTrigger>
-                <GlassDropdownContent
-                  align="start"
-                  collisionPadding={8}
-                  sideOffset={8}
-                  className="w-[var(--radix-dropdown-menu-trigger-width)]"
+              </FormControl>
+              <GlassDropdownContent
+                align="start"
+                collisionPadding={8}
+                sideOffset={8}
+                className="w-[var(--radix-dropdown-menu-trigger-width)]"
+              >
+                <DropdownMenuRadioGroup
+                  value={field.value ?? ''}
+                  onValueChange={field.onChange}
                 >
-                  <DropdownMenuRadioGroup
-                    value={field.value ?? ''}
-                    onValueChange={field.onChange}
-                  >
-                    {items.map((item) => (
-                      <GlassDropdownRadioItem
-                        key={item}
-                        value={item}
-                        label={item}
-                      />
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </GlassDropdownContent>
-              </DropdownMenu>
-            </FormControl>
+                  {items.map((item) => (
+                    <GlassDropdownRadioItem
+                      key={item}
+                      value={item}
+                      label={item}
+                    />
+                  ))}
+                </DropdownMenuRadioGroup>
+              </GlassDropdownContent>
+            </DropdownMenu>
             <FormMessage />
           </FormItem>
         );

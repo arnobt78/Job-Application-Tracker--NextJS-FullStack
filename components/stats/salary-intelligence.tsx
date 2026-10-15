@@ -156,7 +156,7 @@ export function SalaryIntelligence() {
         <KpiCard
           label="Avg Max Salary"
           value={formatSalary(avgMax, currency)}
-          sub="ceiling across enriched jobs"
+          sub="ceiling across linked jobs"
         />
       </div>
 

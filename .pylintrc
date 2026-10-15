@@ -1,0 +1,21 @@
+# Pylint for python-ai-service (imports are rooted at python-ai-service/, e.g. `from app.llm import ...`).
+# Setup: cd python-ai-service && python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+[MAIN]
+source-roots=python-ai-service
+ignore=.venv,__pycache__
+
+[MESSAGES CONTROL]
+# Docstrings are written where they add context; FastAPI/pydantic models are small by design.
+# app/main.py loads env before importing routes on purpose (marked noqa: E402).
+# pytest fixtures are injected by parameter name, which pylint reports as redefined-outer-name.
+disable=
+    redefined-outer-name,
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    wrong-import-position,
+    line-too-long
+
+[FORMAT]
+max-line-length=120

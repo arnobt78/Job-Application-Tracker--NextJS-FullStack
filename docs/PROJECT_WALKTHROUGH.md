@@ -19,7 +19,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Global timeline** | ✅ Complete — `/timeline` — job_created, enriched, posting_changed, ai_generated |
 | **Phase 2 — AI** | ✅ ~90% — FastAPI + streaming SSE + `PipelineProgress` + DB persist + `/profile` for UserProfile |
 | **Phase 2 — n8n / Coolify** | ⚠️ Partial — internal API + `docs/n8n/*.json` templates; no VPS deploy |
-| **Testing / analytics** | ✅ Vitest 105 · pytest 26 · Playwright with auth `storageState` + console/network assertions · PostHog (optional) |
+| **Testing / analytics** | ✅ Vitest 107 · pytest 26 · Playwright 31 (auth `storageState` + console/network assertions, own-row CRUD) · PostHog (optional) |
 | **Phase 3 — complete** | ✅ AI fit chip · react-markdown · Framer Motion · PDF parser · Skill Gap (keyword + LLM) · Salary Intel · Team mode · Browser extension · Email inbound · ARQ batch AI · Interview prep |
 
 **Roadmap detail:** `docs/PROJECT_PLAN.md` · **Stack decisions:** `docs/JOBIFY_TECH_STACK_ANALYSIS.md`
@@ -55,7 +55,7 @@ A **job application tracker (CRM)** at its core: users log applications (company
 | **Internal API** | `GET /api/internal/jobs` + `POST /api/internal/notify` (`X-Internal-Secret`) |
 | **n8n templates** | `docs/n8n/` — daily-digest, stale-app-alert, posting-change-webhook JSON |
 | **PostHog** | `PostHogProvider` + `trackEvent` — no-op without `NEXT_PUBLIC_POSTHOG_KEY` |
-| **E2E tests** | Playwright — `tests/e2e/auth`, `dashboard`, `discover`, `stats`, `user-profile` |
+| **E2E tests** | Playwright — `tests/e2e/auth`, `routes`, `dashboard`, `discover`, `stats`, `user-profile` |
 
 ### ⬜ Not yet implemented
 
@@ -119,7 +119,7 @@ Discover: `lib/discover/query-options.ts` + `useInfiniteQuery` — SSR prefetch 
 | `components/providers/posthog-provider.tsx` | Lazy PostHog init |
 | `lib/analytics/posthog.ts` | `trackEvent`, `identifyUser` — no-op without key |
 | `docs/n8n/` | Workflow JSON for import (daily digest, stale alert, webhook) |
-| `tests/e2e/` | Playwright specs (auth, dashboard, discover, stats, profile) |
+| `tests/e2e/` | Playwright specs (auth, every dashboard route, dashboard CRUD, discover track, stats, profile) — CRUD creates and deletes only its own `E2E-<timestamp>` rows |
 | `lib/postings/queries.ts` · `cache.ts` | Keyset search, facets, detail, events + `unstable_cache` wrappers |
 | `lib/postings/link.ts` | Match + snapshot + `diffSnapshot` + `resyncJob`; `publishNotification` + `sendPostingChangeEmail` |
 | `prisma/seed.ts` · `prisma/seed-data/` | Deterministic demo data — 15 companies, 50 postings + events, demo user, 25 jobs, profile |
@@ -345,7 +345,7 @@ npm run lint && npm run typecheck && npm run test && npm run build
 npm run test:e2e    # Playwright (requires a running server + seeded DB)
 ```
 
-105 Vitest tests · 26 pytest · Playwright auth setup + console/network assertions · all dashboard routes `force-dynamic`.
+107 Vitest tests · 26 pytest · 31 Playwright tests (auth setup + console/network assertions) · all dashboard routes `force-dynamic`.
 
 ---
 

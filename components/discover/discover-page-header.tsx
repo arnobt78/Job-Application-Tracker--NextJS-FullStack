@@ -12,7 +12,7 @@ export function DiscoverPageHeader() {
       <PageSectionHeader
         icon={Compass}
         title="Discover Jobs"
-        subtitle="Search 1.8M+ live postings across Greenhouse, Lever, Ashby, Workday and more"
+        subtitle="Browse open roles from hiring companies — filter, review details and track in one click"
         headingLevel="h1"
       />
     </div>

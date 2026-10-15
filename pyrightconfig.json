@@ -1,0 +1,9 @@
+{
+  "include": ["python-ai-service"],
+  "exclude": ["**/__pycache__", "python-ai-service/.venv"],
+  "venvPath": "python-ai-service",
+  "venv": ".venv",
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "basic",
+  "executionEnvironments": [{ "root": "python-ai-service" }]
+}

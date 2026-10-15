@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import {
   Briefcase,
   CalendarCheck,
@@ -48,7 +48,11 @@ export function getJobModeOptionIcon(value: string): ReactNode {
   return modeIcons[value] ?? modeIcons.all;
 }
 
-type GlassFilterDropdownProps = {
+/** Extra props (id, aria-*) from FormControl land on the trigger so <label htmlFor> names it */
+type GlassFilterDropdownProps = Omit<
+  ComponentPropsWithoutRef<'button'>,
+  'value' | 'onChange' | 'children'
+> & {
   value: string;
   options: FilterOption[];
   onChange: (value: string) => void;
@@ -72,11 +76,12 @@ export function GlassFilterDropdown({
   align = 'start',
   getOptionIcon,
   className,
+  ...triggerProps
 }: GlassFilterDropdownProps) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <GlassDropdownTrigger className={cn(FIELD_GLOW, className)}>
+        <GlassDropdownTrigger {...triggerProps} className={cn(FIELD_GLOW, className)}>
           <span className="flex min-w-0 flex-1 items-center gap-2">
             <span className="shrink-0 text-muted-foreground">{triggerIcon}</span>
             <span className="truncate">{triggerLabel}</span>

@@ -12,7 +12,7 @@ export const JOB_FORM_COPY = {
   create: {
     title: 'New Application',
     subtitle:
-      'Track a role in your pipeline — enrichment runs when you add an apply URL',
+      'Track a role in your pipeline — it links to a matching open posting automatically',
   },
   edit: {
     title: 'Edit Application',

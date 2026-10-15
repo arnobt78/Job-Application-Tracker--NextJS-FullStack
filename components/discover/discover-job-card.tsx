@@ -105,7 +105,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
         onOpenChange={setDetailsOpen}
       />
 
-      <div className="mt-auto flex items-center gap-2">
+      <div className="mt-auto flex flex-wrap items-center gap-2">
         <button
           onClick={() => setDetailsOpen(true)}
           className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-glass-fill px-3 text-xs font-medium text-muted-foreground transition hover:bg-glass-hover hover:text-foreground"
@@ -129,7 +129,7 @@ export function DiscoverJobCard({ job }: DiscoverJobCardProps) {
           variant={tracked ? 'outline' : 'default'}
           disabled={isPending || tracked}
           onClick={handleTrack}
-          className="ml-auto h-8 gap-1.5 text-xs"
+          className="ml-auto h-8 shrink-0 gap-1.5 text-xs"
         >
           {isPending ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
